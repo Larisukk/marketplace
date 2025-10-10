@@ -1,0 +1,7 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update    # for local/demo; use validate + Flyway later
+    open-in-view: false
+server:
+  port: 8080

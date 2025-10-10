@@ -1,0 +1,22 @@
+# ===== Maven / Java =====
+target/
+*.iml
+*.class
+.idea/
+.mvn/timing.properties
+
+# ===== Node / React =====
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# ===== Docker volumes =====
+db_data/
+
+# ===== OS files =====
+.DS_Store
+Thumbs.db
+
+# ===== Environment files =====
+.env
