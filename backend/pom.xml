@@ -87,6 +87,18 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Hibernate Spatial for PostGIS (Boot 3.x uses Hibernate 6) -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-spatial</artifactId>
+        </dependency>
+
+        <!-- JTS geometry API (Hibernate Spatial uses this) -->
+        <dependency>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>1.19.0</version>
+        </dependency>
     </dependencies>
 
     <build>
