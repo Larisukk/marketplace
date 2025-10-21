@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;   -- gen_random_uuid()
 CREATE EXTENSION IF NOT EXISTS citext;     -- CITEXT type
 CREATE EXTENSION IF NOT EXISTS postgis;    -- geography(Point,4326)
 CREATE EXTENSION IF NOT EXISTS pg_trgm;    -- trigram indexes
-
+  
 -- === Enums (idempotent via catalog checks) ===
 DO $$
     BEGIN
