@@ -8,5 +8,9 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
 server:
   port: 8080
