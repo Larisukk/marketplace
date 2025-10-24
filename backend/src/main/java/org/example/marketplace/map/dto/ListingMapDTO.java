@@ -1,4 +1,4 @@
-package org.example.marketplace.map;
+package org.example.marketplace.map.dto;
 
 public record ListingMapDTO(
         String id,
