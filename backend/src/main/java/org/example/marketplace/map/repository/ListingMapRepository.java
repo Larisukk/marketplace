@@ -51,16 +51,11 @@ public class ListingMapRepository {
             p.addValue("avail", available);
         }
         if (minLon != null && minLat != null && maxLon != null && maxLat != null) {
+            // Use lon/lat from v_listings_public; LEAST/GREATEST handle swapped bounds
             sql.append("""
-                AND id IN (
-                  SELECT l.id
-                  FROM listings l
-                  WHERE ST_Intersects(
-                    l.location::geometry,
-                    ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326)
-                  )
-                )
-            """);
+        AND lon BETWEEN LEAST(:minLon, :maxLon) AND GREATEST(:minLon, :maxLon)
+        AND lat BETWEEN LEAST(:minLat, :maxLat) AND GREATEST(:minLat, :maxLat)
+    """);
             p.addValue("minLon", minLon);
             p.addValue("minLat", minLat);
             p.addValue("maxLon", maxLon);
