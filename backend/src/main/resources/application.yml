@@ -1,12 +1,40 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5435/test
+    username: test
+    password: test
+    driver-class-name: org.postgresql.Driver
+
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
   jpa:
+    properties:
+      hibernate.default_schema: public
     hibernate:
       ddl-auto: validate
     open-in-view: false
+    # Optional: newer dialect (warn fixes)
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
   flyway:
     enabled: true
     locations: classpath:db/migration
+    schemas: public
+
 server:
   port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: mappings,health
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
+    org.springframework.web: INFO

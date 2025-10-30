@@ -1,4 +1,4 @@
-import { useState } from 'react'
+/*import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -32,4 +32,19 @@ function App() {
   )
 }
 
-export default App
+export default App*/
+
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import SearchTester from "./pages/SearchTester";
+import "./App.css"; // keep styles separate
+
+export default function App() {
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/dev/search" element={<SearchTester />} />
+                <Route path="*" element={<Navigate to="/dev/search" replace />} />
+            </Routes>
+        </BrowserRouter>
+    );
+}
