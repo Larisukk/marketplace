@@ -1,35 +1,23 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
+import MapPage from "./pages/MapPage";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+function Nav() {
+    return (
+        <div style={{ background:"#1f4633", color:"#e6f3ea", padding:"10px 16px", display:"flex", gap:16 }}>
+            <strong>BioBuy</strong>
+            <Link to="/map" style={{ color:"#cfe9dc" }}>Map</Link>
+        </div>
+    );
 }
 
-export default App
+export default function App() {
+    return (
+        <BrowserRouter>
+            <Nav />
+            <Routes>
+                <Route path="/" element={<Navigate to="/map" replace />} />
+                <Route path="/map" element={<MapPage />} />
+            </Routes>
+        </BrowserRouter>
+    );
+}
