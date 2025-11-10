@@ -1,17 +1,38 @@
 spring:
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+  application:
+    name: marketplace
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${DB_NAME}
+    username: ${DB_USER}
+    password: parola
+    driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: validate
+    show-sql: true
     open-in-view: false
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
+    properties:
+      hibernate.default_schema: public
 
   jackson:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    schemas: public
+    default-schema: public
+    baseline-on-migrate: true
+    baseline-version: 0
+
+
 server:
   port: 8080
 
+app:
+  jwt:
+    secret: ${APP_JWT_SECRET}
+    expiresSeconds: ${APP_JWT_EXPIRES:3600}
