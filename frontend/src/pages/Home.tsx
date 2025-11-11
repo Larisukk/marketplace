@@ -10,7 +10,7 @@ const Home: React.FC = () => {
         // Construct the search query string
         const query = [product, county].filter(Boolean).join(' din ');
         console.log(`Navigating to results with query: ${query}`);
-        // TODO: Implement actual routing here (e.g., using useNavigate from react-router-dom)
+
         alert(`Căutare trimisă: "${query}". (Implementează navigarea reală aici)`);
     };
 
