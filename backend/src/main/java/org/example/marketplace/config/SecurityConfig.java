@@ -59,6 +59,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
+                        // CORS preflight for everything
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()//
+                        .requestMatchers(HttpMethod.GET, "/api/search/**").permitAll() //
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwt, UsernamePasswordAuthenticationFilter.class);
