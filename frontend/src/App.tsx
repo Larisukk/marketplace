@@ -1,17 +1,23 @@
-// src/App.tsx
+import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
+import MapPage from "./pages/MapPage";
 
-import React from 'react';
-import Home from './pages/Home'; // Assuming Home.tsx is the main page component
-
-const App: React.FC = () => {
-    // Renders the main structure of the application.
-    // When a router is added, this component will typically hold the router setup.
+function Nav() {
     return (
-        <div className="App">
-            {/* Currently, only the Home page is rendered */}
-            <Home />
+        <div style={{ background:"#1f4633", color:"#e6f3ea", padding:"10px 16px", display:"flex", gap:16 }}>
+            <strong>BioBuy</strong>
+            <Link to="/map" style={{ color:"#cfe9dc" }}>Map</Link>
         </div>
     );
-};
+}
 
-export default App;
+export default function App() {
+    return (
+        <BrowserRouter>
+            <Nav />
+            <Routes>
+                <Route path="/" element={<Navigate to="/map" replace />} />
+                <Route path="/map" element={<MapPage />} />
+            </Routes>
+        </BrowserRouter>
+    );
+}
