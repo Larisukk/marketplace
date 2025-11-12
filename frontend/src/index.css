@@ -24,3 +24,28 @@ body {
   background-color: #111;
   color: #e6f3ea;
 }
+
+html, body, #root { height: 100%; margin: 0; }
+.content { height: 100vh; display: grid; grid-template-columns: minmax(260px, 26rem) 1fr; min-height: 0; }
+.sidebar { overflow: auto; padding: 12px; }
+.mapPane { position: relative; min-height: 0; }
+.mapFill { position: absolute; inset: 0; } /* MapBox gets this via className="mapFill" */
+
+:root { --nav-h: 56px;           /* adjust if your header is taller */
+  --map-h: 50dvh; }        /* default = 50% of viewport height */
+
+html, body, #root { height: 100%; margin: 0; }
+
+/* Box that the map fills. Height is controlled by --map-h. */
+.mapResponsive {
+  width: 100%;
+  height: var(--map-h);
+}
+
+/* OPTIONAL: on wide screens, let the map take full page minus header.
+   Remove this block if you always want percentage height. */
+@media (min-width: 1024px) {
+  .mapResponsive.fullOnDesktop {
+    height: calc(100dvh - var(--nav-h));
+  }
+}
