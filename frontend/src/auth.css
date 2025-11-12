@@ -42,7 +42,6 @@ body{
     /* spațiu generos la stânga pentru imagine */
     padding:32px 6vw 32px 55vw;
 }
-
 .card.single{ display:flex; padding:0; }
 
 /* ===== SMALL CARD (form) ===== */
@@ -70,7 +69,6 @@ body{
     border-bottom:2px solid rgba(52,78,65,0.15);
     margin-bottom:28px;
 }
-
 .tabs .tab{
     appearance:none !important;
     -webkit-appearance:none !important;
@@ -88,12 +86,10 @@ body{
     cursor:pointer;
     transition:color .2s ease;
 }
-
 .tabs .tab:hover{ color:var(--primary-700); }
 .tabs .tab:focus,
 .tabs .tab:focus-visible,
 .tabs .tab:active{ outline:none !important; box-shadow:none !important; }
-
 .tabs::after{
     content:"";
     position:absolute;
@@ -107,7 +103,6 @@ body{
     transition:transform .28s cubic-bezier(.2,.7,.3,1);
 }
 .tabs[data-active="login"]::after{ transform:translateX(100%); }
-
 .tabs[data-active="signup"] .tab:nth-child(1),
 .tabs[data-active="login"]  .tab:nth-child(2){
     color:var(--primary);
@@ -181,101 +176,149 @@ body{
 /* Layering so the card is above the image */
 .card{ z-index:1; }
 
-/* ===== DESKTOP (single source of truth) ===== */
+/* ===== DESKTOP: coloană fixată la dreapta cu gap între logo și card ===== */
 @media (min-width:1025px){
-    .auth-wrap{ position:relative; padding:0; }
-
-    /* card în dreapta, puțin mai jos ca să încapă logo-ul mare */
-    .card{
-        position:fixed;
-        top:56%;              /* ajustează 54–58% după preferință */
-        right:9vw;
-        transform:translateY(-50%);
-        width:450px; max-width:540px; height:auto;
-        border-radius:24px;
-        border:1px solid var(--border);
-        box-shadow:0 12px 40px rgba(52,78,65,0.12);
-        background:var(--card);
-        padding:0; display:block;
+    :root{
+        --auth-top: 60%;    /* cât de sus/jos e coloana din dreapta */
+        --stack-gap: 24px;  /* distanța dintre logo și card (anti-suprapunere) */
+        --logo-size: 210px; /* mărimea logo-ului */
     }
 
-    .card.single{ padding:0; }
+    /* container comun pentru logo + card; menține gap fix */
+    .right-stack{
+        position: fixed;
+        top: var(--auth-top);
+        right: 6vw;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: var(--stack-gap);
+        z-index: 2; /* peste hero-left */
+    }
+
+    .logo-floating{
+        position: static;         /* nu mai e fix */
+        width: 540px;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+    }
+    .logo-floating .logo{
+        height: var(--logo-size);
+        width: auto; object-fit: contain;
+        filter: drop-shadow(0 4px 6px rgba(52,78,65,0.18));
+        transition: transform .3s ease, filter .3s ease;
+    }
+    .logo-floating .logo:hover{
+        transform: translateY(-2px) scale(1.05);
+        filter: drop-shadow(0 6px 10px rgba(52,78,65,0.22));
+    }
+
+    .card{
+        position: static;         /* stă în stack sub logo */
+        transform: none;
+        right: auto; top: auto;
+        width: 450px; max-width: 540px; height: auto;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        box-shadow: 0 12px 40px rgba(52,78,65,0.12);
+        background: var(--card);
+        padding: 0; display: block;
+        z-index: 1;
+    }
+
     .right.compact{
         max-width:none; width:100%;
         border:none; border-radius:22px;
         background:#f1f4ec; padding:36px 28px; margin:0; box-shadow:none;
     }
-
-    /* LOGO deasupra cardului, aliniat la aceeași ancoră */
-    .logo-floating{
-        position:fixed;
-        top:56%;               /* același top ca .card */
-        right:6vw;             /* același right ca .card */
-        transform:translateY(calc(-50% - 260px)); /* cât spațiu vrei peste card */
-        display:flex; justify-content:center;
-        width:540px; z-index:3; pointer-events:none;
-    }
-    .logo-floating .logo{
-        height:160px;          /* mărimea logo-ului pe desktop */
-        width:auto; object-fit:contain;
-        filter:drop-shadow(0 4px 6px rgba(52,78,65,0.18));
-        transition:transform .3s ease, filter .3s ease;
-    }
-    .logo-floating .logo:hover{
-        transform:translateY(-2px) scale(1.05);
-        filter:drop-shadow(0 6px 10px rgba(52,78,65,0.22));
-    }
 }
-
-/* ===== MOBILE/TABLET ===== */
-@media (max-width:1024px){
-    .hero-left{ display:none; }
-
-    .auth-wrap{
-        padding:16px;
-        display:flex; justify-content:center; align-items:center;
-    }
-
-    .card{
-        position:static; transform:none; right:auto; top:auto;
-        width:100%; height:auto; border-radius:24px;
-        box-shadow:0 12px 40px rgba(52,78,65,.12);
-        display:block; padding:16px;
-    }
-
-    .right.compact{ max-width:100%; padding:24px 20px; }
-
-    /* logo înaintea cardului, centrat */
-    .logo-floating{
-        position:static; transform:none; width:100%;
-        display:flex; justify-content:center; margin-bottom:24px; pointer-events:auto;
-    }
-    .logo-floating .logo{ height:80px; filter:none; }
-}
-/* === OVERRIDES: poziție card + logo aliniate prin variabile (DESKTOP) === */
-@media (min-width: 1025px){
+/* === Compact + centrat peste card (override) === */
+@media (min-width:1025px){
     :root{
-        /* UȘOR DE AJUSTAT: */
-        --auth-top: 62%;     /* cât de jos e cardul (ex. 56–65%) */
-        --logo-lift: 320px;  /* distanța logo-ului deasupra centrului cardului */
-        --logo-size: 210px;  /* înălțimea logo-ului (mărește după gust) */
+        /* reglează fin poziția pe verticală și mărimile */
+        --auth-top: 53%;
+        --stack-gap: 0px;         /* distanța logo–card (mai mic) */
+        --logo-size: 200px;        /* cât de mare e logo-ul */
+        --card-width: 420px;       /* o singură lățime pentru ambele */
     }
 
-    /* cardul coboară mai mult ca să facă loc logo-ului */
-    .card{
-        top: var(--auth-top) !important;
+    /* coloana din dreapta: totul centrat pe aceeași axă */
+    .right-stack{
+        position: fixed;
+        top: var(--auth-top);
+        right: 8vw;                /* apropie/depărtează de marginea dreaptă */
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;       /* <<— CENTRARE logo peste card */
+        gap: var(--stack-gap);
+        z-index: 2;
     }
 
-    /* logo-ul urmează exact aceeași ancoră ca .card */
+    /* ambele au aceeași lățime => centrări perfecte */
     .logo-floating{
-        top: var(--auth-top) !important;
-        transform: translateY(calc(-50% - var(--logo-lift))) !important;
-        width: 540px !important;   /* ține alinierea cu cardul */
-        right: 6vw !important;
+        position: static;
+        width: var(--card-width);
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+    }
+    .logo-floating .logo{
+        height: var(--logo-size);
+        width: auto;
     }
 
-    .logo-floating .logo{
-        height: var(--logo-size) !important;
-        width: auto !important;
+    .card{
+        position: static;
+        width: var(--card-width);
+        max-width: var(--card-width);
+        transform: none;
+        right: auto; top: auto;
+        /* restul stilurilor rămân cum sunt deja setate */
     }
+}
+
+
+/* ===== Field errors & password rules ===== */
+.fielderr{
+    display:block;
+    margin-top:4px;
+    color:#8b1e1e;
+    font-size:12px;
+}
+
+/* (nefolosită acum, dar lăsată ca utilitar) */
+.pwd-reqs{
+    list-style:none;
+    padding-left:0;
+    margin:8px 0 0;
+    font-size:12px;
+    line-height:1.35;
+    color:rgba(52,78,65,.85);
+}
+.pwd-reqs li{ padding-left:18px; position:relative; }
+.pwd-reqs li::before{
+    content:"•";
+    position:absolute; left:0; top:0; transform:translateY(1px);
+}
+.pwd-reqs li.ok{ color:#3a5a40; }
+.pwd-reqs li.no{ color:#8a6b6b; }
+
+/* lista minimală de reguli afișată DOAR când parola e slabă (după submit) */
+.pw-rules{
+    margin: 4px 0 6px;
+    padding-left: 20px;
+    font-size: 13px;
+    line-height: 1.35;
+    list-style: disc;
+}
+.pw-rules li{
+    color: #b04a4a;               /* roșu pentru condiție neîndeplinită */
+}
+.pw-rules li[data-ok="true"]{
+    color: #2e7d32;               /* verde când e îndeplinită (nu-l folosim acum) */
+    text-decoration: none;
+    list-style: "✓  ";
 }
