@@ -1,9 +1,9 @@
 
 .upload-page-layout {
     background-image: url('/upload_fundal.png');
-    background-size: cover; /* Face imaginea să acopere tot spațiul */
-    background-position: center; /* Centrează imaginea */
-    background-repeat: no-repeat; /* Împiedică repetarea imaginii */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 
     min-height: 100vh;
     padding-top: 10px;
@@ -12,20 +12,18 @@
     width: 100%;
     box-sizing: border-box;
 }
-/* src/UploadProduct.css */
 
 .upload-page-layout main {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: 10px 10px; /* Am redus padding-ul de sus de la 40px la 20px */
+    padding: 10px 10px;
     flex-grow: 0;
     width: 100%;
     box-sizing: border-box;
 }
 
-/* Containerul alb din mijloc */
 .upload-form-container {
     background-color: white;
     padding: 30px 40px;
@@ -303,11 +301,7 @@ DROPDOWN CATEGORII
     background: #375534;
 }
 
-/* Pentru Firefox */
 .category-select-dropdown {
     scrollbar-width: thin;
     scrollbar-color: #AEC3B0 #f1f1f1;
 }
-
-/* SECȚIUNEA DE OVERRIDE PENTRU HEADER A FOST ȘTEARSĂ
-*/

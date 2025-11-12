@@ -1,8 +1,8 @@
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import MapPage from "./pages/MapPage";
-import Home from "./pages/Home";
-import UploadProductPage from "./pages/UploadProductPage";
+import MapPage from "./pages/mapPage/MapPage";
+import Home from "./pages/homePage/Home";
+import UploadProductPage from "./pages/uploadProductPage/UploadProductPage";
 
 
 

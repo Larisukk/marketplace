@@ -1,9 +1,7 @@
-// src/pages/Home.tsx
-
 import React from 'react';
-import Header from '../components/Header';
-import HomeHero from '../components/HomeHero';
-import '../style/styles.css'
+import Header from '../../components/Header';
+import HomeHero from '../../components/HomeHero';
+import './styles.css'
 
 const Home: React.FC = () => {
 

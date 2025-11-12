@@ -1,7 +1,7 @@
-import '../style/UploadProduct.css';
+import './UploadProduct.css';
 
-import MainHeader from '../components/MainHeader';
-import UploadProduct from '../components/UploadProduct';
+import MainHeader from "../../components/MainHeader";
+import UploadProduct from "../../components/UploadProduct";
 
 const UploadProductPage = () => {
     return (

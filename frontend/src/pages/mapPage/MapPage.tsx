@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import MapBox, { type Bbox, type Point } from "../components/MapBox";
+import MapBox, { type Bbox, type Point } from "../../components/MapBox";
 
 export default function MapPage() {
     const [points, setPoints] = useState<Point[]>([]);

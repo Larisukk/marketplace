@@ -1,6 +1,5 @@
-import React, { useState } from 'react'; // Am scos useRef și useEffect
-import '../style/MainHeader.css'; // Asigură-te că folosești calea corectă (probabil ../MainHeader.css)
-
+import React, { useState } from 'react';
+import '../Header/MainHeader.css';
 const COLORS = {
     DARK_GREEN: '#0F2A1D',
     ACCENT_GREEN: '#AEC3B0',
