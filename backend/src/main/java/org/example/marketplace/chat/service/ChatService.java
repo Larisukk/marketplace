@@ -10,6 +10,12 @@ import org.example.marketplace.chat.repository.MessageRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.example.marketplace.user.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
+import java.util.UUID;
+
 
 import java.util.*;
 
@@ -19,14 +25,18 @@ public class ChatService {
     private final ConversationRepository conversationRepo;
     private final ConversationParticipantRepository participantRepo;
     private final MessageRepository messageRepo;
+    private final UserRepository userRepo;
 
     public ChatService(ConversationRepository conversationRepo,
                        ConversationParticipantRepository participantRepo,
-                       MessageRepository messageRepo) {
+                       MessageRepository messageRepo,
+                       UserRepository userRepo) {
         this.conversationRepo = conversationRepo;
         this.participantRepo = participantRepo;
         this.messageRepo = messageRepo;
+        this.userRepo = userRepo;
     }
+
 
     @Transactional
     public ConversationDTO startOrGetOneToOne(UUID userA, UUID userB) {
@@ -67,20 +77,29 @@ public class ChatService {
     }
 
     @Transactional
-    public MessageDTO send(SendMessageRequest req) {
-        if (!participantRepo.existsByConversationIdAndUserId(req.conversationId(), req.senderId())) {
-            throw new IllegalArgumentException("Sender is not a participant in this conversation.");
+    public MessageDTO send(Authentication auth, SendMessageRequest req) {
+        UUID me = currentUserId(auth);
+        if (me == null) throw new IllegalStateException("Unauthenticated");
+
+        UUID conversationId = req.conversationId();
+        if (!participantRepo.existsByConversationIdAndUserId(conversationId, me)) {
+            throw new SecurityException("Not a participant in this conversation");
         }
 
         Message m = new Message();
-        m.setConversationId(req.conversationId());
-        m.setSenderUserId(req.senderId());
-        m.setBody(req.body() == null ? "" : req.body().trim());
-        var saved = messageRepo.save(m);
+        m.setConversationId(conversationId);
+        m.setSenderUserId(me);
+        m.setBody(req.body());
+        m.setCreatedAt(java.time.OffsetDateTime.now());
+        m = messageRepo.save(m);
 
-        return new MessageDTO(saved.getId(), saved.getConversationId(), saved.getSenderUserId(),
-                saved.getBody(), saved.getCreatedAt(), saved.getReadAt());
+        return new MessageDTO(
+                m.getId(), m.getConversationId(), m.getSenderUserId(),
+                m.getBody(), m.getCreatedAt(), m.getReadAt()
+        );
     }
+
+
 
     @Transactional(readOnly = true)
     public List<MessageDTO> listMessages(UUID conversationId, int page, int size) {
@@ -90,4 +109,47 @@ public class ChatService {
                 m.getBody(), m.getCreatedAt(), m.getReadAt()
         )).toList();
     }
+
+    // Security helper
+
+    /** Resolve authenticated user's UUID from Authentication (principal name = email). */
+    // imports needed:
+
+    // make sure you have this injected in the service:
+    // helper: email (principal) -> UserEntity.id
+    private UUID currentUserId(Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) return null;
+
+        String username = null;
+        Object principal = auth.getPrincipal();
+
+        // Case A: principal is Spring Security UserDetails
+        if (principal instanceof User u) {
+            username = u.getUsername(); // your email
+        }
+        // Case B: principal is just a String (some setups store the username/email directly)
+        else if (principal instanceof String s) {
+            username = s; // email
+        }
+
+        if (username == null) return null;
+
+        return userRepo.findByEmailIgnoreCase(username)
+                .map(u -> u.getId())
+                .orElse(null);
+    }
+
+    /** True if the authenticated user matches the provided userId OR is ADMIN (checked in @PreAuthorize). */
+    public boolean isSameUser(Authentication auth, UUID userId) {
+        UUID me = currentUserId(auth);
+        return me != null && me.equals(userId);
+    }
+
+    /** True if the authenticated user participates in the given conversation. */
+    public boolean isParticipant(Authentication auth, UUID conversationId) {
+        UUID me = currentUserId(auth);
+        if (me == null) return false;
+        return participantRepo.existsByConversationIdAndUserId(conversationId, me);
+    }
+
 }

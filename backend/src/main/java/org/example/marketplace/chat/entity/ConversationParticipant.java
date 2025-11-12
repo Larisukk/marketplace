@@ -19,6 +19,7 @@ public class ConversationParticipant {
     private UUID userId;
 
     public ConversationParticipant() {}
+
     public ConversationParticipant(UUID conversationId, UUID userId) {
         this.conversationId = conversationId;
         this.userId = userId;
@@ -26,23 +27,30 @@ public class ConversationParticipant {
 
     public UUID getConversationId() { return conversationId; }
     public void setConversationId(UUID conversationId) { this.conversationId = conversationId; }
+
     public UUID getUserId() { return userId; }
     public void setUserId(UUID userId) { this.userId = userId; }
 
     public static class ParticipantKey implements Serializable {
         private UUID conversationId;
         private UUID userId;
+
         public ParticipantKey() {}
         public ParticipantKey(UUID conversationId, UUID userId) {
-            this.conversationId = conversationId; this.userId = userId;
+            this.conversationId = conversationId;
+            this.userId = userId;
         }
-        @Override public boolean equals(Object o) {
+
+        @Override
+        public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof ParticipantKey that)) return false;
-            return Objects.equals(conversationId, that.conversationId) &&
-                   Objects.equals(userId, that.userId);
+            return Objects.equals(conversationId, that.conversationId)
+                    && Objects.equals(userId, that.userId);
         }
-        @Override public int hashCode() {
+
+        @Override
+        public int hashCode() {
             return Objects.hash(conversationId, userId);
         }
     }
