@@ -1,22 +1,20 @@
-import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
-import MapPage from "./pages/MapPage";
 
-function Nav() {
-    return (
-        <div style={{ background:"#1f4633", color:"#e6f3ea", padding:"10px 16px", display:"flex", gap:16 }}>
-            <strong>BioBuy</strong>
-            <Link to="/map" style={{ color:"#cfe9dc" }}>Map</Link>
-        </div>
-    );
-}
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import MapPage from "./pages/MapPage";
+import Home from "./pages/Home";
+import UploadProductPage from "./pages/UploadProductPage";
+
+
 
 export default function App() {
     return (
         <BrowserRouter>
-            <Nav />
+            {/* --- AM ȘTERS LINIA <Nav /> DE AICI --- */}
             <Routes>
-                <Route path="/" element={<Navigate to="/map" replace />} />
+                <Route path="/" element={<Navigate to="/home" replace />} />
                 <Route path="/map" element={<MapPage />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/upload" element={<UploadProductPage />} />
             </Routes>
         </BrowserRouter>
     );

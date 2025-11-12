@@ -202,42 +202,37 @@ const HomeHero: React.FC<HomeHeroProps> = ({ onSearch }) => {
                     <path fill={COLORS.ACCENT_GREEN} d="M0,64L48,64C96,64,192,64,288,58.7C384,53,480,43,576,42.7C672,43,768,53,864,53.3C960,53,1056,43,1152,48C1248,53,1344,64,1392,69.3L1440,75L1440,100L1392,100C1344,100,1248,100,1152,100C1056,100,960,100,864,100C768,100,672,100,576,100C480,100,384,100,288,100C192,100,96,100,48,100L0,100Z"></path>
                 </svg>
             </div>
-            <section className="city-promo-section" style={{ backgroundColor: COLORS.ACCENT_GREEN }}>
+
+            {/* START: SECȚIUNE MODIFICATĂ */}
+            <section className="city-promo-section" style={{backgroundColor: COLORS.ACCENT_GREEN}}>
                 <div className="city-promo-content">
-                    <h2 className="city-promo-title">Cele mai mari orașe din România</h2>
-                    <div className="city-buttons-grid">
-                        <button className="city-button">București</button>
-                        <button className="city-button">Cluj-Napoca</button>
-                        <button className="city-button">Constanța</button>
-                        <button className="city-button">Iași</button>
-                        <button className="city-button">Brașov</button>
-                        <button className="city-button">Timișoara</button>
-                        <button className="city-button">Craiova</button>
-                        <button className="city-button">Oradea</button>
-                        <button className="city-button">Ploiești</button>
-                        <button className="city-button">Sibiu</button>
-                    </div>
+                    {/* IMAGINEA ADAUGATĂ AICI */}
+                    <img src="/4.png" alt="Misiunea Noastra Simbol" style={{ width: '150px', height: '150px', objectFit: 'contain', marginBottom: '1.5rem', display: 'block', margin: '0 auto' }} />
+
+                    <h2 className="city-promo-title">Misiunea Noastra</h2>
+                    {/* Folosim clasa .feature-text pentru stilul de bază al paragrafului,
+                        dar suprascriem culoarea pentru un contrast mai bun pe fundalul accent
+                        și adăugăm spațiere. */}
+                    <p className="feature-text" style={{ color: COLORS.DARK_GREEN, marginBottom: '1.5rem', textAlign: 'justify' }}>
+                        Misiunea noastră este de a redefini experiența organică, aducând beneficiile sănătății și sustenabilității direct în casa ta.
+                    </p>
+                    <p className="feature-text" style={{ color: COLORS.DARK_GREEN, marginBottom: '1.5rem', textAlign: 'justify' }}>
+                        În centrul viziunii noastre se află dedicarea de a-ți oferi o selecție de produse organice de înaltă calitate, care susțin un stil de viață conștient.
+                    </p>
+                    <p className="feature-text" style={{ color: COLORS.DARK_GREEN, marginBottom: '1.5rem', textAlign: 'justify' }}>
+                        Suntem angajați să fim mai mult decât un magazin: suntem puntea ta de legătură cu sursa. Am eliminat intermediarii pentru a garanta că fiecare produs ajunge la tine proaspăt, direct de la producătorii locali care împărtășesc valorile noastre: respect pentru natură și pasiune pentru calitate.
+                    </p>
+                    <p className="feature-text" style={{ color: COLORS.DARK_GREEN, textAlign: 'justify' }}>
+                        Prin încurajarea consumului de alimente bio și sprijinirea practicilor ecologice, platforma noastră promovează sănătatea ta și vitalitatea mediului înconjurător.
+                    </p>
                 </div>
-            </section>
-            <section
-                className="featured-categories-section"
-                style={{ backgroundColor: COLORS.ACCENT_GREEN, position: 'relative' }}
-            >
-                <h2 className="featured-categories-title">Categorii vedetă</h2>
-                <div className="category-buttons-container">
-                    <button className="city-button">Pizza</button>
-                    <button className="city-button">Sushi</button>
-                    <button className="city-button">Flori</button>
-                    <button className="city-button">Burgeri</button>
-                    <button className="city-button">Fructe de mare</button>
-                    <button className="city-button">Mici</button>
-                    <button className="city-button">Cadouri</button>
-                </div>
-                <button className="category-button-all">Toate categoriile</button>
                 <svg className="wave-separator-footer" viewBox="0 0 1440 100" preserveAspectRatio="none">
-                    <path fill={COLORS.DARK_GREEN} d="M0,64L48,64C96,64,192,64,288,58.7C384,53,480,43,576,42.7C672,43,768,53,864,53.3C960,53,1056,43,1152,48C1248,53,1344,64,1392,69.3L1440,75L1440,100L1392,100C1344,100,1248,100,1152,100C1056,100,960,100,864,100C768,100,672,100,576,100C480,100,384,100,288,100C192,100,96,100,48,100L0,100Z"></path>
+                    <path fill={COLORS.DARK_GREEN}
+                          d="M0,64L48,64C96,64,192,64,288,58.7C384,53,480,43,576,42.7C672,43,768,53,864,53.3C960,53,1056,43,1152,48C1248,53,1344,64,1392,69.3L1440,75L1440,100L1392,100C1344,100,1248,100,1152,100C1056,100,960,100,864,100C768,100,672,100,576,100C480,100,384,100,288,100C192,100,96,100,48,100L0,100Z"></path>
                 </svg>
             </section>
+            {/* END: SECȚIUNE MODIFICATĂ */}
+
             <footer className="site-footer" style={{ backgroundColor: COLORS.DARK_GREEN }}>
                 <div className="footer-content">
                     <div className="footer-links">
