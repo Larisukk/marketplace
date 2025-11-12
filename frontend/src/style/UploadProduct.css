@@ -1,0 +1,313 @@
+
+.upload-page-layout {
+    background-image: url('/upload_fundal.png');
+    background-size: cover; /* Face imaginea să acopere tot spațiul */
+    background-position: center; /* Centrează imaginea */
+    background-repeat: no-repeat; /* Împiedică repetarea imaginii */
+
+    min-height: 100vh;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+}
+/* src/UploadProduct.css */
+
+.upload-page-layout main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px 10px; /* Am redus padding-ul de sus de la 40px la 20px */
+    flex-grow: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Containerul alb din mijloc */
+.upload-form-container {
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 650px;
+    box-sizing: border-box;
+}
+
+
+.upload-form-container h3 {
+    font-size: 22px;
+    color: #111;
+    margin-top: 0;
+    margin-bottom: 25px;
+    text-align: left;
+    font-weight: 600;
+}
+
+/* Stilul pentru fiecare secțiune (Categorie, Titlu, etc.) */
+.form-section {
+    margin-bottom: 20px;
+    border: 1px solid #dfe1e5;
+    border-radius: 8px;
+    padding: 12px 15px;
+    transition: border-color 0.2s ease;
+}
+
+.form-section:focus-within {
+    border-color: #375534;
+}
+
+.form-section label {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 4px;
+    display: block;
+    font-size: 14px;
+}
+
+.form-section input[type="text"],
+.form-section select,
+.form-section textarea {
+    width: 100%;
+    padding: 4px 0;
+    border: none;
+    border-radius: 0;
+    font-size: 16px;
+    box-sizing: border-box;
+    color: #333;
+    background-color: #ffffff !important;
+    font-family: inherit;
+    resize: none;
+}
+
+/* Stil vechi pentru select, păstrat pentru coerență dacă mai există altele */
+.form-section select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%2D%3D%22M5%208l5%205%205-5z%22%20fill%3D%22%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 5px center;
+    background-size: 16px 16px;
+    padding-right: 30px;
+    cursor: pointer;
+}
+
+.form-section select:invalid,
+.form-section select option[value=""] {
+    color: #999;
+}
+
+.form-section input[type="text"]::placeholder,
+.form-section textarea::placeholder {
+    color: #999;
+}
+
+.form-section input[type="text"]:focus,
+.form-section select:focus,
+.form-section textarea:focus {
+    outline: none;
+}
+
+/* Secțiunea de încărcare fotografii */
+.photo-upload-section {
+    text-align: center;
+    border: 2px dashed #375534;
+    background-color: #f5f7f5;
+    cursor: pointer;
+    padding: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.photo-upload-section:hover {
+    background-color: #eef3ee;
+}
+
+.photo-upload-label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #375534;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.photo-upload-label .plus-icon {
+    font-size: 24px;
+    font-weight: 400;
+    margin-right: 8px;
+    line-height: 1;
+}
+
+/* Secțiunea de preț */
+.price-input-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.price-input-wrapper input {
+    flex-grow: 1;
+}
+
+.price-input-wrapper span {
+    padding: 4px 0 4px 10px;
+    color: #555;
+    font-size: 16px;
+}
+
+/* Butonul de submit */
+.submit-product-btn {
+    background-color: #375534;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    transition: background-color 0.2s ease;
+}
+
+.submit-product-btn:hover {
+    background-color: #0F2A1D;
+}
+
+
+/* ==================================================
+DROPDOWN CATEGORII
+==================================================
+*/
+
+/* Wrapper-ul care conține și .form-section și logica dropdown */
+.form-section.category-select-wrapper {
+    position: relative;
+    padding: 12px 15px;
+}
+
+/* Zona pe care se dă click */
+.category-select-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    cursor: pointer;
+    padding: 4px 0;
+    font-size: 16px;
+    font-family: inherit;
+    background-color: #ffffff;
+}
+
+.category-display-text {
+    color: #333;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Stil pentru placeholder */
+.category-display-text.placeholder {
+    color: #999;
+}
+
+/* Săgeata */
+.dropdown-arrow {
+    font-size: 10px;
+    margin-left: 8px;
+    color: #555;
+    transition: transform 0.2s ease-in-out;
+    transform: scaleY(0.7);
+}
+
+/* Rotește săgeata când e deschis */
+.category-select-display[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(180deg) scaleY(0.7);
+}
+
+/* Lista care apare */
+.category-select-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0,0,0,0.05);
+    padding: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 10;
+    animation: dropdownFadeIn 0.2s ease-out;
+    border: 1px solid #eee;
+    margin-top: 4px;
+}
+
+/* Opțiunile */
+.category-select-option {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    font-size: 16px;
+    color: #0F2A1D;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-weight: 500;
+    margin: 2px 0;
+}
+
+.category-select-option:hover {
+    background-color: #F5F9F0;
+}
+
+/* Opțiunea selectată */
+.category-select-option.selected {
+    background-color: #E3EED4;
+    font-weight: 600;
+    color: #0F2A1D;
+}
+
+/* Animația de fade-in pentru dropdown */
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.category-select-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.category-select-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.category-select-dropdown::-webkit-scrollbar-thumb {
+    background: #AEC3B0;
+    border-radius: 10px;
+}
+
+.category-select-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #375534;
+}
+
+/* Pentru Firefox */
+.category-select-dropdown {
+    scrollbar-width: thin;
+    scrollbar-color: #AEC3B0 #f1f1f1;
+}
+
+/* SECȚIUNEA DE OVERRIDE PENTRU HEADER A FOST ȘTEARSĂ
+*/

@@ -1,0 +1,94 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+/* * AICI A FOST MODIFICAREA
+ * Am scos 'display: flex' și 'place-items: center'
+ * pentru ca pagina Home să se alinieze corect (de sus)
+*/
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+/* Aceste stiluri au rămas pentru pagina de hartă */
+html, body, #root { height: 100%; margin: 0; }
+.content { height: 100vh; display: grid; grid-template-columns: minmax(260px, 26rem) 1fr; min-height: 0; }
+.sidebar { overflow: auto; padding: 12px; }
+.mapPane { position: relative; min-height: 0; }
+.mapFill { position: absolute; inset: 0; } /* MapBox gets this via className="mapFill" */
+
+:root { --nav-h: 56px;           /* adjust if your header is taller */
+  --map-h: 50dvh; }        /* default = 50% of viewport height */
+
+/* Box that the map fills. Height is controlled by --map-h. */
+.mapResponsive {
+  width: 100%;
+  height: var(--map-h);
+}
+
+/* OPTIONAL: on wide screens, let the map take full page minus header.
+   Remove this block if you always want percentage height. */
+@media (min-width: 1024px) {
+  .mapResponsive.fullOnDesktop {
+    height: calc(100dvh - var(--nav-h));
+  }
+}
