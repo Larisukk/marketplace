@@ -1,0 +1,324 @@
+/* src/auth.css – green palette, RIGHT-aligned compact layout (FINAL) */
+
+:root{
+    --bg:#dad7cd; --bg-2:#a3b18a;
+    --primary:#588157; --primary-700:#3a5a40; --ink:#344e41;
+    --muted:rgba(52,78,65,.65); --border:rgba(58,90,64,.25);
+    --focus:rgba(88,129,87,.28); --card:#e7e9df;
+    --error-bg:#e6f3ea; --error-ink:#2f5d3a;
+}
+
+*{ box-sizing:border-box; }
+
+body{
+    background:linear-gradient(135deg, var(--bg) 0%, #e3e6da 40%, var(--bg-2) 100%);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+
+/* ===== FRAME ===== */
+.auth-wrap{
+    min-height:100vh;
+    display:block;
+    padding:24px;
+}
+
+/* ===== BIG CARD (generic defaults; overridden on desktop/mobile) ===== */
+.card{
+    background:var(--card);
+    border:none;
+    box-shadow:none;
+    overflow:hidden;
+
+    width:100%;
+    height:calc(100vh - 48px);
+    max-width:none;
+    border-radius:0;
+
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+
+    /* spațiu generos la stânga pentru imagine */
+    padding:32px 6vw 32px 55vw;
+}
+.card.single{ display:flex; padding:0; }
+
+/* ===== SMALL CARD (form) ===== */
+.right.compact{
+    width:100%;
+    max-width:440px;
+    background:#f1f4ec;
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:36px 28px;
+    box-shadow:0 10px 26px rgba(52,78,65,.10);
+
+    margin-left:auto;
+    margin-right:0;
+}
+
+/* no legacy left image blocks */
+.left, .left img, .left-gradient{ display:none !important; }
+
+/* ===== TABS 50/50 cu indicator glisant ===== */
+.tabs{
+    position:relative;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    border-bottom:2px solid rgba(52,78,65,0.15);
+    margin-bottom:28px;
+}
+.tabs .tab{
+    appearance:none !important;
+    -webkit-appearance:none !important;
+    background:transparent !important;
+    border:0 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    outline:none !important;
+
+    font-size:20px;
+    font-weight:500;
+    text-align:center;
+    padding:14px 0;
+    color:rgba(52,78,65,0.55);
+    cursor:pointer;
+    transition:color .2s ease;
+}
+.tabs .tab:hover{ color:var(--primary-700); }
+.tabs .tab:focus,
+.tabs .tab:focus-visible,
+.tabs .tab:active{ outline:none !important; box-shadow:none !important; }
+.tabs::after{
+    content:"";
+    position:absolute;
+    bottom:-2px;
+    left:0;
+    width:50%;
+    height:2px;
+    background:var(--primary);
+    border-radius:1px;
+    transform:translateX(0%);
+    transition:transform .28s cubic-bezier(.2,.7,.3,1);
+}
+.tabs[data-active="login"]::after{ transform:translateX(100%); }
+.tabs[data-active="signup"] .tab:nth-child(1),
+.tabs[data-active="login"]  .tab:nth-child(2){
+    color:var(--primary);
+    font-weight:600;
+}
+
+/* ===== FORMS & INPUTS ===== */
+.form{ display:flex; flex-direction:column; gap:14px; }
+.block{ display:block; }
+.label{ display:block; font-size:14px; color:rgba(52,78,65,.9); }
+
+.input{
+    width:100%; border:1px solid var(--border); border-radius:14px;
+    padding:12px 16px; margin-top:6px; outline:none; background:#f0f2ea; color:var(--ink);
+    transition:border .2s ease, box-shadow .2s ease;
+}
+.input::placeholder{ color:rgba(52,78,65,.55); }
+.input:focus{ border-color:var(--primary); box-shadow:0 0 0 3px var(--focus); }
+
+/* Floating labels */
+.field{ position:relative; margin-top:6px; }
+.input.floating{ padding:18px 16px 12px; background:#f1f4ec; }
+.flabel{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    font-size:14px; color:rgba(52,78,65,0.62);
+    background:#f1f4ec; padding:0 6px; border-radius:8px;
+    pointer-events:none; transition:all .16s ease;
+}
+.input.floating:focus + .flabel,
+.input.floating:not(:placeholder-shown) + .flabel{
+    top:0; transform:translateY(-50%) scale(.94); color:var(--primary);
+}
+
+/* Buttons */
+.btn{
+    width:100%; border-radius:14px; border:1px solid transparent;
+    background:var(--primary); color:#edf3ea; padding:12px 16px; font-weight:600;
+    cursor:pointer; margin-top:8px;
+    transition:transform .05s ease, background .15s ease, box-shadow .15s ease;
+    box-shadow:0 6px 18px rgba(58,90,64,.18);
+}
+.btn:hover{ background:var(--primary-700); box-shadow:0 6px 20px rgba(58,90,64,.25); }
+.btn:active{ transform:translateY(1px); }
+.btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+/* Messages */
+.error{
+    background:var(--error-bg); color:var(--error-ink); padding:12px 16px;
+    border-radius:14px; font-size:14px; border:1px solid rgba(58,90,64,.25);
+}
+.note{ color:var(--muted); font-size:12px; margin-top:20px; text-align:center; }
+
+/* ===== LEFT HERO IMAGE WITH SOFT EDGE ===== */
+.hero-left{
+    position:fixed; top:0; left:0; bottom:0;
+    width:50vw;
+    background:url("/image.jpg") center left / cover no-repeat;
+
+    -webkit-mask-image:linear-gradient(to right, black 0%, black 55%, rgba(0,0,0,0) 100%);
+    mask-image:linear-gradient(to right, black 0%, black 55%, rgba(0,0,0,0) 100%);
+
+    filter:contrast(1.02) brightness(1.01);
+    z-index:0; pointer-events:none;
+}
+.hero-left::after{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(closest-side at 100% 50%, rgba(0,0,0,0.08), transparent 70%);
+    pointer-events:none;
+}
+
+/* Layering so the card is above the image */
+.card{ z-index:1; }
+
+/* ===== DESKTOP: coloană fixată la dreapta cu gap între logo și card ===== */
+@media (min-width:1025px){
+    :root{
+        --auth-top: 60%;    /* cât de sus/jos e coloana din dreapta */
+        --stack-gap: 24px;  /* distanța dintre logo și card (anti-suprapunere) */
+        --logo-size: 210px; /* mărimea logo-ului */
+    }
+
+    /* container comun pentru logo + card; menține gap fix */
+    .right-stack{
+        position: fixed;
+        top: var(--auth-top);
+        right: 6vw;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: var(--stack-gap);
+        z-index: 2; /* peste hero-left */
+    }
+
+    .logo-floating{
+        position: static;         /* nu mai e fix */
+        width: 540px;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+    }
+    .logo-floating .logo{
+        height: var(--logo-size);
+        width: auto; object-fit: contain;
+        filter: drop-shadow(0 4px 6px rgba(52,78,65,0.18));
+        transition: transform .3s ease, filter .3s ease;
+    }
+    .logo-floating .logo:hover{
+        transform: translateY(-2px) scale(1.05);
+        filter: drop-shadow(0 6px 10px rgba(52,78,65,0.22));
+    }
+
+    .card{
+        position: static;         /* stă în stack sub logo */
+        transform: none;
+        right: auto; top: auto;
+        width: 450px; max-width: 540px; height: auto;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        box-shadow: 0 12px 40px rgba(52,78,65,0.12);
+        background: var(--card);
+        padding: 0; display: block;
+        z-index: 1;
+    }
+
+    .right.compact{
+        max-width:none; width:100%;
+        border:none; border-radius:22px;
+        background:#f1f4ec; padding:36px 28px; margin:0; box-shadow:none;
+    }
+}
+/* === Compact + centrat peste card (override) === */
+@media (min-width:1025px){
+    :root{
+        /* reglează fin poziția pe verticală și mărimile */
+        --auth-top: 53%;
+        --stack-gap: 0px;         /* distanța logo–card (mai mic) */
+        --logo-size: 200px;        /* cât de mare e logo-ul */
+        --card-width: 420px;       /* o singură lățime pentru ambele */
+    }
+
+    /* coloana din dreapta: totul centrat pe aceeași axă */
+    .right-stack{
+        position: fixed;
+        top: var(--auth-top);
+        right: 8vw;                /* apropie/depărtează de marginea dreaptă */
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;       /* <<— CENTRARE logo peste card */
+        gap: var(--stack-gap);
+        z-index: 2;
+    }
+
+    /* ambele au aceeași lățime => centrări perfecte */
+    .logo-floating{
+        position: static;
+        width: var(--card-width);
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+    }
+    .logo-floating .logo{
+        height: var(--logo-size);
+        width: auto;
+    }
+
+    .card{
+        position: static;
+        width: var(--card-width);
+        max-width: var(--card-width);
+        transform: none;
+        right: auto; top: auto;
+        /* restul stilurilor rămân cum sunt deja setate */
+    }
+}
+
+
+/* ===== Field errors & password rules ===== */
+.fielderr{
+    display:block;
+    margin-top:4px;
+    color:#8b1e1e;
+    font-size:12px;
+}
+
+/* (nefolosită acum, dar lăsată ca utilitar) */
+.pwd-reqs{
+    list-style:none;
+    padding-left:0;
+    margin:8px 0 0;
+    font-size:12px;
+    line-height:1.35;
+    color:rgba(52,78,65,.85);
+}
+.pwd-reqs li{ padding-left:18px; position:relative; }
+.pwd-reqs li::before{
+    content:"•";
+    position:absolute; left:0; top:0; transform:translateY(1px);
+}
+.pwd-reqs li.ok{ color:#3a5a40; }
+.pwd-reqs li.no{ color:#8a6b6b; }
+
+/* lista minimală de reguli afișată DOAR când parola e slabă (după submit) */
+.pw-rules{
+    margin: 4px 0 6px;
+    padding-left: 20px;
+    font-size: 13px;
+    line-height: 1.35;
+    list-style: disc;
+}
+.pw-rules li{
+    color: #b04a4a;               /* roșu pentru condiție neîndeplinită */
+}
+.pw-rules li[data-ok="true"]{
+    color: #2e7d32;               /* verde când e îndeplinită (nu-l folosim acum) */
+    text-decoration: none;
+    list-style: "✓  ";
+}
