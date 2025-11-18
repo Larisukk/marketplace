@@ -18,6 +18,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+// --- ADĂUGĂ:
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
 @Configuration
 public class SecurityConfig {
 
@@ -47,16 +54,35 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtAuthFilter jwtAuthFilter(JwtService jwt) {
-        return new JwtAuthFilter(jwt);
+    public JwtAuthFilter jwtAuthFilter(JwtService jwt) { return new JwtAuthFilter(jwt); }
+
+    // --- NOU: configurație CORS
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        var cfg = new CorsConfiguration();
+        cfg.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://localhost:5174"   // adaugă alte porturi Vite dacă le folosești
+        ));
+        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setExposedHeaders(List.of("Authorization"));
+        cfg.setAllowCredentials(true);
+
+        var src = new UrlBasedCorsConfigurationSource();
+        src.registerCorsConfiguration("/**", cfg);
+        return src;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwt) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // <-- activează CORS
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <-- preflight liber
+                        .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
