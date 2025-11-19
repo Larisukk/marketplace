@@ -9,6 +9,7 @@ import {
 } from "react-leaflet";
 import L, { type DivIcon, type LatLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import LocateMe from "./LocateMe";
 
 /** Single listing point coming from /api/listings/bbox */
 export type Point = {
@@ -46,6 +47,9 @@ function createPriceIcon(p: Point): DivIcon {
     const label = hasPrice
         ? `${(p.priceCents! / 100).toFixed(0)} ${p.currency || "RON"}`
         : "•";
+
+    //ce bagi pentru cantitate
+
 
     return L.divIcon({
         className: "price-marker",
@@ -115,7 +119,7 @@ export default function MapBox({ center, points, onBboxChange }: MapBoxProps) {
                 url={tileUrl}
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-
+            <LocateMe />
             <BboxWatcher onChange={onBboxChange} />
 
             {points
