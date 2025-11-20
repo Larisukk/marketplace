@@ -1,15 +1,31 @@
 // frontend/src/services/searchApi.ts
 import axios from "axios";
-import type { ListingCardDto, ListingSummaryDto, PageDto, UUID } from "@/types/search";
+import type {
+    ListingCardDto,
+    ListingSummaryDto,
+    PageDto,
+    UUID,
+} from "@/types/search";
 
+// Axios instance
 const api = axios.create({
-    baseURL: "",        // <- was VITE_API_URL ?? "http://localhost:8080"
+    baseURL: "", // or import.meta.env.VITE_API_URL || ""
     timeout: 12000,
-    paramsSerializer: { /* keep as is */ },
+
+    // Your axios version expects: (params: Object) => string
+    paramsSerializer: (params: any): string => {
+        const sp = new URLSearchParams();
+        Object.entries(params as Record<string, unknown>).forEach(
+            ([key, value]) => {
+                if (value === undefined || value === null) return;
+                sp.append(key, String(value));
+            }
+        );
+        return sp.toString();
+    },
 });
 
-
-// Attach JWT if present (non-breaking)
+// Attach JWT if present
 api.interceptors.request.use((config) => {
     const token =
         localStorage.getItem("jwt") ||
@@ -17,7 +33,14 @@ api.interceptors.request.use((config) => {
         sessionStorage.getItem("jwt") ||
         sessionStorage.getItem("token");
 
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+        // headers can be undefined -> ensure object
+        if (!config.headers) {
+            config.headers = {};
+        }
+        (config.headers as any).Authorization = `Bearer ${token}`;
+    }
+
     return config;
 });
 
@@ -28,18 +51,21 @@ export interface SearchParams {
     productId?: UUID;
     categoryId?: UUID;
     available?: boolean;
-    bbox?: string; // "w,s,e,n" lon/lat WGS84
+    bbox?: string; // "w,s,e,n" lon/lat
     page?: number;
     size?: number;
     sort?: "price,asc" | "price,desc" | "createdAt,asc" | "createdAt,desc";
 }
 
 export async function searchListings(params: SearchParams) {
-    const { data } = await api.get<PageDto<ListingCardDto>>("/api/search/search/listings", { params });
+    const { data } = await api.get<PageDto<ListingCardDto>>(
+        "/api/search/search/listings",
+        { params }
+    );
     return data;
 }
 
-// ---- Map-driven quick search (hits your /api/listings/map endpoint) ----
+// ---- Optional: map endpoints if you still use them elsewhere ----
 export interface MapSearchParams {
     q?: string;
     category?: string;
@@ -48,15 +74,17 @@ export interface MapSearchParams {
     minLat?: number;
     maxLon?: number;
     maxLat?: number;
-    limit?: number; // default 300
+    limit?: number;
 }
 
 export async function searchListingsForMap(params: MapSearchParams) {
     const { data } = await api.get("/api/listings/map", { params });
-    return data; // List<ListingMapDTO> (kept untyped here to avoid duplication)
+    return data;
 }
 
 export async function getListingSummary(id: UUID) {
-    const { data } = await api.get<ListingSummaryDto>(`/api/search/listings/${id}/summary`);
+    const { data } = await api.get<ListingSummaryDto>(
+        `/api/search/listings/${id}/summary`
+    );
     return data;
 }

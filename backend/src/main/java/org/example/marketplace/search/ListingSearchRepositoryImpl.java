@@ -40,6 +40,7 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
     FROM public.listings l
     JOIN public.products p   ON p.id = l.product_id
     LEFT JOIN public.categories c ON c.id = p.category_id
+    LEFT JOIN public.farmer_profiles fp ON fp.user_id = l.farmer_user_id
     LEFT JOIN LATERAL (
         SELECT ma.url AS thumbnail_url
         FROM public.listing_images li
@@ -64,6 +65,7 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
       ))
     """;
 
+
     @Override
     public List<ListingCardDto> search(String q, Integer minPrice, Integer maxPrice,
                                        UUID productId, UUID categoryId, Boolean available,   // NOTE: Boolean (nullable)
@@ -84,7 +86,9 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                        l.price_cents, l.currency,
                        p.name AS product_name,
                        c.name AS category_name,
-                       thumb.thumbnail_url
+                       thumb.thumbnail_url,
+                       l.description,
+                       fp.farm_name AS farmer_name
                 """ + BASE_FROM +
                         " ORDER BY " + sortSql +
                         " LIMIT :limit OFFSET :offset";
@@ -104,7 +108,9 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                     rs.getDouble("lat"),
                     rs.getString("product_name"),
                     rs.getString("category_name"),
-                    (thumb == null || thumb.isBlank()) ? null : thumb
+                    (thumb == null || thumb.isBlank()) ? null : thumb,
+                    rs.getString("description"),
+                    rs.getString("farmer_name")
             );
         });
     }

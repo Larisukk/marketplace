@@ -21,5 +21,7 @@ public record ListingCardDto(
         double lat,
         String productName,
         String categoryName,
-        String thumbnailUrl
+        String thumbnailUrl,
+        String description,   // NEW
+        String farmerName     // NEW
 ) {}

@@ -6,12 +6,15 @@ import {
     Marker,
     Popup,
     useMapEvents,
+    useMap,
 } from "react-leaflet";
 import L, { type DivIcon, type LatLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import LocateMe from "./LocateMe";
 
-/** Single listing point coming from /api/listings/bbox */
+import MarkerClusterGroup from "react-leaflet-cluster";
+
+/** Single listing point coming from /api/search/search/listings */
 export type Point = {
     id: string;
     title: string;
@@ -48,17 +51,25 @@ function createPriceIcon(p: Point): DivIcon {
         ? `${(p.priceCents! / 100).toFixed(0)} ${p.currency || "RON"}`
         : "•";
 
-    //ce bagi pentru cantitate
-
-
     return L.divIcon({
         className: "price-marker",
         html: `<div class="price-badge">${label}</div>`,
-        iconSize: [0, 0],          // let CSS define size
-        iconAnchor: [0, 0],        // Leaflet will anchor at top-left of bubble
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
     });
 }
 
+/** Bubble cluster icon (green circle with count) */
+function createClusterIcon(cluster: any): DivIcon {
+    const count = cluster.getChildCount();
+
+    return L.divIcon({
+        html: `<div class="cluster-badge"><span>${count}</span></div>`,
+        // both classes so we override default markercluster CSS cleanly
+        className: "marker-cluster marker-cluster-badge",
+        iconSize: [40, 40],
+    });
+}
 
 /** Watches map moves, debounces, and notifies parent with bbox. */
 function BboxWatcher({ onChange }: { onChange: (bbox: Bbox) => void }) {
@@ -91,11 +102,29 @@ function BboxWatcher({ onChange }: { onChange: (bbox: Bbox) => void }) {
         },
     });
 
-    // Initial fetch on mount
     useEffect(() => {
         scheduleUpdate();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    return null;
+}
+
+/** Keep Leaflet center in sync with `center` prop (used for card-click fly-to). */
+function CenterOnProp({ center }: { center: [number, number] }) {
+    const map = useMap();
+    const prev = useRef<[number, number] | null>(null);
+
+    useEffect(() => {
+        if (!center) return;
+        const [lat, lon] = center;
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+
+        if (!prev.current || prev.current[0] !== lat || prev.current[1] !== lon) {
+            map.setView(center, map.getZoom());
+            prev.current = center;
+        }
+    }, [center, map]);
 
     return null;
 }
@@ -107,6 +136,14 @@ export default function MapBox({ center, points, onBboxChange }: MapBoxProps) {
         import.meta.env.VITE_TILE_URL ||
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
+    const validPoints = points.filter(
+        (p) =>
+            typeof p.lat === "number" &&
+            typeof p.lon === "number" &&
+            !Number.isNaN(p.lat) &&
+            !Number.isNaN(p.lon)
+    );
+
     return (
         <MapContainer
             center={center}
@@ -115,22 +152,21 @@ export default function MapBox({ center, points, onBboxChange }: MapBoxProps) {
             scrollWheelZoom
             className="mapPage-map fullOnDesktop"
         >
-        <TileLayer
+            <TileLayer
                 url={tileUrl}
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
+
+            <CenterOnProp center={center} />
             <LocateMe />
             <BboxWatcher onChange={onBboxChange} />
 
-            {points
-                .filter(
-                    (p) =>
-                        typeof p.lat === "number" &&
-                        typeof p.lon === "number" &&
-                        !Number.isNaN(p.lat) &&
-                        !Number.isNaN(p.lon)
-                )
-                .map((p) => (
+            {/* clustering for performance, with bubble icons */}
+            <MarkerClusterGroup
+                chunkedLoading
+                iconCreateFunction={createClusterIcon}
+            >
+                {validPoints.map((p) => (
                     <Marker
                         key={p.id}
                         position={[p.lat, p.lon]}
@@ -143,14 +179,18 @@ export default function MapBox({ center, points, onBboxChange }: MapBoxProps) {
                             {p.priceCents != null && (
                                 <>
                                     {" — "}
-                                    {(p.priceCents / 100).toFixed(2)} {p.currency || "RON"}
+                                    {(p.priceCents / 100).toFixed(2)}{" "}
+                                    {p.currency || "RON"}
                                 </>
                             )}
                             <br />
-                            {p.farmerName && <small>Farmer: {p.farmerName}</small>}
+                            {p.farmerName && (
+                                <small>Farmer: {p.farmerName}</small>
+                            )}
                         </Popup>
                     </Marker>
                 ))}
+            </MarkerClusterGroup>
         </MapContainer>
     );
 }

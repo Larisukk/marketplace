@@ -11,6 +11,8 @@ export interface ListingCardDto {
     productName: string | null;
     categoryName: string | null;
     thumbnailUrl: string | null;
+    description: string | null;   // NEW
+    farmerName: string | null;    // NEW
 }
 
 export interface ListingSummaryDto {
