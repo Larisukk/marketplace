@@ -1,6 +1,6 @@
 // src/pages/MapPage.tsx
 import { useState } from "react";
-import MapBox, { type Bbox, type Point } from "../../components/MapBox.tsx";
+import MapBox, { type Bbox, type Point } from "../../components/MapBox";
 import "./MapPage.css";
 
 export default function MapPage() {
