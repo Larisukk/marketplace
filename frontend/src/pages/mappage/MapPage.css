@@ -1,0 +1,100 @@
+:root {
+    --map-nav-h: 56px;
+    --map-h: 50dvh;
+}
+
+/* Map page wrapper */
+.mapPage {
+    padding: 16px;
+    background-color: #111;
+    color: #e6f3ea;
+    min-height: 100dvh;
+}
+
+.mapPage-title {
+    margin: 0 0 12px;
+}
+
+/* Map container */
+.mapPage-mapWrapper {
+    margin-top: 12px;
+}
+
+.mapPage-map {
+    width: 100%;
+    height: var(--map-h);
+}
+
+/* On wide screens, map fills viewport minus nav */
+@media (min-width: 1024px) {
+    .mapPage-map.fullOnDesktop {
+        height: calc(100dvh - var(--map-nav-h));
+    }
+}
+
+/* Price markers only inside MapPage */
+.mapPage .price-marker .price-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 10px;
+    min-width: 34px;
+
+    background: #1f7a3a;
+    color: #ffffff;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    white-space: nowrap;
+}
+
+.mapPage .price-marker .price-badge::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -5px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #1f7a3a;
+}
+
+.locate-controls {
+    position: absolute;
+    z-index: 1000;
+    top: 10px;
+    right: 10px;
+    left: auto;
+
+    background: #fff;
+    padding: 4px 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+
+.user-location-dot {
+    border-radius: 999px;
+}
+
+.user-location-inner {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: rgba(0, 120, 255, 1);
+    box-shadow: 0 0 0 4px rgba(0, 120, 255, 0.3);
+}
+
+.locate-error {
+    color: #d00;
+    font-size: 0.75rem;
+}
