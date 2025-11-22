@@ -3,36 +3,341 @@
     --map-h: 50dvh;
 }
 
-/* Map page wrapper */
+/* === Overall page layout === */
 .mapPage {
+    display: flex;
+    flex-direction: column;
     padding: 16px;
-    background-color: #111;
-    color: #e6f3ea;
-    min-height: 100dvh;
+    background: linear-gradient(180deg, #e6f3ea, #cde9d6);
+    color: #143321;
+    min-height: 100vh;
 }
 
-.mapPage-title {
-    margin: 0 0 12px;
-}
-
-/* Map container */
-.mapPage-mapWrapper {
-    margin-top: 12px;
-}
-
-.mapPage-map {
-    width: 100%;
-    height: var(--map-h);
-}
-
-/* On wide screens, map fills viewport minus nav */
 @media (min-width: 1024px) {
-    .mapPage-map.fullOnDesktop {
-        height: calc(100dvh - var(--map-nav-h));
+    .mapPage {
+        height: calc(100vh - var(--map-nav-h));
+        max-height: calc(100vh - var(--map-nav-h));
+        box-sizing: border-box;
+        overflow: hidden; /* page itself doesn't scroll; only left list does */
     }
 }
 
-/* Price markers only inside MapPage */
+.mapPage-header {
+    padding-bottom: 8px;
+    border-bottom: 1px solid #b8d7c3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mapPage-title {
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+/* === Main area: list on the left, map on the right === */
+.mapPage-content {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    margin-top: 12px;
+}
+
+/* LEFT: search + results */
+.mapPage-list {
+    width: 380px;
+    max-width: 40%;
+    min-width: 280px;
+    border-right: 1px solid #b8d7c3;
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.8);
+    overflow-y: auto; /* only list scrolls on desktop */
+}
+
+@media (max-width: 1023px) {
+    .mapPage-list {
+        width: 100%;
+        max-width: none;
+        border-right: none;
+        border-bottom: 1px solid #b8d7c3;
+    }
+}
+
+/* Search form */
+.mapPage-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    background: #f2f9f4;
+    border: 1px solid #c4decf;
+}
+
+.mapPage-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.mapPage-fieldRow {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.mapPage-fieldRow-bottom {
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mapPage-field label {
+    font-size: 0.8rem;
+    color: #446953;
+}
+
+.mapPage-field input {
+    padding: 0.35rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #b8d7c3;
+    font-size: 0.9rem;
+}
+
+.mapPage-field input::placeholder {
+    color: #9dbba8;
+}
+
+.mapPage-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: #275237;
+}
+
+.mapPage-filterButtons {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.mapPage-filterButtons button {
+    padding: 0.35rem 0.7rem;
+    border-radius: 4px;
+    border: none;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.mapPage-filterButtons button[type="submit"] {
+    background: #1f7a3a;
+    color: #fff;
+}
+
+.mapPage-filterButtons button[type="button"] {
+    background: #e7f2ea;
+    color: #275237;
+}
+
+.mapPage-filterButtons button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* Sort buttons */
+.mapPage-sortGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.mapPage-sortLabel {
+    font-size: 0.8rem;
+    color: #446953;
+}
+
+.mapPage-sortBtn {
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid #c4decf;
+    background: #f2f9f4;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: #275237;
+}
+
+.mapPage-sortBtn--active {
+    background: #1f7a3a;
+    border-color: #1f7a3a;
+    color: #ffffff;
+}
+
+/* Filter chips */
+.mapPage-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.chip {
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: #e0efe5;
+    color: #275237;
+}
+
+.chip-main {
+    background: #c6e2d0;
+}
+
+.chip-available {
+    background: #b9e4c1;
+}
+
+/* List header info */
+.mapPage-listHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #4b6c57;
+}
+
+.mapPage-listInfo b {
+    font-weight: 600;
+}
+
+/* Status / error messages */
+.mapPage-status,
+.mapPage-error {
+    font-size: 0.9rem;
+    margin-top: 0.4rem;
+}
+
+.mapPage-error {
+    color: #b20000;
+}
+
+/* Cards */
+.mapPage-card {
+    display: flex;
+    gap: 0.75rem;
+    border: 1px solid #d0e5d8;
+    border-radius: 8px;
+    padding: 0.75rem;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.mapPage-card--active {
+    border-color: #1f7a3a;
+    box-shadow: 0 0 0 2px rgba(31, 122, 58, 0.35);
+}
+
+.mapPage-card-thumb img {
+    width: 96px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.mapPage-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.mapPage-card-title {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.mapPage-card-meta {
+    font-size: 0.85rem;
+    color: #567a63;
+}
+
+.mapPage-card-desc {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #345040;
+}
+
+.mapPage-card-footer {
+    margin-top: 0.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    align-items: center;
+}
+
+.mapPage-card-price {
+    font-weight: 600;
+}
+
+.mapPage-card-tag {
+    background: #eef5f0;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+}
+
+/* Pagination controls */
+.mapPage-pagination {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.mapPage-pagination button {
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid #b8d7c3;
+    background: #ffffff;
+    color: #275237;
+    cursor: pointer;
+}
+
+.mapPage-pagination button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* RIGHT: map wrapper */
+.mapPage-mapWrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Map container */
+.mapPage-map {
+    width: 100%;
+    position: relative;
+}
+
+@media (min-width: 1024px) {
+    .mapPage-map {
+        height: 100%; /* fill right column */
+    }
+}
+
+@media (max-width: 1023px) {
+    .mapPage-content {
+        flex-direction: column;
+    }
+    .mapPage-map {
+        height: var(--map-h);
+    }
+}
+
+/* Price markers */
 .mapPage .price-marker .price-badge {
     position: relative;
     display: inline-flex;
@@ -64,6 +369,21 @@
     border-top: 5px solid #1f7a3a;
 }
 
+/* Fix: Min/Max price fields should have equal width */
+.mapPage-priceRow .mapPage-priceCol {
+    flex: 1 1 0;
+    min-width: 0; /* prevent overflow */
+}
+
+/* Fix: Input in Max price box becomes too wide – set tighter max width */
+.mapPage-priceRow .mapPage-priceCol input {
+    width: 100%;
+    max-width: 120px;  /* adjust this smaller/bigger as you like */
+    box-sizing: border-box;
+}
+
+
+/* LocateMe overlay */
 .locate-controls {
     position: absolute;
     z-index: 1000;
@@ -81,6 +401,18 @@
     font-size: 0.9rem;
 }
 
+.locate-controls button {
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #f8f8f8;
+    cursor: pointer;
+}
+
+.locate-controls button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
 
 .user-location-dot {
     border-radius: 999px;
@@ -97,4 +429,37 @@
 .locate-error {
     color: #d00;
     font-size: 0.75rem;
+}
+
+/* Make Min price and Max price inputs the same smaller size */
+.mapPage-fieldRow .mapPage-field input {
+    max-width: 120px;   /* adjust to 100px or 90px if you want smaller */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* --- Cluster bubbles --- */
+.marker-cluster-badge {
+    background: transparent;
+    border: none;
+}
+
+.marker-cluster-badge .cluster-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+
+    background: #1f7a3a;          /* same green as price badges */
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 0 0 3px rgba(31, 122, 58, 0.35);
+}
+
+.marker-cluster-badge .cluster-badge span {
+    line-height: 1;
 }
