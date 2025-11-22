@@ -12,7 +12,7 @@ const api = axios.create({
     baseURL: "", // or import.meta.env.VITE_API_URL || ""
     timeout: 12000,
 
-    // Your axios version expects: (params: Object) => string
+    // axios v1 expects paramsSerializer: (params: object) => string
     paramsSerializer: (params: any): string => {
         const sp = new URLSearchParams();
         Object.entries(params as Record<string, unknown>).forEach(
@@ -34,10 +34,7 @@ api.interceptors.request.use((config) => {
         sessionStorage.getItem("token");
 
     if (token) {
-        // headers can be undefined -> ensure object
-        if (!config.headers) {
-            config.headers = {};
-        }
+        config.headers = config.headers ?? {};
         (config.headers as any).Authorization = `Bearer ${token}`;
     }
 
@@ -51,21 +48,22 @@ export interface SearchParams {
     productId?: UUID;
     categoryId?: UUID;
     available?: boolean;
-    bbox?: string; // "w,s,e,n" lon/lat
+    bbox?: string; // "w,s,e,n"
     page?: number;
     size?: number;
     sort?: "price,asc" | "price,desc" | "createdAt,asc" | "createdAt,desc";
 }
 
-export async function searchListings(params: SearchParams) {
-    const { data } = await api.get<PageDto<ListingCardDto>>(
-        "/api/search/search/listings",
-        { params }
-    );
-    return data;
+// ----------------------
+//  NO async / await
+// ----------------------
+
+export function searchListings(params: SearchParams) {
+    return api
+        .get<PageDto<ListingCardDto>>("/api/search/search/listings", { params })
+        .then((r) => r.data);
 }
 
-// ---- Optional: map endpoints if you still use them elsewhere ----
 export interface MapSearchParams {
     q?: string;
     category?: string;
@@ -77,14 +75,12 @@ export interface MapSearchParams {
     limit?: number;
 }
 
-export async function searchListingsForMap(params: MapSearchParams) {
-    const { data } = await api.get("/api/listings/map", { params });
-    return data;
+export function searchListingsForMap(params: MapSearchParams) {
+    return api.get("/api/listings/map", { params }).then((r) => r.data);
 }
 
-export async function getListingSummary(id: UUID) {
-    const { data } = await api.get<ListingSummaryDto>(
-        `/api/search/listings/${id}/summary`
-    );
-    return data;
+export function getListingSummary(id: UUID) {
+    return api
+        .get<ListingSummaryDto>(`/api/search/listings/${id}/summary`)
+        .then((r) => r.data);
 }
