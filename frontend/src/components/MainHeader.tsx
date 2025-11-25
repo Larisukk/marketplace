@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import '../header/MainHeader.css';
+import { useAuth } from "../context/AuthContext";
+
 const COLORS = {
     DARK_GREEN: '#0F2A1D',
     ACCENT_GREEN: '#AEC3B0',
     MEDIUM_GREEN: '#375534',
 };
+
 const MainHeader: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { user } = useAuth();
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -14,24 +18,30 @@ const MainHeader: React.FC = () => {
 
     return (
         <>
-            <header
-                className="main-header"
-            >
+            <header className="main-header">
                 <div className="header-top-row">
                     <div className="left-group">
-                        <button className="menu-icon-btn" aria-label="Open menu" style={{ color: COLORS.DARK_GREEN }} onClick={toggleMenu}>
+                        <button
+                            className="menu-icon-btn"
+                            aria-label="Open menu"
+                            style={{ color: COLORS.DARK_GREEN }}
+                            onClick={toggleMenu}
+                        >
                             <span className="icon">☰</span>
                         </button>
                     </div>
+
                     <div className="icon-links">
-                        <a href="/login" className="login-button" aria-label="Conectare sau Autentificare">
-                            <img src="/profile.png" alt="Pictogramă profil" className="icon" />
-                            Conectare
-                        </a>
+                        {!user && (
+                            <a href="/auth" className="login-button" aria-label="Conectare sau Autentificare">
+                                <img src="/profile.png" alt="Pictogramă profil" className="icon" />
+                                Conectare
+                            </a>
+                        )}
                     </div>
                 </div>
-
             </header>
+
             <nav
                 className={`vertical-menu ${isMenuOpen ? 'open' : ''}`}
                 style={{ backgroundColor: COLORS.ACCENT_GREEN }}
@@ -42,9 +52,23 @@ const MainHeader: React.FC = () => {
                         &times;
                     </button>
                 </div>
+
                 <div className="menu-links">
-                    <a href="/profil" className="menu-link">Profilul meu</a>
-                    <a href="/produse" className="menu-link">Produse</a>
+
+                    {/* PROFIL */}
+                    <a href="/profile" className="menu-link">
+                        Profilul meu
+                    </a>
+
+                    {/* PRODUSE */}
+                    <a href="/produse" className="menu-link">
+                        Produse
+                    </a>
+
+                    {/* Vinde un produs */}
+                    <a href="/upload" className="menu-link">
+                        Vinde un produs
+                    </a>
                 </div>
             </nav>
 

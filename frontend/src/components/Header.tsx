@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from "../context/AuthContext";
 
 const COLORS = {
     DARK_GREEN: '#0F2A1D',
@@ -41,7 +42,7 @@ const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCou
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [wrapperRef]);
+    }, []);
 
     const handleSelect = (county: string) => {
         onSelectCounty(county);
@@ -61,6 +62,7 @@ const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCou
                 </div>
                 <span className="dropdown-arrow">▼</span>
             </div>
+
             {isOpen && (
                 <div className="county-select-dropdown">
                     {ROMANIAN_COUNTIES.map(county => (
@@ -79,15 +81,14 @@ const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCou
     );
 };
 
-
-// Componenta principală Header
 const Header: React.FC = () => {
+    const { user } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const headerRef = useRef<HTMLElement>(null);
     const heroSearchRef = useRef<HTMLElement | null>(null);
-
     const [headerCounty, setHeaderCounty] = useState('');
+    const [showLoginPopup, setShowLoginPopup] = useState(false);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -102,7 +103,6 @@ const Header: React.FC = () => {
 
         const handleScroll = () => {
             const heroSearch = heroSearchRef.current;
-
             if (heroSearch && mainHeader) {
                 const heroRect = heroSearch.getBoundingClientRect();
                 setIsSearchVisible(heroRect.top < 0);
@@ -115,12 +115,35 @@ const Header: React.FC = () => {
 
     return (
         <>
+            {showLoginPopup && (
+                <div className="login-required-overlay">
+                    <div className="login-required-popup">
+                        <h2>Trebuie să fii conectat</h2>
+                        <p>Conectează-te pentru a accesa această funcție.</p>
+
+                        <div className="login-required-buttons">
+                            <button
+                                className="login-required-confirm"
+                                onClick={() => (window.location.href = "/auth")}
+                            >
+                                Conectează-te
+                            </button>
+
+                            <button
+                                className="login-required-cancel"
+                                onClick={() => setShowLoginPopup(false)}
+                            >
+                                Anulează
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <header
                 ref={headerRef}
                 className={`main-header ${isSearchVisible ? 'search-visible' : ''}`}
-                style={{
-                    backgroundColor: COLORS.ACCENT_GREEN
-                }}
+                style={{ backgroundColor: COLORS.ACCENT_GREEN }}
             >
                 <div className="header-top-row">
                     <div className="left-group">
@@ -128,11 +151,14 @@ const Header: React.FC = () => {
                             <span className="icon">☰</span>
                         </button>
                     </div>
+
                     <div className="icon-links">
-                        <a href="/login" className="login-button" aria-label="Conectare sau Autentificare">
-                            <img src="/profile.png" alt="Pictogramă profil" className="icon" />
-                            Conectare
-                        </a>
+                        {!user && (
+                            <a href="/auth" className="login-button" aria-label="Conectare sau Autentificare">
+                                <img src="/profile.png" alt="Pictogramă profil" className="icon" />
+                                Conectare
+                            </a>
+                        )}
                     </div>
                 </div>
 
@@ -141,7 +167,6 @@ const Header: React.FC = () => {
                         <input type="text" placeholder="Ce produse locale cauți?" />
                         <span className="divider"></span>
 
-                        {/* MODIFICAT: Folosim noua clasă de context */}
                         <CountySelect
                             selectedCounty={headerCounty}
                             onSelectCounty={setHeaderCounty}
@@ -164,9 +189,29 @@ const Header: React.FC = () => {
                         &times;
                     </button>
                 </div>
+
                 <div className="menu-links">
-                    <a href="/profil" className="menu-link">Profilul meu</a>
+                    <div
+                        className="menu-link"
+                        onClick={() => {
+                            if (!user) setShowLoginPopup(true);
+                            else window.location.href = "/profile";
+                        }}
+                    >
+                        Profilul meu
+                    </div>
+
                     <a href="/produse" className="menu-link">Produse</a>
+
+                    <div
+                        className="menu-link"
+                        onClick={() => {
+                            if (!user) setShowLoginPopup(true);
+                            else window.location.href = "/upload";
+                        }}
+                    >
+                        Vinde un produs
+                    </div>
                 </div>
             </nav>
 
