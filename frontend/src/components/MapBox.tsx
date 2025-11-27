@@ -60,7 +60,9 @@ function createPriceIcon(p: Point): DivIcon {
 }
 
 /** Bubble cluster icon (green circle with count) */
-function createClusterIcon(cluster: any): DivIcon {
+function createClusterIcon(
+    cluster: { getChildCount: () => number }  // <-- aici am înlocuit `any`
+): DivIcon {
     const count = cluster.getChildCount();
 
     return L.divIcon({
