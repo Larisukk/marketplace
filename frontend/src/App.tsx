@@ -7,7 +7,7 @@ import UploadProductPage from "./pages/uploadProductPage/UploadProductPage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 
-import ProtectedRoute from "./ProtectedRoute"; //
+import ProtectedRoute from "./components/routing/ProtectedRoute"; //
 
 export default function App() {
     return (
