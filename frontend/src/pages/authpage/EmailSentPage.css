@@ -1,0 +1,72 @@
+/* EmailSentPage.css */
+
+@import "../authpage/AuthPage.css";
+
+/* Fundal general */
+.email-sent-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--bg) 0%, #e3e6da 40%, var(--bg-2) 100%);
+}
+
+/* Card */
+.email-sent-card {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 40px 34px;
+    width: 420px;
+    text-align: center;
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 40px rgba(52, 78, 65, 0.12);
+}
+
+/* Logo */
+.email-logo {
+    width: 150px;
+    margin-bottom: 14px;
+    filter: drop-shadow(0 4px 10px rgba(52,78,65,0.14));
+}
+
+/* Titlu */
+.email-sent-card h1 {
+    font-size: 26px;
+    color: var(--ink);
+    margin-bottom: 12px;
+}
+
+/* Text */
+.email-text {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 28px;
+}
+
+/* Buton principal */
+.open-mail-btn {
+    display: block;
+    width: 100%;
+    background: var(--primary);
+    color: #edf3ea;
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 6px 18px rgba(58,90,64,0.18);
+    transition: 0.15s ease;
+}
+
+.open-mail-btn:hover {
+    background: var(--primary-700);
+    box-shadow: 0 6px 22px rgba(58,90,64,0.25);
+}
+
+/* Notă */
+.email-note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--muted);
+}
