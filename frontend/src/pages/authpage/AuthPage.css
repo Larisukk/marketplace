@@ -1,4 +1,4 @@
-/* src/auth.css – green palette, RIGHT-aligned compact layout (FINAL) */
+/* src/AuthPage.css – green palette, RIGHT-aligned compact layout (FINAL) */
 
 :root{
     --bg:#dad7cd; --bg-2:#a3b18a;
@@ -161,8 +161,7 @@ body{
     width:50vw;
     background:url("/image.jpg") center left / cover no-repeat;
 
-    -webkit-mask-image:linear-gradient(to right, black 0%, black 55%, rgba(0,0,0,0) 100%);
-    mask-image:linear-gradient(to right, black 0%, black 55%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to right, black 0%, black 55%, rgba(0,0,0,0) 100%);
 
     filter:contrast(1.02) brightness(1.01);
     z-index:0; pointer-events:none;

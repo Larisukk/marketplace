@@ -1,8 +1,8 @@
 // src/pages/AuthPage.tsx
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import "../auth.css";
+import "./AuthPage.css";
 
 type FloatingFieldProps = {
     id: string;
@@ -150,7 +150,6 @@ function SignupForm() {
         if (!allOk) return; // don’t send if password is weak; show unmet list instead
 
         await register(displayName.trim(), email.trim(), password);
-        navigate("/home");
     }
 
     return (

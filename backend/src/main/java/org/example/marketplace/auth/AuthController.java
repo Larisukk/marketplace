@@ -3,6 +3,7 @@ package org.example.marketplace.auth;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.example.marketplace.auth.dto.*;
+import org.example.marketplace.emailverification.EmailVerificationService;
 import org.example.marketplace.user.UserEntity;
 import org.example.marketplace.user.UserRepository;
 import org.springframework.http.*;
@@ -17,11 +18,14 @@ public class AuthController {
 
     private final AuthService service;
     private final UserRepository repo;
+    private final EmailVerificationService emailVerificationService;
 
-    public AuthController(AuthService service, UserRepository repo) {
+    public AuthController(AuthService service, UserRepository repo, EmailVerificationService emailVerificationService) {
         this.service = service;
         this.repo = repo;
+        this.emailVerificationService = emailVerificationService;
     }
+
 
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody @Valid RegisterRequest req) {
@@ -44,4 +48,11 @@ public class AuthController {
         var u = repo.findByEmailIgnoreCase(principal.getUsername()).orElseThrow();
         return new MeResponse(u.getId(), u.getEmail(), u.getDisplayName(), u.getRole().name());
     }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+        emailVerificationService.verify(token);
+        return ResponseEntity.ok("Email verified successfully!");
+    }
+
 }
