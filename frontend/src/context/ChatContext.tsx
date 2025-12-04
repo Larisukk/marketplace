@@ -1,24 +1,22 @@
-import React, { createContext, useContext, useMemo, useReducer } from 'react'
-import type { ConversationDTO, MessageDTO, UUID } from '../types/index'
-import * as api from '../services/chatApi'
+import React, { createContext, useContext, useReducer, useMemo } from "react";
+import * as api from "../services/chatApi";
+import type { UUID, ConversationDTO, MessageDTO } from "../types";
 
 type State = {
   me: UUID | null;
   conversations: ConversationDTO[];
   activeConversationId: UUID | null;
-  messages: Record<UUID, MessageDTO[]>; // by conversation
+  messages: Record<UUID, MessageDTO[]>;
   loading: boolean;
-  error: string | null;
-}
+};
 
 type Action =
-  | { type: 'SET_ME', me: UUID }
-  | { type: 'SET_CONVERSATIONS', conversations: ConversationDTO[] }
-  | { type: 'SET_ACTIVE', id: UUID | null }
-  | { type: 'ADD_MESSAGE', message: MessageDTO }
-  | { type: 'SET_MESSAGES', id: UUID, messages: MessageDTO[] }
-  | { type: 'SET_LOADING', value: boolean }
-  | { type: 'SET_ERROR', error: string | null }
+    | { type: "SET_ME"; me: UUID }
+    | { type: "SET_CONVERSATIONS"; data: ConversationDTO[] }
+    | { type: "SET_ACTIVE"; id: UUID | null }
+    | { type: "SET_MESSAGES"; id: UUID; data: MessageDTO[] }
+    | { type: "ADD_MESSAGE"; msg: MessageDTO }
+    | { type: "SET_LOADING"; v: boolean };
 
 const initial: State = {
   me: null,
@@ -26,102 +24,108 @@ const initial: State = {
   activeConversationId: null,
   messages: {},
   loading: false,
-  error: null
-}
+};
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'SET_ME':
-      return { ...state, me: action.me }
-    case 'SET_CONVERSATIONS':
-      return { ...state, conversations: action.conversations }
-    case 'SET_ACTIVE':
-      return { ...state, activeConversationId: action.id }
-    case 'ADD_MESSAGE': {
-      const arr = state.messages[action.message.conversationId] ?? []
+    case "SET_ME":
+      return { ...state, me: action.me };
+    case "SET_CONVERSATIONS":
+      return { ...state, conversations: action.data };
+    case "SET_ACTIVE":
+      return { ...state, activeConversationId: action.id };
+    case "SET_MESSAGES":
       return {
         ...state,
-        messages: { ...state.messages, [action.message.conversationId]: [...arr, action.message] }
-      }
+        messages: { ...state.messages, [action.id]: action.data },
+      };
+    case "ADD_MESSAGE": {
+      const arr = state.messages[action.msg.conversationId] || [];
+      return {
+        ...state,
+        messages: {
+          ...state.messages,
+          [action.msg.conversationId]: [...arr, action.msg],
+        },
+      };
     }
-    case 'SET_MESSAGES':
-      return { ...state, messages: { ...state.messages, [action.id]: action.messages } }
-    case 'SET_LOADING':
-      return { ...state, loading: action.value }
-    case 'SET_ERROR':
-      return { ...state, error: action.error }
+    case "SET_LOADING":
+      return { ...state, loading: action.v };
     default:
-      return state
+      return state;
   }
 }
 
 type Ctx = State & {
   actions: {
-    setMe: (id: UUID) => void
-    loadConversations: (userId: UUID) => Promise<void>
-    startOrOpen: (userA: UUID, userB: UUID) => Promise<ConversationDTO>
-    openConversation: (id: UUID) => void
-    loadMessages: (id: UUID, page?: number, size?: number) => Promise<void>
-    send: (conversationId: UUID, senderId: UUID, body: string) => Promise<MessageDTO>
-  }
-}
+    setMe(id: UUID): void;
+    loadConversations(): Promise<void>;
+    openConversation(id: UUID): void;
+    startConversation(otherUserId: UUID): Promise<void>;
+    loadMessages(id: UUID): Promise<void>;
+    sendMessage(text: string): Promise<void>;
+  };
+};
 
-const ChatContext = createContext<Ctx | null>(null)
+const ChatContext = createContext<Ctx | null>(null);
 
-export const ChatProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [state, dispatch] = useReducer(reducer, initial)
+export function ChatProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(reducer, initial);
 
-  const actions = useMemo(() => ({
-    setMe(id: UUID) { dispatch({ type: 'SET_ME', me: id }) },
+  const actions = useMemo(() => {
+    return {
+      setMe(id: UUID) {
+        dispatch({ type: "SET_ME", me: id });
+      },
 
-    async loadConversations(userId: UUID) {
-      dispatch({ type: 'SET_LOADING', value: true })
-      try {
-        const data = await api.getConversations(userId)
-        dispatch({ type: 'SET_CONVERSATIONS', conversations: data })
-      } catch (e: any) {
-        dispatch({ type: 'SET_ERROR', error: e?.message ?? 'Failed loading conversations' })
-      } finally {
-        dispatch({ type: 'SET_LOADING', value: false })
-      }
-    },
+      async loadConversations() {
+        if (!state.me) return;
+        dispatch({ type: "SET_LOADING", v: true });
+        const data = await api.getConversations(state.me);
+        dispatch({ type: "SET_CONVERSATIONS", data });
+        dispatch({ type: "SET_LOADING", v: false });
+      },
 
-    async startOrOpen(userA: UUID, userB: UUID) {
-      const conv = await api.startOrGetConversation({ userA, userB })
-      dispatch({ type: 'SET_ACTIVE', id: conv.id })
-      return conv
-    },
+      openConversation(id: UUID) {
+        dispatch({ type: "SET_ACTIVE", id });
+      },
 
-    openConversation(id: UUID) {
-      dispatch({ type: 'SET_ACTIVE', id })
-    },
+      async startConversation(otherUserId: UUID) {
+        if (!state.me) return;
+        const conv = await api.startOrGetConversation({
+          userA: state.me,
+          userB: otherUserId,
+        });
+        dispatch({ type: "SET_ACTIVE", id: conv.id });
+        await actions.loadConversations();
+      },
 
-    async loadMessages(id: UUID, page = 0, size = 50) {
-      dispatch({ type: 'SET_LOADING', value: true })
-      try {
-        const msgs = await api.getMessages(id, page, size)
-        dispatch({ type: 'SET_MESSAGES', id, messages: msgs })
-      } catch (e: any) {
-        dispatch({ type: 'SET_ERROR', error: e?.message ?? 'Failed loading messages' })
-      } finally {
-        dispatch({ type: 'SET_LOADING', value: false })
-      }
-    },
+      async loadMessages(id: UUID) {
+        const msgs = await api.getMessages(id, 0, 100);
+        dispatch({ type: "SET_MESSAGES", id, data: msgs });
+      },
 
-    async send(conversationId: UUID, senderId: UUID, body: string) {
-      const msg = await api.sendMessage({ conversationId, senderId, body })
-      dispatch({ type: 'ADD_MESSAGE', message: msg })
-      return msg
-    }
-  }), [])
+      async sendMessage(text: string) {
+        if (!state.me || !state.activeConversationId) return;
+        const msg = await api.sendMessage({
+          conversationId: state.activeConversationId,
+          senderId: state.me,
+          body: text,
+        });
+        dispatch({ type: "ADD_MESSAGE", msg });
+      },
+    };
+  }, [state.me, state.activeConversationId]);
 
-  const value: Ctx = { ...state, actions }
-
-  return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
+  return (
+      <ChatContext.Provider value={{ ...state, actions }}>
+        {children}
+      </ChatContext.Provider>
+  );
 }
 
 export function useChat() {
-  const ctx = useContext(ChatContext)
-  if (!ctx) throw new Error('useChat must be used within ChatProvider')
-  return ctx
+  const ctx = useContext(ChatContext);
+  if (!ctx) throw new Error("useChat must be inside ChatProvider");
+  return ctx;
 }

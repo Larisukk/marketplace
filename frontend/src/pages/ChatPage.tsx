@@ -1,33 +1,46 @@
-import React, { useEffect } from 'react'
-import ChatList from '../components/ChatList'
-import ChatWindow from '../components/ChatWindow'
-import { useChat } from '../hooks/useChat'
-import type { UUID } from '../types/index'
+import React, { useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useChat } from "../hooks/useChat";
+import ChatList from "../components/ChatList";
+import ChatWindow from "../components/ChatWindow";
 
-// TEMP: emulate current user selection until you wire auth
-const ME: UUID = '11111111-1111-1111-1111-111111111111'
-const OTHER: UUID = '22222222-2222-2222-2222-222222222222'
-
-const ChatPage: React.FC = () => {
-  const { actions, conversations } = useChat()
+export default function ChatPage() {
+  const { user } = useAuth();
+  const { conversations, activeConversationId, actions } = useChat();
 
   useEffect(() => {
-    actions.setMe(ME)
-    // ensure there is a conversation to click on for demo purposes
-    actions.loadConversations(ME).then(async () => {
-      const exists = conversations.some(c => c.participantIds.includes(OTHER))
-      if (!exists) {
-        await actions.startOrOpen(ME, OTHER)
-      }
-    })
-  }, [])
+    if (user) {
+      actions.setMe(user.id);
+      actions.loadConversations();
+    }
+  }, [user]);
+
+  const hasChats = conversations.length > 0;
 
   return (
-    <div className="container">
-      <ChatList me={ME} />
-      <ChatWindow me={ME} />
-    </div>
-  )
-}
+      <div className="container" style={{ display: "flex", height: "100%" }}>
+        {/* LEFT SIDE LIST */}
+        <div style={{ width: 300, borderRight: "1px solid #ddd" }}>
+          {!hasChats && (
+              <div style={{ padding: 20, color: "#777" }}>
+                <h3>No chats yet 😔</h3>
+                <p>Find a user and press “Message” to start chatting.</p>
+              </div>
+          )}
 
-export default ChatPage
+          {hasChats && <ChatList />}
+        </div>
+
+        {/* RIGHT SIDE WINDOW */}
+        <div style={{ flex: 1 }}>
+          {!activeConversationId && hasChats && (
+              <div style={{ padding: 20, color: "#888" }}>
+                <h3>Select a chat from the left</h3>
+              </div>
+          )}
+
+          {activeConversationId && <ChatWindow />}
+        </div>
+      </div>
+  );
+}

@@ -1,33 +1,35 @@
-import React, { useEffect, useCallback } from 'react'
-import type { UUID } from '../types/index'
-import { useChat } from '../hooks/useChat'
-import { MessageBubble } from '../components/MessageBubble'
-import MessageInput from '../components/MessageInput'
-import ConversationHeader from '../components/ConversationHeader'
+import React, { useCallback, useEffect } from "react";
+import { useChat } from "../hooks/useChat";
+import MessageInput from "./MessageInput";
+import { MessageBubble } from "./MessageBubble";
 
-const ChatWindow: React.FC<{ me: UUID }> = ({ me }) => {
-  const { activeConversationId, conversations, messages, actions, loading } = useChat()
-  const msgs = activeConversationId ? (messages[activeConversationId] || []) : []
-  const participants = conversations.find(c => c.id === activeConversationId)?.participantIds || [me]
+export default function ChatWindow() {
+    const { activeConversationId, messages, actions, me } = useChat();
 
-  useEffect(() => {
-    if (activeConversationId) actions.loadMessages(activeConversationId, 0, 100)
-  }, [activeConversationId])
+    const msgs = activeConversationId ? messages[activeConversationId] || [] : [];
 
-  const onSend = useCallback(async (text: string) => {
-    if (!activeConversationId) return
-    await actions.send(activeConversationId, me, text)
-  }, [activeConversationId, me])
+    useEffect(() => {
+        if (activeConversationId) {
+            actions.loadMessages(activeConversationId);
+        }
+    }, [activeConversationId]);
 
-  return (
-    <div className="content">
-      <ConversationHeader me={me} participants={participants} />
-      <div className="messages" id="messages">
-        {msgs.map(m => <MessageBubble key={m.id} me={me} msg={m} />)}
-      </div>
-      <MessageInput onSend={onSend} disabled={!activeConversationId || loading} />
-    </div>
-  )
+    const onSend = useCallback(
+        (text: string) => {
+            actions.sendMessage(text);
+        },
+        [activeConversationId]
+    );
+
+    return (
+        <div className="content" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+            <div className="messages" style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+                {msgs.map((m) => (
+                    <MessageBubble key={m.id} me={me!} msg={m} />
+                ))}
+            </div>
+
+            <MessageInput onSend={onSend} disabled={!activeConversationId} />
+        </div>
+    );
 }
-
-export default ChatWindow

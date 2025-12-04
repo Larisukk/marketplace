@@ -1,30 +1,31 @@
-import React, { useEffect } from 'react'
-import { useChat } from '../hooks/useChat'
-import type { UUID } from '../types/index'
+import React from "react";
+import { useChat } from "../hooks/useChat";
 
-type Props = { me: UUID }
-
-const ChatList: React.FC<Props> = ({ me }) => {
-  const { conversations, activeConversationId, actions } = useChat()
-
-  useEffect(() => {
-    actions.loadConversations(me)
-  }, [me])
+export default function ChatList() {
+  const { conversations, activeConversationId, actions, me } = useChat();
 
   return (
-    <div className="sidebar">
-      {conversations.map(c => {
-        const other = c.participantIds.find(id => id !== me) ?? 'Unknown'
-        const active = c.id === activeConversationId
-        return (
-          <div key={c.id} className={active ? 'item active' : 'item'} onClick={() => actions.openConversation(c.id)}>
-            <div><strong>Chat</strong></div>
-            <div style={{ fontSize: 12, opacity: .7 }}>with: {other}</div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
+      <div>
+        {conversations.map((c) => {
+          const other = c.participantIds.find((id) => id !== me);
+          const active = c.id === activeConversationId;
 
-export default ChatList
+          return (
+              <div
+                  key={c.id}
+                  onClick={() => actions.openConversation(c.id)}
+                  style={{
+                    padding: "12px 16px",
+                    cursor: "pointer",
+                    background: active ? "#e4f1ff" : "transparent",
+                    borderBottom: "1px solid #eee",
+                  }}
+              >
+                <strong>Chat</strong>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>with {other}</div>
+              </div>
+          );
+        })}
+      </div>
+  );
+}
