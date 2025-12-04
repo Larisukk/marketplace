@@ -1,0 +1,18 @@
+import './UploadProduct.css';
+
+import MainHeader from "../../components/MainHeader";
+import UploadProduct from "../../components/UploadProduct";
+
+const UploadProductPage = () => {
+    return (
+        <div className="upload-page-layout">
+
+            <MainHeader />
+            <main>
+                <UploadProduct />
+            </main>
+        </div>
+    );
+};
+
+export default UploadProductPage;
