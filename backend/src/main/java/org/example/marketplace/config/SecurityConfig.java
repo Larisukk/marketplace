@@ -87,6 +87,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <-- preflight liber
                         .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/search/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/search/**").permitAll()
+                        .requestMatchers("/api/listings/search/**").permitAll()
+                        .requestMatchers("/api/map/**").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
 

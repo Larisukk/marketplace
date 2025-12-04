@@ -1,5 +1,5 @@
 import "./App.css";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MapPage from "./pages/mappage/MapPage";
 import AuthPage from "./pages/AuthPage";
 import { useAuth } from "./context/AuthContext";
@@ -14,16 +14,8 @@ export default function App() {
             <Routes>
                 <Route path="/" element={<Navigate to="/map" replace />} />
                 <Route path="/map" element={<MapPage />} />
-
-                {/*<Route*/}
-                {/*    path="/chat"*/}
-                {/*    element={!user ? <ChatPage /> : <Navigate to="/auth" replace />}*/}
-                {/*/>*/}
+                <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/" replace />}/>
                 <Route path="/chat" element={<ChatPage />} />
-                <Route
-                    path="/auth"
-                    element={!user ? <AuthPage /> : <Navigate to="/map" replace />}
-                />
             </Routes>
         </ChatProvider>
     );
