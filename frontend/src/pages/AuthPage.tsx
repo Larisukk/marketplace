@@ -1,7 +1,7 @@
 // src/pages/AuthPage.tsx
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../auth.css";
 
 type FloatingFieldProps = {
@@ -86,13 +86,20 @@ function Tabs({
 function LoginForm() {
     const { login, loading, error } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation() as { state?: { redirectAfterLogin?: string; sellerId?: string; autoStartChat?: boolean } };
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
         await login(email.trim(), password);
-        navigate("/home");
+        const redirectPath = location.state?.redirectAfterLogin || "/home";
+        navigate(redirectPath, {
+            state: {
+                sellerId: location.state?.sellerId,
+                autoStartChat: location.state?.autoStartChat,
+            },
+        });
     }
 
     return (
@@ -127,6 +134,7 @@ function LoginForm() {
 function SignupForm() {
     const { register, loading, error } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation() as { state?: { redirectAfterLogin?: string; sellerId?: string; autoStartChat?: boolean } };
     const [displayName, setDisplayName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -147,10 +155,16 @@ function SignupForm() {
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
         setSubmitted(true);
-        if (!allOk) return; // don’t send if password is weak; show unmet list instead
+        if (!allOk) return; // don't send if password is weak; show unmet list instead
 
         await register(displayName.trim(), email.trim(), password);
-        navigate("/home");
+        const redirectPath = location.state?.redirectAfterLogin || "/home";
+        navigate(redirectPath, {
+            state: {
+                sellerId: location.state?.sellerId,
+                autoStartChat: location.state?.autoStartChat,
+            },
+        });
     }
 
     return (

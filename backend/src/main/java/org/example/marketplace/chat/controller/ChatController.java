@@ -23,13 +23,13 @@ public class ChatController {
         return ResponseEntity.ok(dto);
     }
 
-    @PreAuthorize("@chatSecurity.canAccessConversations(principal, #userId)")
+    @PreAuthorize("@chatSecurity.canAccessConversations(authentication, #userId)")
     @GetMapping("/conversations")
     public ResponseEntity<List<ConversationDTO>> myConversations(@RequestParam UUID userId) {
         return ResponseEntity.ok(service.getUserConversations(userId));
     }
 
-    @PreAuthorize("@chatSecurity.canSendToConversation(principal, #req.conversationId)")
+    @PreAuthorize("@chatSecurity.canSendToConversation(authentication, #req.conversationId)")
     @PostMapping("/send")
     public ResponseEntity<MessageDTO> send(
             @RequestBody SendMessageRequest req,
@@ -39,7 +39,7 @@ public class ChatController {
     }
 
 
-    @PreAuthorize("@chatSecurity.canSendToConversation(principal, #payload.conversationId)")
+    @PreAuthorize("@chatSecurity.canSendToConversation(authentication, #conversationId)")
     @GetMapping("/messages")
     public ResponseEntity<List<MessageDTO>> list(
             @RequestParam UUID conversationId,

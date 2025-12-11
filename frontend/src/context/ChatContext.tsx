@@ -1,8 +1,18 @@
-import React, { createContext, useContext, useReducer, useMemo } from "react";
-import * as api from "../services/chatApi";
+// frontend/src/context/ChatContext.tsx
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  type ReactNode,
+} from "react";
+import * as chatApi from "../services/chatApi";
 import type { UUID, ConversationDTO, MessageDTO } from "../types";
+import { useAuth } from "./AuthContext";
 
-type State = {
+type ChatState = {
   me: UUID | null;
   conversations: ConversationDTO[];
   activeConversationId: UUID | null;
@@ -10,122 +20,209 @@ type State = {
   loading: boolean;
 };
 
-type Action =
-    | { type: "SET_ME"; me: UUID }
-    | { type: "SET_CONVERSATIONS"; data: ConversationDTO[] }
-    | { type: "SET_ACTIVE"; id: UUID | null }
-    | { type: "SET_MESSAGES"; id: UUID; data: MessageDTO[] }
-    | { type: "ADD_MESSAGE"; msg: MessageDTO }
-    | { type: "SET_LOADING"; v: boolean };
-
-const initial: State = {
-  me: null,
-  conversations: [],
-  activeConversationId: null,
-  messages: {},
-  loading: false,
+type ChatActions = {
+  loadConversations(): Promise<void>;
+  openConversation(id: UUID): void;
+  startConversation(otherUserId: UUID): Promise<ConversationDTO>;
+  loadMessages(id: UUID): Promise<void>;
+  sendMessage(text: string): Promise<void>;
 };
 
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case "SET_ME":
-      return { ...state, me: action.me };
-    case "SET_CONVERSATIONS":
-      return { ...state, conversations: action.data };
-    case "SET_ACTIVE":
-      return { ...state, activeConversationId: action.id };
-    case "SET_MESSAGES":
-      return {
-        ...state,
-        messages: { ...state.messages, [action.id]: action.data },
-      };
-    case "ADD_MESSAGE": {
-      const arr = state.messages[action.msg.conversationId] || [];
-      return {
-        ...state,
-        messages: {
-          ...state.messages,
-          [action.msg.conversationId]: [...arr, action.msg],
-        },
-      };
+type ChatContextValue = ChatState & {
+  actions: ChatActions;
+};
+
+const ChatContext = createContext<ChatContextValue | undefined>(undefined);
+
+export const ChatProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
+
+  const [me, setMe] = useState<UUID | null>(null);
+  const [conversations, setConversations] = useState<ConversationDTO[]>([]);
+  const [activeConversationId, setActiveConversationId] =
+    useState<UUID | null>(null);
+  const [messages, setMessages] = useState<Record<UUID, MessageDTO[]>>(
+    {} as any
+  );
+  const [loading, setLoading] = useState(false);
+  const messagesRef = useRef<Record<UUID, MessageDTO[]>>({} as any);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // When auth user changes, reset / load chats
+  useEffect(() => {
+    if (user) {
+      setMe(user.id);
+      // Load conversations inline to avoid any initialization order issues
+      void (async () => {
+        setLoading(true);
+        try {
+          const data = await chatApi.getConversations(user.id);
+          setConversations((prev) => {
+            const prevIds = new Set(prev.map((c) => c.id));
+            const newIds = new Set(data.map((c) => c.id));
+            if (
+              prevIds.size === newIds.size &&
+              data.every((c) => prevIds.has(c.id))
+            ) {
+              return prev;
+            }
+            return data;
+          });
+          setActiveConversationId((current) => {
+            if (!current && data.length > 0) {
+              return data[0].id;
+            }
+            return current;
+          });
+        } finally {
+          setLoading(false);
+        }
+      })();
+    } else {
+      setMe(null);
+      setConversations([]);
+      setActiveConversationId(null);
+      setMessages({} as any);
+      messagesRef.current = {} as any;
     }
-    case "SET_LOADING":
-      return { ...state, loading: action.v };
-    default:
-      return state;
-  }
-}
+  }, [user?.id]);
 
-type Ctx = State & {
-  actions: {
-    setMe(id: UUID): void;
-    loadConversations(): Promise<void>;
-    openConversation(id: UUID): void;
-    startConversation(otherUserId: UUID): Promise<void>;
-    loadMessages(id: UUID): Promise<void>;
-    sendMessage(text: string): Promise<void>;
+  // Internal helper
+  const loadConversationsInternal = useCallback(async (userId: UUID) => {
+    setLoading(true);
+    try {
+      const data = await chatApi.getConversations(userId);
+      setConversations((prev) => {
+        const prevIds = new Set(prev.map((c) => c.id));
+        const newIds = new Set(data.map((c) => c.id));
+        if (
+          prevIds.size === newIds.size &&
+          data.every((c) => prevIds.has(c.id))
+        ) {
+          return prev;
+        }
+        return data;
+      });
+      setActiveConversationId((current) => {
+        if (!current && data.length > 0) {
+          return data[0].id;
+        }
+        return current;
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadConversations = useCallback(async () => {
+    const userId = user?.id ?? me;
+    if (!userId) return;
+    await loadConversationsInternal(userId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, me]); // loadConversationsInternal is stable
+
+  // 👇 Move THIS above openConversation
+  const loadMessages = useCallback(async (id: UUID) => {
+    setLoading(true);
+    try {
+      const data = await chatApi.getMessages(id, 0, 50);
+      setMessages((prev) => ({ ...prev, [id]: data }));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const openConversation = useCallback(
+    (id: UUID) => {
+      setActiveConversationId(id);
+      // Check if messages are already loaded using ref
+      if (!messagesRef.current[id]) {
+        void loadMessages(id);
+      }
+    },
+    [loadMessages]
+  );
+
+  const startConversation = useCallback(
+    async (otherUserId: UUID): Promise<ConversationDTO> => {
+      if (!user) {
+        throw new Error("Not authenticated");
+      }
+
+      const convo = await chatApi.startOrGetConversation({
+        userA: user.id,
+        userB: otherUserId,
+      });
+
+      setConversations((prev) => {
+        const exists = prev.some((c) => c.id === convo.id);
+        return exists ? prev : [...prev, convo];
+      });
+
+      setActiveConversationId(convo.id);
+
+      try {
+        await loadMessages(convo.id);
+      } catch (error) {
+        console.warn(
+          "Could not load messages immediately after creating conversation:",
+          error
+        );
+      }
+
+      return convo;
+    },
+    [user, loadMessages]
+  );
+
+  const sendMessage = useCallback(
+    async (text: string) => {
+      if (!user || !activeConversationId) return;
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      const msg = await chatApi.sendMessage({
+        conversationId: activeConversationId,
+        senderId: user.id,
+        body: trimmed,
+      });
+
+      setMessages((prev) => ({
+        ...prev,
+        [activeConversationId]: [...(prev[activeConversationId] || []), msg],
+      }));
+    },
+    [user, activeConversationId]
+  );
+
+  const value: ChatContextValue = {
+    me,
+    conversations,
+    activeConversationId,
+    messages,
+    loading,
+    actions: {
+      loadConversations,
+      openConversation,
+      startConversation,
+      loadMessages,
+      sendMessage,
+    },
   };
-};
-
-const ChatContext = createContext<Ctx | null>(null);
-
-export function ChatProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initial);
-
-  const actions = useMemo(() => {
-    return {
-      setMe(id: UUID) {
-        dispatch({ type: "SET_ME", me: id });
-      },
-
-      async loadConversations() {
-        if (!state.me) return;
-        dispatch({ type: "SET_LOADING", v: true });
-        const data = await api.getConversations(state.me);
-        dispatch({ type: "SET_CONVERSATIONS", data });
-        dispatch({ type: "SET_LOADING", v: false });
-      },
-
-      openConversation(id: UUID) {
-        dispatch({ type: "SET_ACTIVE", id });
-      },
-
-      async startConversation(otherUserId: UUID) {
-        if (!state.me) return;
-        const conv = await api.startOrGetConversation({
-          userA: state.me,
-          userB: otherUserId,
-        });
-        dispatch({ type: "SET_ACTIVE", id: conv.id });
-        await actions.loadConversations();
-      },
-
-      async loadMessages(id: UUID) {
-        const msgs = await api.getMessages(id, 0, 100);
-        dispatch({ type: "SET_MESSAGES", id, data: msgs });
-      },
-
-      async sendMessage(text: string) {
-        if (!state.me || !state.activeConversationId) return;
-        const msg = await api.sendMessage({
-          conversationId: state.activeConversationId,
-          senderId: state.me,
-          body: text,
-        });
-        dispatch({ type: "ADD_MESSAGE", msg });
-      },
-    };
-  }, [state.me, state.activeConversationId]);
 
   return (
-      <ChatContext.Provider value={{ ...state, actions }}>
-        {children}
-      </ChatContext.Provider>
+    <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
   );
-}
+};
 
-export function useChat() {
+export function useChat(): ChatContextValue {
   const ctx = useContext(ChatContext);
-  if (!ctx) throw new Error("useChat must be inside ChatProvider");
+  if (!ctx) {
+    throw new Error("useChat must be used inside ChatProvider");
+  }
   return ctx;
 }

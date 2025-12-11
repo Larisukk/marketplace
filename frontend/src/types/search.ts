@@ -3,26 +3,29 @@ export type UUID = string;
 
 export interface ListingCardDto {
     id: UUID;
+    farmerUserId: UUID;
     title: string;
     priceCents: number;
     currency: string;
-    lon?: number; // made optional to avoid runtime crashes on partial data
+    lon?: number;
     lat?: number;
     productName: string | null;
     categoryName: string | null;
     thumbnailUrl: string | null;
-    description: string | null;   // NEW
-    farmerName: string | null;    // NEW
+    description: string | null;
+    farmerName: string | null;
 }
 
 export interface ListingSummaryDto {
     id: UUID;
+    farmerUserId: UUID;
     title: string;
     lon: number;
     lat: number;
     priceCents: number;
     currency: string;
 }
+
 
 export interface PageDto<T> {
     items: T[];

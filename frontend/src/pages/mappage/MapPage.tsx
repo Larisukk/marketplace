@@ -2,9 +2,12 @@
 import { FormEvent, useState } from "react";
 import MapBox, { type Bbox, type Point } from "../../components/MapBox";
 import "./MapPage.css";
+import { useNavigate } from "react-router-dom";
 
 import { searchListings } from "@/services/searchApi";
 import type { ListingCardDto } from "@/types/search";
+import { useAuth } from "../../context/AuthContext";
+import { useChat } from "../../hooks/useChat";
 
 type SortOption =
     | "createdAt,desc"
@@ -32,6 +35,9 @@ export default function MapPage() {
     });
 
     const [bbox, setBbox] = useState<Bbox | null>(null);
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const { actions } = useChat();
 
     const [listings, setListings] = useState<ListingCardDto[]>([]);
     const [points, setPoints] = useState<Point[]>([]);
@@ -58,7 +64,7 @@ export default function MapPage() {
             currency: l.currency,
             lon: l.lon ?? 0,
             lat: l.lat ?? 0,
-            farmerName: (l as any).farmerName ?? null,
+            farmerName: l.farmerName ?? null,
         };
     }
 
@@ -182,6 +188,50 @@ export default function MapPage() {
         setFilters(reset);
         setPage(0);
         if (bbox) void fetchListingsFor(bbox, reset, 0);
+    }
+
+    // Handle opening listing and starting chat
+    async function handleOpenListing(listing: ListingCardDto) {
+        if (!listing.farmerUserId) {
+            alert("Seller information is not available for this listing.");
+            return;
+        }
+
+        // If user is not logged in, redirect to auth with redirect info
+        if (!user) {
+            navigate("/auth", {
+                state: {
+                    redirectAfterLogin: `/listings/${listing.id}`,
+                    sellerId: listing.farmerUserId,
+                },
+            });
+            return;
+        }
+
+        // Check if trying to chat with self
+        if (user.id === listing.farmerUserId) {
+            alert("You cannot start a chat with yourself.");
+            return;
+        }
+
+        // User is logged in - start chat directly
+        try {
+            console.log("Starting conversation with seller:", listing.farmerUserId, "from user:", user.id);
+            const convo = await actions.startConversation(listing.farmerUserId as any);
+            console.log("Conversation started successfully:", convo);
+            navigate("/chat", { state: { conversationId: convo.id } });
+        } catch (error: any) {
+            console.error("Failed to start conversation:", error);
+            const errorMessage = error?.response?.data?.message || error?.message || "Unknown error";
+            console.error("Error details:", {
+                message: errorMessage,
+                status: error?.response?.status,
+                data: error?.response?.data,
+                sellerId: listing.farmerUserId,
+                userId: user.id,
+            });
+            alert(`Failed to start chat: ${errorMessage}. Please try again.`);
+        }
     }
 
     return (
@@ -361,6 +411,7 @@ export default function MapPage() {
                     )}
 
                     {/* Result cards */}
+                    {/* Result cards */}
                     {listings.map((l) => (
                         <article
                             key={l.id}
@@ -401,22 +452,36 @@ export default function MapPage() {
                                 <div className="mapPage-card-footer">
                                     {l.priceCents != null && l.currency && (
                                         <span className="mapPage-card-price">
-                                            {(l.priceCents / 100).toFixed(0)}{" "}
+                        {(l.priceCents / 100).toFixed(0)}{" "}
                                             {l.currency}
-                                        </span>
+                    </span>
                                     )}
 
                                     {l.productName && (
                                         <span className="mapPage-card-tag">
-                                            {l.productName}
-                                        </span>
+                        {l.productName}
+                    </span>
                                     )}
                                     {l.categoryName && (
                                         <span className="mapPage-card-tag">
-                                            {l.categoryName}
-                                        </span>
+                        {l.categoryName}
+                    </span>
                                     )}
                                 </div>
+
+                                {/* 👇 NEW BUTTON GOES HERE */}
+                                <div className="mapPage-card-actions">
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // don't trigger card click
+                                            void handleOpenListing(l);
+                                        }}
+                                    >
+                                        Open listing
+                                    </button>
+                                </div>
+                                {/* ☝️ NEW BUTTON */}
                             </div>
                         </article>
                     ))}

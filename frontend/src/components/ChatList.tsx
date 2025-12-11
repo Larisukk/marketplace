@@ -1,31 +1,45 @@
-import React from "react";
+// frontend/src/components/ChatList.tsx
 import { useChat } from "../hooks/useChat";
 
 export default function ChatList() {
-  const { conversations, activeConversationId, actions, me } = useChat();
+    const { conversations, activeConversationId, actions } = useChat();
 
-  return (
-      <div>
-        {conversations.map((c) => {
-          const other = c.participantIds.find((id) => id !== me);
-          const active = c.id === activeConversationId;
+    if (!conversations.length) {
+        return (
+            <div style={{ padding: 16, fontSize: 14, color: "#777" }}>
+                No conversations yet.
+            </div>
+        );
+    }
 
-          return (
-              <div
-                  key={c.id}
-                  onClick={() => actions.openConversation(c.id)}
-                  style={{
-                    padding: "12px 16px",
-                    cursor: "pointer",
-                    background: active ? "#e4f1ff" : "transparent",
-                    borderBottom: "1px solid #eee",
-                  }}
-              >
-                <strong>Chat</strong>
-                <div style={{ fontSize: 12, opacity: 0.7 }}>with {other}</div>
-              </div>
-          );
-        })}
-      </div>
-  );
+    return (
+        <div>
+            {conversations.map((c) => {
+                const isActive = c.id === activeConversationId;
+
+                return (
+                    <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => actions.openConversation(c.id)}
+                        style={{
+                            display: "block",
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "8px 12px",
+                            border: "none",
+                            borderBottom: "1px solid #eee",
+                            background: isActive ? "#eef2ff" : "transparent",
+                            cursor: "pointer",
+                            fontSize: 14,
+                        }}
+                    >
+                        <div style={{ fontWeight: 600 }}>
+                            Conversation {c.id.slice(0, 8)}
+                        </div>
+                    </button>
+                );
+            })}
+        </div>
+    );
 }

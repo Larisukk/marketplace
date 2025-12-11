@@ -5,6 +5,7 @@ import AuthPage from "./pages/AuthPage";
 import { useAuth } from "./context/AuthContext";
 import ChatPage from "./pages/ChatPage";
 import { ChatProvider } from "./context/ChatContext";
+import ListingPage from "./pages/ListingPage";
 
 export default function App() {
     const { user } = useAuth();
@@ -16,6 +17,7 @@ export default function App() {
                 <Route path="/map" element={<MapPage />} />
                 <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/" replace />}/>
                 <Route path="/chat" element={<ChatPage />} />
+                <Route path="/listings/:id" element={<ListingPage />} />
             </Routes>
         </ChatProvider>
     );

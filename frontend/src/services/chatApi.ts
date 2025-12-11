@@ -30,9 +30,21 @@ api.interceptors.request.use((config) => {
 
 export function startOrGetConversation(payload: StartConversationRequest) {
   return api
-      .post<ConversationDTO>('/chat/conversations/start', payload)
-      .then(response => response.data)
+    .post<ConversationDTO>('/chat/conversations/start', payload)
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error('Chat API error:', {
+        url: '/chat/conversations/start',
+        payload,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        message: error?.message,
+      });
+      throw error;
+    });
 }
+
 
 export function getConversations(userId: UUID) {
   return api
@@ -42,9 +54,10 @@ export function getConversations(userId: UUID) {
 
 export function sendMessage(payload: SendMessageRequest) {
   return api
-      .post<MessageDTO>('/chat/messages', payload)
-      .then(response => response.data)
+    .post<MessageDTO>('/chat/send', payload)
+    .then((response) => response.data);
 }
+
 
 export function getMessages(conversationId: UUID, page = 0, size = 50) {
   return api

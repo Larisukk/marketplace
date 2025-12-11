@@ -80,7 +80,9 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
         // >>> FIX: ensure spaces around ORDER BY and before LIMIT
         String sql =
                 """
-                SELECT l.id, l.title,
+                SELECT l.id,
+                       l.farmer_user_id,
+                       l.title,
                        ST_X(l.location::geometry) AS lon,
                        ST_Y(l.location::geometry) AS lat,
                        l.price_cents, l.currency,
@@ -101,6 +103,7 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
             String thumb = rs.getString("thumbnail_url");
             return new ListingCardDto(
                     UUID.fromString(rs.getString("id")),
+                    UUID.fromString(rs.getString("farmer_user_id")),
                     rs.getString("title"),
                     rs.getInt("price_cents"),
                     rs.getString("currency"),
@@ -108,7 +111,7 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                     rs.getDouble("lat"),
                     rs.getString("product_name"),
                     rs.getString("category_name"),
-                    (thumb == null || thumb.isBlank()) ? null : thumb,
+                    rs.getString("thumbnail_url"),
                     rs.getString("description"),
                     rs.getString("farmer_name")
             );
@@ -126,17 +129,23 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
 
     @Override
     public Optional<ListingSummaryDto> findSummaryById(UUID id) {
-        String sql = """
-            SELECT l.id, l.title,
-                   ST_X(l.location::geometry) AS lon,
-                   ST_Y(l.location::geometry) AS lat,
-                   l.price_cents, l.currency
-            FROM listings l
-            WHERE l.id = :id
-            """;
+        String sql =
+                """
+                SELECT l.id,
+                       l.farmer_user_id,
+                       l.title,
+                       ST_X(l.location::geometry) AS lon,
+                       ST_Y(l.location::geometry) AS lat,
+                       l.price_cents, l.currency
+                FROM listings l
+                WHERE l.id = :id
+                """;
+
+
         MapSqlParameterSource p = new MapSqlParameterSource().addValue("id", id);
         var list = jdbc.query(sql, p, (rs, i) -> new ListingSummaryDto(
                 UUID.fromString(rs.getString("id")),
+                UUID.fromString(rs.getString("farmer_user_id")),
                 rs.getString("title"),
                 rs.getDouble("lon"),
                 rs.getDouble("lat"),

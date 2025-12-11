@@ -3,6 +3,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { searchListings, getListingSummary, type SearchParams } from "@/services/searchApi";
 import type { ListingCardDto, PageDto } from "@/types/search";
 import type { JSX } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useChat } from "../hooks/useChat";
 
 function formatMoney(cents: number | undefined, ccy: string | undefined): string {
     if (cents == null) return "-";
@@ -20,6 +23,9 @@ const DEFAULT_PARAMS: SearchParams = {
 };
 
 export default function SearchTester(): JSX.Element {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const { actions } = useChat();
     const [params, setParams] = useState<SearchParams>(DEFAULT_PARAMS);
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -77,6 +83,48 @@ export default function SearchTester(): JSX.Element {
         } catch (e) {
             const message = e instanceof Error ? e.message : "Failed to load summary";
             setError(message);
+        }
+    };
+    const openListingPage = async (item: ListingCardDto): Promise<void> => {
+        if (!item.farmerUserId) {
+            alert("Seller information is not available for this listing.");
+            return;
+        }
+
+        // If user is not logged in, redirect to auth with redirect info
+        if (!user) {
+            navigate("/auth", {
+                state: {
+                    redirectAfterLogin: `/listings/${item.id}`,
+                    sellerId: item.farmerUserId,
+                },
+            });
+            return;
+        }
+
+        // Check if trying to chat with self
+        if (user.id === item.farmerUserId) {
+            alert("You cannot start a chat with yourself.");
+            return;
+        }
+
+        // User is logged in - start chat directly
+        try {
+            console.log("Starting conversation with seller:", item.farmerUserId, "from user:", user.id);
+            const convo = await actions.startConversation(item.farmerUserId as any);
+            console.log("Conversation started successfully:", convo);
+            navigate("/chat", { state: { conversationId: convo.id } });
+        } catch (error: any) {
+            console.error("Failed to start conversation:", error);
+            const errorMessage = error?.response?.data?.message || error?.message || "Unknown error";
+            console.error("Error details:", {
+                message: errorMessage,
+                status: error?.response?.status,
+                data: error?.response?.data,
+                sellerId: item.farmerUserId,
+                userId: user.id,
+            });
+            alert(`Failed to start chat: ${errorMessage}. Please try again.`);
         }
     };
 
@@ -233,23 +281,33 @@ export default function SearchTester(): JSX.Element {
                             <div className="mt-1">{formatMoney(it.priceCents, it.currency)}</div>
 
                             {it.lon != null && it.lat != null && (
-                                <div className="text-xs text-gray-500">lon:{it.lon.toFixed(5)} • lat:{it.lat.toFixed(5)}</div>
+                                <div className="text-xs text-gray-500">lon:{it.lon.toFixed(5)} •
+                                    lat:{it.lat.toFixed(5)}</div>
                             )}
 
                             {it.thumbnailUrl && (
-                                <img src={it.thumbnailUrl} alt="" className="mt-2 w-full h-28 object-cover rounded" />
+                                <img src={it.thumbnailUrl} alt="" className="mt-2 w-full h-28 object-cover rounded"/>
                             )}
 
                             <div className="mt-2 flex gap-2">
-                                <button className="border rounded px-2 py-1 text-sm" onClick={() => void onClickItem(it.id)}>
-                                    Get summary
+                                <button
+                                    className="border rounded px-2 py-1 text-sm"
+                                    onClick={() => void onClickItem(it.id)}
+                                >
+                                    Summary
                                 </button>
-                                {/* Optional: stash coords -> Map page can flyTo on next visit */}
-                                {it.lon != null && it.lat != null && (
+
+                                <button
+                                    className="border rounded px-2 py-1 text-sm"
+                                    onClick={() => void openListingPage(it)}
+                                >
+                                    Open listing page
+                                </button>
+
+                                {typeof window !== "undefined" && window.location.pathname !== "/map" && (
                                     <button
                                         className="border rounded px-2 py-1 text-sm"
                                         onClick={() => {
-                                            sessionStorage.setItem("map:flyTo", JSON.stringify({ lon: it.lon, lat: it.lat, id: it.id }));
                                             window.location.href = "/map";
                                         }}
                                     >
