@@ -1,20 +1,40 @@
 import "./App.css";
 import { Routes, Route, Navigate } from "react-router-dom";
+
 import MapPage from "./pages/mappage/MapPage";
+import Home from "./pages/homePage/Home";
+import UploadProductPage from "./pages/uploadProductPage/UploadProductPage";
 import AuthPage from "./pages/AuthPage";
-import { useAuth } from "./context/AuthContext";
+import ProfilePage from "./pages/profile/ProfilePage";
+
+import ProtectedRoute from "./components/routing/ProtectedRoute"; //
 
 export default function App() {
-    const { user } = useAuth();
-
     return (
         <Routes>
-            <Route path="/" element={<Navigate to="/map" replace />} />
+            <Route path="/" element={<Navigate to="/home" replace />} />
+
+            <Route path="/home" element={<Home />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="/map" element={<MapPage />} />
             <Route
-                path="/auth"
-                element={!user ? <AuthPage /> : <Navigate to="/map" replace />}
+                path="/profile"
+                element={
+                    <ProtectedRoute>
+                        <ProfilePage />
+                    </ProtectedRoute>
+                }
             />
+
+            <Route
+                path="/upload"
+                element={
+                    <ProtectedRoute>
+                        <UploadProductPage />
+                    </ProtectedRoute>
+                }
+            />
+
         </Routes>
     );
 }
