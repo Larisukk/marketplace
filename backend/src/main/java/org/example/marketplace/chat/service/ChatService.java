@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.example.marketplace.user.UserRepository;
+import org.example.marketplace.user.UserEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -56,9 +57,10 @@ public class ChatService {
                 new ConversationParticipant(conversationId, userB)
             ));
         }
-        var participants = participantRepo.findByConversationId(conversationId)
+        var participantIds = participantRepo.findByConversationId(conversationId)
                                           .stream().map(ConversationParticipant::getUserId).toList();
-        return new ConversationDTO(conversationId, participants);
+        var participants = buildParticipantInfo(participantIds);
+        return new ConversationDTO(conversationId, participantIds, participants);
     }
 
     @Transactional(readOnly = true)
@@ -69,9 +71,10 @@ public class ChatService {
 
         List<ConversationDTO> result = new ArrayList<>();
         for (var cp : cps) {
-            var participants = participantRepo.findByConversationId(cp.getConversationId())
+            var participantIds = participantRepo.findByConversationId(cp.getConversationId())
                     .stream().map(ConversationParticipant::getUserId).toList();
-            result.add(new ConversationDTO(cp.getConversationId(), participants));
+            var participants = buildParticipantInfo(participantIds);
+            result.add(new ConversationDTO(cp.getConversationId(), participantIds, participants));
         }
         return result;
     }
@@ -150,6 +153,18 @@ public class ChatService {
         UUID me = currentUserId(auth);
         if (me == null) return false;
         return participantRepo.existsByConversationIdAndUserId(conversationId, me);
+    }
+
+    /** Build participant info list with display names from user IDs. */
+    private List<ParticipantInfo> buildParticipantInfo(List<UUID> participantIds) {
+        return participantIds.stream()
+                .map(userId -> {
+                    String displayName = userRepo.findById(userId)
+                            .map(UserEntity::getDisplayName)
+                            .orElse("Unknown User");
+                    return new ParticipantInfo(userId, displayName);
+                })
+                .toList();
     }
 
 }

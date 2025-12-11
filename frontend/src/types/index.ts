@@ -1,8 +1,14 @@
 export type UUID = string;
 
+export interface ParticipantInfo {
+  id: UUID;
+  displayName: string;
+}
+
 export interface ConversationDTO {
   id: UUID;
   participantIds: UUID[];
+  participants: ParticipantInfo[];
 }
 
 export interface MessageDTO {
