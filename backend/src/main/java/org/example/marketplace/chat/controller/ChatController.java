@@ -39,7 +39,7 @@ public class ChatController {
     }
 
 
-    @PreAuthorize("@chatSecurity.canSendToConversation(authentication, #conversationId)")
+    @PreAuthorize("@chatSecurity.canAccessConversation(authentication, #conversationId)")
     @GetMapping("/messages")
     public ResponseEntity<List<MessageDTO>> list(
             @RequestParam UUID conversationId,

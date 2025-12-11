@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../hooks/useChat";
-import ChatList from "../components/ChatList";
-import ChatWindow from "../components/ChatWindow";
+import ChatList from "../components/chatlist/ChatList";
+import ChatWindow from "../components/chatwindow/ChatWindow";
 
 export default function ChatPage() {
     const { user } = useAuth();

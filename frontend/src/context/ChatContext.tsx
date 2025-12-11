@@ -131,6 +131,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     try {
       const data = await chatApi.getMessages(id, 0, 50);
       setMessages((prev) => ({ ...prev, [id]: data }));
+    } catch (error) {
+      console.error('Failed to load messages for conversation:', id, error);
+      // Don't set messages on error - leave existing state
     } finally {
       setLoading(false);
     }
@@ -153,7 +156,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         throw new Error("Not authenticated");
       }
 
-      const convo = await chatApi.startOrGetConversation({
+      const convo: ConversationDTO = await chatApi.startOrGetConversation({
         userA: user.id,
         userB: otherUserId,
       });

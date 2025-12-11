@@ -28,7 +28,7 @@ api.interceptors.request.use((config) => {
 // --- Chat API functions ---
 // --- Chat API functions ---
 
-export function startOrGetConversation(payload: StartConversationRequest) {
+export function startOrGetConversation(payload: StartConversationRequest): Promise<ConversationDTO> {
   return api
     .post<ConversationDTO>('/chat/conversations/start', payload)
     .then((response) => response.data)
@@ -65,4 +65,17 @@ export function getMessages(conversationId: UUID, page = 0, size = 50) {
         params: { conversationId, page, size }
       })
       .then(response => response.data)
+      .catch((error) => {
+        console.error('Chat API error (getMessages):', {
+          url: '/chat/messages',
+          conversationId,
+          page,
+          size,
+          status: error?.response?.status,
+          statusText: error?.response?.statusText,
+          data: error?.response?.data,
+          message: error?.message,
+        });
+        throw error;
+      });
 }
