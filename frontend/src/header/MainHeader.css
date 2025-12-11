@@ -1,0 +1,174 @@
+:root {
+    --color-dark-green: #0F2A1D;
+    --color-medium-green: #375534;
+    --color-light-green: #E3EED4;
+    --color-accent-green: #AEC3B0;
+    --color-page-background: #F5F9F0;
+    --header-height: 72px;
+}
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 3rem;
+
+    /* Acum acest cod va fi aplicat corect */
+    background-color: rgba(174, 195, 176, 0.5) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    /* Fără borduri sau umbre */
+    border: none !important;
+    box-shadow: none !important;
+
+    z-index: 1000;
+    min-height: var(--header-height);
+    box-sizing: border-box;
+}
+.header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.left-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.menu-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0;
+    line-height: 1;
+}
+
+.icon-links {
+    display: flex;
+    align-items: center;
+}
+.login-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    background-color: #FFFFFF;
+    color: #0F2A1D;
+    border-radius: 9999px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease-in-out;
+}
+.login-button:hover {
+    background-color: #f7f7f7;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+.login-button .icon {
+    width: 24px;
+    height: 24px;
+    object-fit: cover;
+}
+
+.vertical-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 1002;
+    padding: 1.5rem;
+    box-shadow: 4px 0px 15px rgba(0, 0, 0, 0.15);
+    border-radius: 0 15px 15px 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+.vertical-menu.open { transform: translateX(0); }
+.menu-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 2px solid rgba(15, 42, 29, 0.2); }
+.menu-title { font-size: 1.5rem; font-weight: 700; color: var(--color-dark-green); }
+.close-menu-btn { background: none; border: none; font-size: 2.2rem; font-weight: 300; color: var(--color-dark-green); cursor: pointer; line-height: 1; padding: 0; }
+.menu-links { display: flex; flex-direction: column; }
+.menu-link { text-decoration: none; color: var(--color-dark-green); font-size: 1.15rem; font-weight: 500; padding: 1rem 0.5rem; border-radius: 8px; transition: background-color 0.2s ease, transform 0.2s ease; }
+.menu-link:not(:last-child) { border-bottom: 1px solid rgba(15, 42, 29, 0.1); }
+.menu-link:hover { background-color: rgba(255, 255, 255, 0.3); transform: translateX(5px); }
+.menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); z-index: 1001; cursor: pointer; animation: fadeIn 0.3s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.page-content-spacer {
+    padding-top: var(--header-height);
+}
+
+.login-required-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+}
+
+.login-required-popup {
+    background: #fff;
+    width: 380px;
+    padding: 25px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+}
+
+.login-required-popup h2 {
+    margin-bottom: 10px;
+    color: #0F2A1D;
+}
+
+.login-required-popup p {
+    margin-top: 0;
+    color: #333;
+}
+
+.login-required-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.login-required-confirm {
+    padding: 12px;
+    border-radius: 25px;
+    border: none;
+    background: #2d2d2d;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: .2s;
+}
+
+.login-required-confirm:hover {
+    background: #000;
+}
+
+.login-required-cancel {
+    padding: 12px;
+    border-radius: 25px;
+    border: 1px solid #444;
+    background: transparent;
+    color: #444;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: .2s;
+}
+
+.login-required-cancel:hover {
+    background: #f2f2f2;
+}
