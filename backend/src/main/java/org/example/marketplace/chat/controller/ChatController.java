@@ -5,6 +5,7 @@ import org.example.marketplace.chat.service.ChatService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +33,7 @@ public class ChatController {
     @PreAuthorize("@chatSecurity.canSendToConversation(authentication, #req.conversationId)")
     @PostMapping("/send")
     public ResponseEntity<MessageDTO> send(
-            @RequestBody SendMessageRequest req,
+            @RequestBody @Valid SendMessageRequest req,
             org.springframework.security.core.Authentication auth
     ) {
         return ResponseEntity.ok(service.send(auth, req));

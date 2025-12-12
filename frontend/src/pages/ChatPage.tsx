@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useChat } from "../hooks/useChat";
 import ChatList from "../components/chatlist/ChatList";
 import ChatWindow from "../components/chatwindow/ChatWindow";
+import "./ChatPage.css";
 
 export default function ChatPage() {
     const { user } = useAuth();
@@ -31,24 +32,31 @@ export default function ChatPage() {
     const hasChats = conversations.length > 0;
 
     return (
-        <div style={{ display: "flex", height: "100vh" }}>
+        <div className="chat-page-container">
             {/* LEFT: conversation list */}
-            <div style={{ width: 260, borderRight: "1px solid #eee" }}>
-                <div style={{ padding: 12, fontWeight: 600 }}>Chats</div>
+            <div className="chat-sidebar">
+                <div className="chat-sidebar-header">
+                    <h1 className="chat-sidebar-title">Chats</h1>
+                </div>
                 <ChatList />
             </div>
 
             {/* RIGHT: window */}
-            <div style={{ flex: 1 }}>
+            <div className="chat-content-area">
                 {!activeConversationId && hasChats && (
-                    <div style={{ padding: 20, color: "#888" }}>
-                        <h3>Select a chat from the left</h3>
+                    <div className="chat-select-state">
+                        <div className="chat-select-icon">💬</div>
+                        <p className="chat-select-message">Select a conversation to start chatting</p>
                     </div>
                 )}
 
                 {!hasChats && (
-                    <div style={{ padding: 20, color: "#888" }}>
-                        <h3>No conversations yet.</h3>
+                    <div className="chat-empty-state">
+                        <div className="chat-empty-state-icon">💬</div>
+                        <h2 className="chat-empty-state-title">No conversations yet</h2>
+                        <p className="chat-empty-state-message">
+                            Start a new conversation from a listing or profile page to begin chatting.
+                        </p>
                     </div>
                 )}
 
