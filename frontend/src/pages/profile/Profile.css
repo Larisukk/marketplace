@@ -1,0 +1,224 @@
+.profile-page-wrapper {
+    width: 100%;
+    height: calc(100vh - 65px);
+    background-color: #AEC3B0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-card-split {
+    width: 60%;
+    height: 70%;
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.18);
+}
+.profile-left-box {
+    width: 60%;
+    background: #ffffff;
+    padding: 40px;
+}
+
+
+.profile-left-box h2 {
+    margin-bottom: 20px;
+    font-size: 26px;
+    font-weight: 600;
+}
+
+.profile-field {
+    margin-bottom: 18px;
+}
+
+.profile-field label {
+    display: block;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 4px;
+}
+
+.profile-field p {
+    background: #f2f2f2;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: 0;
+}
+/* WRAPPER COMPONENTĂ PROFILE (stânga + centru) */
+.profile-container {
+    display: flex;
+    gap: 25px;
+    width: 100%;
+}
+
+/* MENIU SETARI */
+.settings-menu {
+    width: 180px;
+    background: #ffffffaa;
+    padding: 20px;
+    border-radius: 12px;
+    height: fit-content;
+}
+
+.settings-menu h3 {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+.settings-menu ul {
+    list-style: none;
+    padding: 0;
+}
+
+.settings-menu li {
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: 0.2s;
+}
+
+.settings-menu li:hover {
+    background: #d7e6d6;
+}
+
+.settings-menu li.active {
+    background: #96b59a;
+    color: white;
+}
+
+.profile-left-box {
+    flex: 1;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+}
+
+.profile-right-image {
+    width: 350px;
+    background-image: url("https://i.ibb.co/M1M1g20/blueberries.jpg");
+    background-size: cover;
+    background-position: center;
+    border-radius: 20px;
+}
+.password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.password-form input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+.change-pass-btn {
+    margin-top: 15px;
+    padding: 10px;
+    background: #7fa887;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.change-pass-btn:hover {
+    background: #6d9574;
+}
+
+.error-msg {
+    color: #d9534f;
+    font-weight: 500;
+}
+
+.success-msg {
+    color: #4cae4c;
+    font-weight: 500;
+}
+/* ===== OVERLAY ===== */
+.logout-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+/* ===== POPUP ===== */
+.logout-popup {
+    background: #fff;
+    width: 380px;
+    padding: 25px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+}
+
+.logout-popup h2 {
+    margin-bottom: 10px;
+}
+
+.logout-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* ===== BUTTON CONFIRM ===== */
+.logout-confirm {
+    padding: 12px;
+    border-radius: 25px;
+    border: none;
+    background: #2d2d2d;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: .2s;
+}
+
+.logout-confirm:hover {
+    background: #000;
+}
+
+.logout-cancel {
+    padding: 12px;
+    border-radius: 25px;
+    border: 1px solid #444;
+    background: transparent;
+    color: #444;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: .2s;
+}
+.logout-menu-btn {
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: 0.2s;
+    background: #ffffff;
+    font-size: 1rem;
+    border: none;
+    text-align: left;
+    width: 100%;
+}
+
+.logout-menu-btn:hover {
+    background: #d7e6d6;
+}
+
+.logout-menu-btn.active {
+    background: #96b59a;
+    color: white;
+}

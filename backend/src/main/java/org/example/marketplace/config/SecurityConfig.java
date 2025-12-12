@@ -102,9 +102,11 @@ public class SecurityConfig {
 
 
                         .anyRequest().authenticated()
+
                 )
                 .addFilterBefore(jwt, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 }
