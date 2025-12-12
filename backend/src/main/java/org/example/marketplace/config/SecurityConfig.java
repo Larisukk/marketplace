@@ -91,6 +91,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
                         .anyRequest().authenticated()
+
                 )
                 .addFilterBefore(jwt, UsernamePasswordAuthenticationFilter.class);
 
