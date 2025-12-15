@@ -16,6 +16,10 @@ body {
   font-family: system-ui, sans-serif;
   background-color: var(--color-page-background);
   color: var(--color-medium-green);
+}
+
+/* Only the home page layout is offset below the header */
+.home-page-layout {
   padding-top: 4rem;
 }
 

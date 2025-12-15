@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+// --- ADĂUGĂ:
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -79,15 +80,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
-
-                        // PUBLIC AUTH ENDPOINTS
-                        .requestMatchers(
-                                "/api/auth/register",
-                                "/api/auth/login",
-                                "/api/auth/verify-email"
-                        ).permitAll()
-
-                        // PUBLIC LISTINGS
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/verify-email").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/search/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/search/**").permitAll()
+                        .requestMatchers("/api/listings/search/**").permitAll()
+                        .requestMatchers("/api/map/**").permitAll()
+                        .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
 
                         .anyRequest().authenticated()

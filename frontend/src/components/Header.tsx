@@ -191,6 +191,7 @@ const Header: React.FC = () => {
                 </div>
 
                 <div className="menu-links">
+                    <a href="/home" className="menu-link">Acasă</a>
                     <div
                         className="menu-link"
                         onClick={() => {
@@ -201,7 +202,15 @@ const Header: React.FC = () => {
                         Profilul meu
                     </div>
 
-                    <a href="/produse" className="menu-link">Produse</a>
+                    <div
+                        className="menu-link"
+                        onClick={() => {
+                            window.location.href = "/map";
+                        }}
+                    >
+                        Harta
+                    </div>
+
 
                     <div
                         className="menu-link"

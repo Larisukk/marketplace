@@ -2,6 +2,7 @@
 import { FormEvent, useState } from "react";
 import MapBox, { type Bbox, type Point } from "../../components/MapBox";
 import "./MapPage.css";
+import MapMiniHeader from "../../components/MapMiniHeader";
 
 import { searchListings } from "@/services/searchApi";
 import type { ListingCardDto } from "@/types/search";
@@ -185,11 +186,9 @@ export default function MapPage() {
     }
 
     return (
+
         <div className="mapPage">
-            {/* Top bar: title */}
-            <header className="mapPage-header">
-                <h2 className="mapPage-title">BioBuy Map</h2>
-            </header>
+            <MapMiniHeader />
 
             {/* Main layout: left search + list, right map */}
             <div className="mapPage-content">

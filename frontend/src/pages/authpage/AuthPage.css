@@ -20,8 +20,47 @@ body{
 .auth-wrap{
     min-height:100vh;
     display:block;
-    padding:24px;
 }
+
+/* Reduce height of main header ONLY on /auth page */
+/* Make the global header smaller only when on /auth */
+
+body.auth-mode .main-header {
+    height: 56px;
+    padding: 8px 20px 8px 40px;
+}
+
+body.auth-mode .menu-icon-btn {
+    margin-left: 16px !important;   /* modifică 16 → 20 → 24 etc. până îți place */
+}
+
+.auth-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 56px;
+    background: rgba(174, 195, 176, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    z-index: 2000;
+}
+
+.auth-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-header-logo {
+    height: 38px;
+    width: auto;
+    opacity: 0.9;
+}
+
 
 /* ===== BIG CARD (generic defaults; overridden on desktop/mobile) ===== */
 .card{
@@ -196,13 +235,24 @@ body{
         z-index: 2; /* peste hero-left */
     }
 
-    .logo-floating{
-        position: static;         /* nu mai e fix */
-        width: 540px;
+    /* === LOGO FLOATING DEASUPRA CARDULUI (CORECT) === */
+    .logo-floating {
+        position: relative;        /* nu mai este în header */
+        width: var(--card-width, 420px);
         display: flex;
         justify-content: center;
-        pointer-events: none;
+        margin-bottom: 16px;       /* distanță între logo și card */
+        z-index: 5;                /* peste fundal, sub header */
     }
+
+    .logo-floating img {
+        height: var(--logo-size, 200px);
+        width: auto;
+        object-fit: contain;
+        pointer-events: none;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+    }
+
     .logo-floating .logo{
         height: var(--logo-size);
         width: auto; object-fit: contain;

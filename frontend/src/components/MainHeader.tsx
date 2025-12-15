@@ -54,21 +54,10 @@ const MainHeader: React.FC = () => {
                 </div>
 
                 <div className="menu-links">
-
-                    {/* PROFIL */}
-                    <a href="/profile" className="menu-link">
-                        Profilul meu
-                    </a>
-
-                    {/* PRODUSE */}
-                    <a href="/produse" className="menu-link">
-                        Produse
-                    </a>
-
-                    {/* Vinde un produs */}
-                    <a href="/upload" className="menu-link">
-                        Vinde un produs
-                    </a>
+                    <a href="/home" className="menu-link">Acasă</a>
+                    <a href="/map" className="menu-link">Harta</a>
+                    <a href="/produse" className="menu-link">Produse</a>
+                    <a href="/upload" className="menu-link">Vinde un produs</a>
                 </div>
             </nav>
 

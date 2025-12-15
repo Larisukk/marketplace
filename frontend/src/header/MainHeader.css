@@ -29,6 +29,11 @@
     min-height: var(--header-height);
     box-sizing: border-box;
 }
+
+body.auth-mode .main-header {
+    display: none !important;
+}
+
 .header-top-row {
     display: flex;
     justify-content: space-between;
@@ -79,6 +84,13 @@
 }
 
 .vertical-menu {
+    background: #AEC3B0;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.25);
+    backdrop-filter: none;
+}
+
+
+.vertical-menu {
     position: fixed;
     top: 0;
     left: 0;
@@ -106,6 +118,16 @@
     padding-top: var(--header-height);
 }
 
+/* Fix: meniu peste auth-header */
+.menu-overlay {
+    z-index: 3000 !important;
+}
+
+.vertical-menu {
+    z-index: 4000 !important;
+}
+
+
 .login-required-overlay {
     position: fixed;
     inset: 0;
@@ -114,7 +136,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 3000;
+    z-index: 9999;
 }
 
 .login-required-popup {

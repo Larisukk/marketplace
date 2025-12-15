@@ -38,7 +38,7 @@ public class ListingSearchController {
      * Frontend passes filters in query params (q, minPrice, maxPrice, bbox, etc.).
      * We parse + validate them, then delegate to the repository.
      */
-    @GetMapping("/search/listings")
+    @GetMapping("/listings")
     public ResponseEntity<PageDto<ListingCardDto>> search(
             @RequestParam(required = false) String bbox,          // "w,s,e,n" (lon/lat WGS84)
             @RequestParam(required = false) String q,             // free-text (title/descr/product)
