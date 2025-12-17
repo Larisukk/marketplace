@@ -3,7 +3,9 @@ import { FormEvent, useState } from "react";
 import MapBox, { type Bbox, type Point } from "../../components/MapBox";
 import "./MapPage.css";
 import MapMiniHeader from "../../components/MapMiniHeader";
-
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { COUNTY_BBOX } from "@/utils/counties";
 import { searchListings } from "@/services/searchApi";
 import type { ListingCardDto } from "@/types/search";
 
@@ -48,6 +50,40 @@ export default function MapPage() {
     const [activeId, setActiveId] = useState<string | null>(null);
 
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    const [searchParams] = useSearchParams();
+    const urlQuery = searchParams.get("q") ?? "";
+    const urlCounty = searchParams.get("county");
+
+    useEffect(() => {
+        if (!urlCounty) return;
+
+        const countyData = COUNTY_BBOX[urlCounty];
+        if (!countyData) return;
+
+        // 1. center map
+        setMapCenter(countyData.center);
+
+        // 2. bbox
+        const [minLon, minLat, maxLon, maxLat] = countyData.bbox;
+        const initialBbox = { minLon, minLat, maxLon, maxLat };
+        setBbox(initialBbox);
+
+        // 3. inject search text
+        setFilters((prev) => ({
+            ...prev,
+            q: urlQuery,
+        }));
+
+        // 4. trigger SAME search logic
+        fetchListingsFor(
+            initialBbox,
+            { ...filters, q: urlQuery },
+            0
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
 
     // Convert ListingCardDto -> Point expected by MapBox
     function listingToPoint(l: ListingCardDto): Point {
@@ -116,7 +152,7 @@ export default function MapPage() {
             setTotal(data.total);
         } catch (e) {
             console.error("search error", e);
-            setError("Could not load listings.");
+            setError("EROARE: Nu s-au putut afisa produsele.");
         } finally {
             setLoading(false);
         }
@@ -196,10 +232,10 @@ export default function MapPage() {
                 <section className="mapPage-list">
                     <form className="mapPage-filters" onSubmit={handleSubmit}>
                         <div className="mapPage-field">
-                            <label>Search</label>
+                            <label>Cautare</label>
                             <input
                                 type="text"
-                                placeholder="tomatoes, apples, cheese..."
+                                placeholder="rosii, mere, branza..."
                                 value={filters.q}
                                 onChange={(e) =>
                                     setFilters((f) => ({ ...f, q: e.target.value }))
@@ -209,7 +245,7 @@ export default function MapPage() {
 
                         <div className="mapPage-fieldRow">
                             <div className="mapPage-field">
-                                <label>Min price</label>
+                                <label>Pret minim</label>
                                 <input
                                     type="number"
                                     placeholder="1"
@@ -223,7 +259,7 @@ export default function MapPage() {
                                 />
                             </div>
                             <div className="mapPage-field">
-                                <label>Max price</label>
+                                <label>Pret maxim</label>
                                 <input
                                     type="number"
                                     placeholder="999"
@@ -240,7 +276,7 @@ export default function MapPage() {
 
                         {/* Sort buttons: Newest / Oldest / Price ↑ / Price ↓ */}
                         <div className="mapPage-sortGroup">
-                            <span className="mapPage-sortLabel">Sort by:</span>
+                            <span className="mapPage-sortLabel">Sortare dupa:</span>
                             <button
                                 type="button"
                                 className={
@@ -251,7 +287,7 @@ export default function MapPage() {
                                 }
                                 onClick={() => updateSort("createdAt,desc")}
                             >
-                                Newest
+                                Cele mai noi
                             </button>
                             <button
                                 type="button"
@@ -263,7 +299,7 @@ export default function MapPage() {
                                 }
                                 onClick={() => updateSort("createdAt,asc")}
                             >
-                                Oldest
+                                Cele mai vechi
                             </button>
                             <button
                                 type="button"
@@ -275,7 +311,7 @@ export default function MapPage() {
                                 }
                                 onClick={() => updateSort("price,asc")}
                             >
-                                Price ↑
+                                Pret ↑
                             </button>
                             <button
                                 type="button"
@@ -287,7 +323,7 @@ export default function MapPage() {
                                 }
                                 onClick={() => updateSort("price,desc")}
                             >
-                                Price ↓
+                                Pret ↓
                             </button>
                         </div>
 
@@ -303,19 +339,19 @@ export default function MapPage() {
                                         }))
                                     }
                                 />
-                                Only available
+                                Disponibile
                             </label>
 
                             <div className="mapPage-filterButtons">
                                 <button type="submit" disabled={loading || !bbox}>
-                                    {loading ? "Loading..." : "Search"}
+                                    {loading ? "Se incarca..." : "Cautare"}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={clearFilters}
                                     disabled={loading}
                                 >
-                                    Clear
+                                    Sterge
                                 </button>
                             </div>
                         </div>
@@ -325,7 +361,7 @@ export default function MapPage() {
                     <div className="mapPage-chips">
                         {filters.q && (
                             <span className="chip chip-main">
-                                q: "{filters.q}"
+                                text: "{filters.q}"
                             </span>
                         )}
                         {filters.minPrice && (
@@ -336,7 +372,7 @@ export default function MapPage() {
                         )}
                         {filters.available && (
                             <span className="chip chip-available">
-                                available
+                                disponibile
                             </span>
                         )}
                     </div>
@@ -344,7 +380,7 @@ export default function MapPage() {
                     {/* List header info */}
                     <div className="mapPage-listHeader">
                         <div className="mapPage-listInfo">
-                            Total: <b>{total}</b> • Page {page + 1} / {totalPages}
+                            Total produse: <b>{total}</b> • Pagini {page + 1} / {totalPages}
                         </div>
                     </div>
 

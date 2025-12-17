@@ -259,11 +259,6 @@ const UploadProduct: React.FC = () => {
     return (
         <div className="upload-form-container">
             <form onSubmit={handleSubmit}>
-                {submitError && <div className="form-error">{submitError}</div>}
-                {submitSuccess && (
-                    <div className="form-success">Anunțul a fost publicat cu succes.</div>
-                )}
-
                 {/* FOTO */}
                 <div className="form-section photo-upload-section">
                     <label htmlFor="photo-upload" className="photo-upload-label">
@@ -484,7 +479,21 @@ const UploadProduct: React.FC = () => {
                     </div>
                 </div>
 
-                <button type="submit" className="submit-product-btn" disabled={submitting}>
+            {/* MESAJE EROARE / SUCCES – jos */}
+            {submitError && (
+                <div className="form-error bottom-error">
+                    {submitError}
+                </div>
+            )}
+
+            {submitSuccess && (
+                <div className="form-success bottom-success">
+                    Anunțul a fost publicat cu succes.
+                </div>
+            )}
+
+
+            <button type="submit" className="submit-product-btn" disabled={submitting}>
                     {submitting ? "Se publică…" : "Publică Anunțul"}
                 </button>
             </form>

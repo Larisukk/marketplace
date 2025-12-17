@@ -194,3 +194,32 @@ body.auth-mode .main-header {
 .login-required-cancel:hover {
     background: #f2f2f2;
 }
+
+:root {
+    --header-h: 72px;
+    --header-h-compact: 48px;
+}
+
+/* header normal */
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-h);
+    background-color: var(--color-accent-green);
+    z-index: 1000;
+    transition: height 0.2s ease, padding 0.2s ease;
+}
+
+/* 🔽 DOAR PE /upload */
+.main-header--compact {
+    height: var(--header-h-compact);
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+/* ca să rămână centrat conținutul */
+.main-header--compact .header-top-row {
+    align-items: center;
+}

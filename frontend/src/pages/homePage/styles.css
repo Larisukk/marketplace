@@ -744,3 +744,24 @@ DROPDOWN ORAȘE
     transform: translateY(0);
   }
 }
+.county-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  width: 120px;
+}
+.search-form-inline .cta-button.glovo-button {
+  border-radius: 0 50px 50px 0; /* DOAR colțurile din dreapta */
+}
+.search-form-inline .cta-button.glovo-button:focus,
+.search-form-inline .cta-button.glovo-button:active {
+  outline: none;
+  box-shadow: none;
+}
+.search-form-inline .cta-button.glovo-button:focus-visible {
+  outline: none;
+}
+.search-form-inline {
+  overflow: hidden;
+}

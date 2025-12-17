@@ -55,10 +55,14 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
       AND (:productId::uuid   IS NULL OR l.product_id   = :productId::uuid)
       AND (:categoryId::uuid  IS NULL OR p.category_id  = :categoryId::uuid)
       AND (:q::text IS NULL OR (
-            l.title       ILIKE '%' || :q || '%'
-         OR l.description ILIKE '%' || :q || '%'
-         OR p.name        ILIKE '%' || :q || '%'
+             p.name        ILIKE '%' || :q || '%'
+          OR l.title       ILIKE '%' || :q || '%'
+          OR l.description ILIKE '%' || :q || '%'
+          OR similarity(p.name, :q) > 0.15
+          OR similarity(l.title, :q) > 0.15
+          OR similarity(l.description, :q) > 0.15
       ))
+      
       AND (:hasBbox::boolean = FALSE OR ST_Intersects(
             l.location,
             ST_MakeEnvelope(:w, :s, :e, :n, 4326)::geography
@@ -72,12 +76,31 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                                        Double w, Double s, Double e, Double n,
                                        int limit, int offset, String sortField, String sortDir) {
 
-        String sortSql = switch (sortField) {
-            case "price" -> "l.price_cents";
-            default -> "l.created_at";
-        } + ("asc".equalsIgnoreCase(sortDir) ? " ASC" : " DESC");
+        boolean hasQuery = (q != null && !q.isBlank());
+        String sortSql;
+
+        if (hasQuery) {
+            sortSql = """
+        GREATEST(
+            similarity(p.name, :q),
+            similarity(l.title, :q),
+            similarity(l.description, :q)
+        ) DESC,
+        """ + (
+                    "price".equals(sortField)
+                            ? "l.price_cents"
+                            : "l.created_at"
+            ) + ("asc".equalsIgnoreCase(sortDir) ? " ASC" : " DESC");
+        } else {
+            sortSql = switch (sortField) {
+                case "price" -> "l.price_cents";
+                default -> "l.created_at";
+            } + ("asc".equalsIgnoreCase(sortDir) ? " ASC" : " DESC");
+        }
+
 
         // >>> FIX: ensure spaces around ORDER BY and before LIMIT
+
         String sql =
                 """
                 SELECT l.id, l.title,

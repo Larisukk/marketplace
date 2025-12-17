@@ -356,9 +356,16 @@
     color: #14532d;
     font-size: 0.9rem;
 }
-
+z
 .currency-label {
     padding: 4px 0 4px 10px;
     color: #555;
     font-size: 16px;
+}
+.page-with-header {
+    padding-top: var(--header-h);
+}
+
+.page-with-header.compact-header {
+    padding-top: var(--header-h-compact);
 }

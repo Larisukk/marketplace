@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../header/MainHeader.css';
 import { useAuth } from "../context/AuthContext";
+import { useLocation } from "react-router-dom";
 
 const COLORS = {
     DARK_GREEN: '#0F2A1D',
@@ -11,6 +12,9 @@ const COLORS = {
 const MainHeader: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { user } = useAuth();
+    const location = useLocation();
+    const isUploadPage = location.pathname === "/upload";
+
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -18,8 +22,8 @@ const MainHeader: React.FC = () => {
 
     return (
         <>
-            <header className="main-header">
-                <div className="header-top-row">
+            <header className={`main-header ${isUploadPage ? "main-header--compact" : ""}`}>
+            <div className="header-top-row">
                     <div className="left-group">
                         <button
                             className="menu-icon-btn"

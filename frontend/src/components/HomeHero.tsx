@@ -27,7 +27,11 @@ interface CountySelectProps {
     className?: string;
 }
 
-const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCounty, className = '' }) => {
+const CountySelect: React.FC<CountySelectProps> = ({
+                                                       selectedCounty,
+                                                       onSelectCounty,
+                                                       className = '',
+                                                   }) => {
     const [isOpen, setIsOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -39,7 +43,12 @@ const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCou
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [wrapperRef]);
+    }, []);
+
+    // 🔍 FILTRARE DUPĂ CE SCRIE USERUL
+    const filteredCounties = ROMANIAN_COUNTIES.filter((county) =>
+        county.toLowerCase().includes(selectedCounty.toLowerCase())
+    );
 
     const handleSelect = (county: string) => {
         onSelectCounty(county);
@@ -48,24 +57,41 @@ const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCou
 
     return (
         <div className={`county-select-wrapper ${className}`} ref={wrapperRef}>
-            <div
-                className={`county-select-display ${!selectedCounty ? 'placeholder' : ''}`}
-                onClick={() => setIsOpen(!isOpen)}
-                aria-expanded={isOpen}
-            >
+            <div className="county-select-display">
 
                 <div className="county-display-content">
                     <LocationIcon />
-                    <span className="county-display-text">{selectedCounty || 'Oraș'}</span>
+
+                    <input
+                        type="text"
+                        value={selectedCounty}
+                        placeholder="Judet"
+                        onChange={(e) => {
+                            onSelectCounty(e.target.value);
+                            setIsOpen(true);
+                        }}
+                        className="county-input"
+                    />
                 </div>
-                <span className="dropdown-arrow">▼</span>
+
+                <span
+                    className="dropdown-arrow"
+                    onClick={(e) => {
+                        e.stopPropagation(); // 🔴 FOARTE IMPORTANT
+                        setIsOpen((prev) => !prev);
+                    }}
+                >
+                ▼
+                </span>
             </div>
-            {isOpen && (
+
+            {/* 🔽 SUGESTII FILTRATE */}
+            {isOpen && filteredCounties.length > 0 && (
                 <div className="county-select-dropdown">
-                    {ROMANIAN_COUNTIES.map(county => (
+                    {filteredCounties.map((county) => (
                         <div
                             key={county}
-                            className={`county-select-option ${selectedCounty === county ? 'selected' : ''}`}
+                            className="county-select-option"
                             onClick={() => handleSelect(county)}
                         >
                             <LocationIcon />

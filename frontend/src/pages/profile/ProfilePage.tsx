@@ -1,12 +1,10 @@
 import React from "react";
-import MainHeader from "../../components/MainHeader";
 import Profile from "../../components/Profile";
 import "./Profile.css";
 
 export default function ProfilePage() {
     return (
         <div className="profile-page-wrapper">
-            <MainHeader />
 
             <div className="profile-card-split">
 
