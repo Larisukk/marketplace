@@ -1,6 +1,5 @@
-
 .upload-page-layout {
-    background-image: url('/upload_fundal.png');
+    background-image: url("/upload_fundal.png");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -33,7 +32,6 @@
     max-width: 650px;
     box-sizing: border-box;
 }
-
 
 .upload-form-container h3 {
     font-size: 22px;
@@ -83,7 +81,7 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%2D%3D%22M5%208l5%205%205-5z%22%20fill%3D%22%3C%2Fsvg%3E');
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%2D%3D%22M5%208l5%205%205-5z%22%20fill%3D%22%3C%2Fsvg%3E");
     background-repeat: no-repeat;
     background-position: right 5px center;
     background-size: 16px 16px;
@@ -168,7 +166,12 @@
 }
 
 .submit-product-btn:hover {
-    background-color: #0F2A1D;
+    background-color: #0f2a1d;
+}
+
+.submit-product-btn:disabled {
+    opacity: 0.7;
+    cursor: default;
 }
 
 .form-section.category-select-wrapper {
@@ -217,9 +220,9 @@
     top: 100%;
     left: 0;
     width: 100%;
-    background-color: #FFFFFF;
+    background-color: #ffffff;
     border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
     padding: 8px;
     max-height: 250px;
     overflow-y: auto;
@@ -229,13 +232,12 @@
     margin-top: 4px;
 }
 
-
 .category-select-option {
     display: flex;
     align-items: center;
     padding: 12px 14px;
     font-size: 16px;
-    color: #0F2A1D;
+    color: #0f2a1d;
     border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.2s ease;
@@ -244,13 +246,13 @@
 }
 
 .category-select-option:hover {
-    background-color: #F5F9F0;
+    background-color: #f5f9f0;
 }
 
 .category-select-option.selected {
-    background-color: #E3EED4;
+    background-color: #e3eed4;
     font-weight: 600;
-    color: #0F2A1D;
+    color: #0f2a1d;
 }
 
 @keyframes dropdownFadeIn {
@@ -274,7 +276,7 @@
 }
 
 .category-select-dropdown::-webkit-scrollbar-thumb {
-    background: #AEC3B0;
+    background: #aec3b0;
     border-radius: 10px;
 }
 
@@ -284,8 +286,9 @@
 
 .category-select-dropdown {
     scrollbar-width: thin;
-    scrollbar-color: #AEC3B0 #f1f1f1;
+    scrollbar-color: #aec3b0 #f1f1f1;
 }
+
 .unit-box {
     width: 100%;
     padding: 6px 0;
@@ -298,4 +301,64 @@
 
 .unit-box:focus {
     outline: none;
+}
+
+/* NEW: location + messages */
+
+.location-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.locate-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #aec3b0;
+    color: #0f2a1d;
+}
+
+.locate-btn:disabled {
+    opacity: 0.65;
+    cursor: default;
+}
+
+.location-preview {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #4b5563;
+}
+
+.location-error {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #b91c1c;
+}
+
+.form-error {
+    margin-bottom: 12px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #ffecec;
+    color: #7a1f1f;
+    font-size: 0.9rem;
+}
+
+.form-success {
+    margin-bottom: 12px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #e6f7ea;
+    color: #14532d;
+    font-size: 0.9rem;
+}
+
+.currency-label {
+    padding: 4px 0 4px 10px;
+    color: #555;
+    font-size: 16px;
 }
