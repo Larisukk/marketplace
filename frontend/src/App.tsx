@@ -6,7 +6,7 @@ import Home from "./pages/homePage/Home";
 import UploadProductPage from "./pages/uploadProductPage/UploadProductPage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/profile/ProfilePage";
-
+import ListingPage from "./pages/listingpage/ListingPage";
 import ProtectedRoute from "./components/routing/ProtectedRoute"; //
 import { ChatProvider } from "./context/ChatContext";
 import ChatPage from "./pages/ChatPage";
@@ -16,7 +16,6 @@ export default function App() {
         <ChatProvider>
         <Routes>
             <Route path="/" element={<Navigate to="/home" replace />} />
-
             <Route path="/home" element={<Home />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/map" element={<MapPage />} />
@@ -38,7 +37,7 @@ export default function App() {
                 }
             />
             <Route path="/chat" element={<ChatPage />} />
-
+            <Route path="/listings/:id" element={<ListingPage />} />
         </Routes>
         </ChatProvider>
     );

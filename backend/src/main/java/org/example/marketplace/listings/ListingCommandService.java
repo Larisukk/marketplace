@@ -101,20 +101,29 @@ public class ListingCommandService {
     }
 
     @Transactional
-    public void uploadListingImages(UUID listingId, List<MultipartFile> files) throws IOException {
+    public void uploadListingImages(UUID listingId, List<MultipartFile> files, String userEmail) throws IOException {
         if (files == null || files.isEmpty()) {
             return;
         }
 
-        // Ensure listing exists
+        // Get user ID
+        UserEntity user = users.findByEmailIgnoreCase(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+
+        // Ensure listing exists and user owns it
+        UUID ownerId;
         try {
-            jdbc.queryForObject(
-                    "SELECT 1 FROM listings WHERE id = ?",
-                    Integer.class,
+            ownerId = jdbc.queryForObject(
+                    "SELECT farmer_user_id FROM listings WHERE id = ?",
+                    UUID.class,
                     listingId
             );
         } catch (EmptyResultDataAccessException ex) {
             throw new IllegalArgumentException("Listing not found: " + listingId);
+        }
+
+        if (!ownerId.equals(user.getId())) {
+            throw new IllegalArgumentException("You do not have permission to upload images to this listing");
         }
 
         Path uploadRoot = Paths.get("uploads");

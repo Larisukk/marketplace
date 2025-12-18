@@ -37,11 +37,12 @@ type MapBoxProps = {
     center: [number, number];
     points: Point[];
     onBboxChange: (bbox: Bbox) => void;
+    activeId?: string | null;
 };
 
 /* ---------- helpers ---------- */
 
-function createPriceIcon(p: Point): DivIcon {
+function createPriceIcon(p: Point, isActive: boolean): DivIcon {
     const hasPrice =
         p.priceCents !== null &&
         p.priceCents !== undefined &&
@@ -51,9 +52,11 @@ function createPriceIcon(p: Point): DivIcon {
         ? `${(p.priceCents! / 100).toFixed(0)} ${p.currency || "RON"}`
         : "•";
 
+    const extraClass = isActive ? " price-badge--active" : "";
+
     return L.divIcon({
         className: "price-marker",
-        html: `<div class="price-badge">${label}</div>`,
+        html: `<div class="price-badge${extraClass}">${label}</div>`,
         iconSize: [0, 0],
         iconAnchor: [0, 0],
     });
@@ -133,7 +136,7 @@ function CenterOnProp({ center }: { center: [number, number] }) {
 
 /* ---------- main component ---------- */
 
-export default function MapBox({ center, points, onBboxChange }: MapBoxProps) {
+export default function MapBox({ center, points, onBboxChange, activeId }: MapBoxProps) {
     const tileUrl =
         import.meta.env.VITE_TILE_URL ||
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -168,30 +171,33 @@ export default function MapBox({ center, points, onBboxChange }: MapBoxProps) {
                 chunkedLoading
                 iconCreateFunction={createClusterIcon}
             >
-                {validPoints.map((p) => (
-                    <Marker
-                        key={p.id}
-                        position={[p.lat, p.lon]}
-                        icon={createPriceIcon(p)}
-                    >
-                        <Popup>
-                            <strong>{p.title}</strong>
-                            <br />
-                            {p.productName}
-                            {p.priceCents != null && (
-                                <>
-                                    {" — "}
-                                    {(p.priceCents / 100).toFixed(2)}{" "}
-                                    {p.currency || "RON"}
-                                </>
-                            )}
-                            <br />
-                            {p.farmerName && (
-                                <small>Farmer: {p.farmerName}</small>
-                            )}
-                        </Popup>
-                    </Marker>
-                ))}
+                {validPoints.map((p) => {
+                    const isActive = activeId != null && p.id === activeId;
+                    return (
+                        <Marker
+                            key={p.id}
+                            position={[p.lat, p.lon]}
+                            icon={createPriceIcon(p, isActive)}
+                        >
+                            <Popup>
+                                <strong>{p.title}</strong>
+                                <br />
+                                {p.productName}
+                                {p.priceCents != null && (
+                                    <>
+                                        {" — "}
+                                        {(p.priceCents / 100).toFixed(2)}{" "}
+                                        {p.currency || "RON"}
+                                    </>
+                                )}
+                                <br />
+                                {p.farmerName && (
+                                    <small>Farmer: {p.farmerName}</small>
+                                )}
+                            </Popup>
+                        </Marker>
+                    );
+                })}
             </MarkerClusterGroup>
         </MapContainer>
     );

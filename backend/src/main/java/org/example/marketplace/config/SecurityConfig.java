@@ -93,6 +93,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/map/**").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()  // Allow public access to uploaded images
 
                         // chat endpoints (require authenticated user w/ role)
                         .requestMatchers(HttpMethod.POST, "/api/chat/conversations/start").hasAnyRole("USER","FARMER","ADMIN")

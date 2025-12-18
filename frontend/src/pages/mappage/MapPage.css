@@ -8,6 +8,7 @@
     display: flex;
     flex-direction: column;
     padding: 16px;
+    padding-top: 100px; /* Account for fixed header */
     background: linear-gradient(180deg, #e6f3ea, #cde9d6);
     color: #143321;
     min-height: 100vh;
@@ -367,6 +368,17 @@
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-top: 5px solid #1f7a3a;
+}
+
+/* Active (selected) listing marker – lighter green highlight */
+.mapPage .price-marker .price-badge.price-badge--active {
+    background: #4ade80; /* light green */
+    color: #065f46;
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.6);
+}
+
+.mapPage .price-marker .price-badge.price-badge--active::after {
+    border-top-color: #4ade80;
 }
 
 /* Fix: Min/Max price fields should have equal width */

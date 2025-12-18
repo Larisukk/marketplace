@@ -1,8 +1,10 @@
 // frontend/src/pages/MapPage.tsx
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import MapBox, { type Bbox, type Point } from "../../components/MapBox";
+import Header from "../../components/Header";
 import "./MapPage.css";
-import { useNavigate } from "react-router-dom";
+import "../homePage/styles.css";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { searchListings } from "@/services/searchApi";
 import type { ListingCardDto } from "@/types/search";
@@ -36,6 +38,9 @@ export default function MapPage() {
 
     const [bbox, setBbox] = useState<Bbox | null>(null);
     const navigate = useNavigate();
+    const location = useLocation() as {
+        state?: { center?: { lat: number; lon: number; listingId?: string } };
+    };
     const { user } = useAuth();
     const { actions } = useChat();
 
@@ -53,6 +58,23 @@ export default function MapPage() {
     const [activeId, setActiveId] = useState<string | null>(null);
 
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const hasAppliedCenterRef = useRef(false);
+
+    // If we arrive from ListingPage with a center in location.state,
+    // center the map on that listing once.
+    useEffect(() => {
+        if (hasAppliedCenterRef.current) return;
+        const center = location.state?.center;
+        if (!center) return;
+
+        if (typeof center.lat === "number" && typeof center.lon === "number") {
+            setMapCenter([center.lat, center.lon]);
+        }
+        if (center.listingId) {
+            setActiveId(center.listingId);
+        }
+        hasAppliedCenterRef.current = true;
+    }, [location.state, setMapCenter]);
 
     // Convert ListingCardDto -> Point expected by MapBox
     function listingToPoint(l: ListingCardDto): Point {
@@ -190,52 +212,26 @@ export default function MapPage() {
         if (bbox) void fetchListingsFor(bbox, reset, 0);
     }
 
-    // Handle opening listing and starting chat
+    // Handle opening listing (view details only; chat is started from ListingPage)
     async function handleOpenListing(listing: ListingCardDto) {
         if (!listing.farmerUserId) {
             alert("Seller information is not available for this listing.");
             return;
         }
 
-        // If user is not logged in, redirect to auth with redirect info
-        if (!user) {
-            navigate("/auth", {
-                state: {
-                    redirectAfterLogin: `/listings/${listing.id}`,
-                    sellerId: listing.farmerUserId,
-                },
-            });
-            return;
-        }
-
-        // Check if trying to chat with self
-        if (user.id === listing.farmerUserId) {
-            alert("You cannot start a chat with yourself.");
-            return;
-        }
-
-        // User is logged in - start chat directly
-        try {
-            console.log("Starting conversation with seller:", listing.farmerUserId, "from user:", user.id);
-            const convo = await actions.startConversation(listing.farmerUserId as any);
-            console.log("Conversation started successfully:", convo);
-            navigate("/chat", { state: { conversationId: convo.id } });
-        } catch (error: any) {
-            console.error("Failed to start conversation:", error);
-            const errorMessage = error?.response?.data?.message || error?.message || "Unknown error";
-            console.error("Error details:", {
-                message: errorMessage,
-                status: error?.response?.status,
-                data: error?.response?.data,
+        // Always allow opening the listing page, even if not logged in.
+        // Chat/login flow is handled inside ListingPage when the user presses "Start chat".
+        navigate(`/listings/${listing.id}`, {
+            state: {
                 sellerId: listing.farmerUserId,
-                userId: user.id,
-            });
-            alert(`Failed to start chat: ${errorMessage}. Please try again.`);
-        }
+                autoStartChat: false,
+            },
+        });
     }
 
     return (
         <div className="mapPage">
+            <Header />
             {/* Top bar: title */}
             <header className="mapPage-header">
                 <h2 className="mapPage-title">BioBuy Map</h2>
@@ -516,6 +512,7 @@ export default function MapPage() {
                         center={mapCenter}
                         points={points}
                         onBboxChange={handleBboxChange}
+                        activeId={activeId}
                     />
                 </section>
             </div>

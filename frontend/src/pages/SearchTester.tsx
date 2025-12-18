@@ -85,47 +85,21 @@ export default function SearchTester(): JSX.Element {
             setError(message);
         }
     };
+    // Open listing details page (no auth required; chat is started from ListingPage)
     const openListingPage = async (item: ListingCardDto): Promise<void> => {
         if (!item.farmerUserId) {
             alert("Seller information is not available for this listing.");
             return;
         }
 
-        // If user is not logged in, redirect to auth with redirect info
-        if (!user) {
-            navigate("/auth", {
-                state: {
-                    redirectAfterLogin: `/listings/${item.id}`,
-                    sellerId: item.farmerUserId,
-                },
-            });
-            return;
-        }
-
-        // Check if trying to chat with self
-        if (user.id === item.farmerUserId) {
-            alert("You cannot start a chat with yourself.");
-            return;
-        }
-
-        // User is logged in - start chat directly
-        try {
-            console.log("Starting conversation with seller:", item.farmerUserId, "from user:", user.id);
-            const convo = await actions.startConversation(item.farmerUserId as any);
-            console.log("Conversation started successfully:", convo);
-            navigate("/chat", { state: { conversationId: convo.id } });
-        } catch (error: any) {
-            console.error("Failed to start conversation:", error);
-            const errorMessage = error?.response?.data?.message || error?.message || "Unknown error";
-            console.error("Error details:", {
-                message: errorMessage,
-                status: error?.response?.status,
-                data: error?.response?.data,
+        // Always allow opening the listing page, even if not logged in.
+        // Chat/login flow is handled inside ListingPage when the user presses "Start chat".
+        navigate(`/listings/${item.id}`, {
+            state: {
                 sellerId: item.farmerUserId,
-                userId: user.id,
-            });
-            alert(`Failed to start chat: ${errorMessage}. Please try again.`);
-        }
+                autoStartChat: false,
+            },
+        });
     };
 
     const clearAll = () => {
