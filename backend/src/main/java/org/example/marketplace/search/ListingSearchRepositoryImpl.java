@@ -155,6 +155,48 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
         return list.stream().findFirst();
     }
 
+    @Override
+    public Optional<ListingCardDto> findCardById(UUID id) {
+        String sql =
+                """
+                SELECT l.id,
+                       l.farmer_user_id,
+                       l.title,
+                       ST_X(l.location::geometry) AS lon,
+                       ST_Y(l.location::geometry) AS lat,
+                       l.price_cents, l.currency,
+                       p.name AS product_name,
+                       c.name AS category_name,
+                       thumb.thumbnail_url,
+                       l.description,
+                       fp.farm_name AS farmer_name
+                """ + BASE_FROM +
+                """
+                AND l.id = :id
+                LIMIT 1
+                """;
+
+        MapSqlParameterSource p = baseParams(null, null, null, null, null, null, null, null, null, null)
+                .addValue("id", id);
+
+        var list = jdbc.query(sql, p, (rs, i) -> new ListingCardDto(
+                UUID.fromString(rs.getString("id")),
+                UUID.fromString(rs.getString("farmer_user_id")),
+                rs.getString("title"),
+                rs.getInt("price_cents"),
+                rs.getString("currency"),
+                rs.getDouble("lon"),
+                rs.getDouble("lat"),
+                rs.getString("product_name"),
+                rs.getString("category_name"),
+                rs.getString("thumbnail_url"),
+                rs.getString("description"),
+                rs.getString("farmer_name")
+        ));
+
+        return list.stream().findFirst();
+    }
+
     // Helper to bind all optional filters safely.
     private MapSqlParameterSource baseParams(String q, Integer minPrice, Integer maxPrice,
                                              UUID productId, UUID categoryId, Boolean available,
