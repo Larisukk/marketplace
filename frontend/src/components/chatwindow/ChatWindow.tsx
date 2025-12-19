@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useChat } from "../../hooks/useChat";
 import { useAuth } from "../../context/AuthContext";
-import "./ChatWindow.css";
+import styles from "./ChatWindow.module.css";
 
 export default function ChatWindow() {
   const { user } = useAuth();
@@ -53,30 +53,34 @@ export default function ChatWindow() {
   };
 
   return (
-    <div className="chat-window">
+    <div className={styles['chat-window']}>
       {/* Header */}
-      <div className="chat-header">{title}</div>
+      <div className={styles['chat-header']}>{title}</div>
 
       {/* Messages */}
-      <div className="chat-messages">
+      <div className={styles['chat-messages']}>
         {loading && list.length === 0 && (
-          <div className="chat-loading">Loading messages…</div>
+          <div className={styles['chat-loading']}>Loading messages…</div>
         )}
 
         {list.map((m) => {
           const isMine = user && m.senderId === user.id;
+          // IMPORTANT: these are space-separated in CSS modules?
+          // If CSS modules hash classes, string concatenation `styles.a + ' ' + styles.b` works.
+          // BUT "chat-message-row mine" implies logical modifiers.
+          // I will assume `mine` and `theirs` are separate classes in CSS.
           const rowClass = isMine
-            ? "chat-message-row mine"
-            : "chat-message-row theirs";
+            ? `${styles['chat-message-row']} ${styles['mine']}`
+            : `${styles['chat-message-row']} ${styles['theirs']}`;
           const bubbleClass = isMine
-            ? "chat-bubble mine"
-            : "chat-bubble theirs";
+            ? `${styles['chat-bubble']} ${styles['mine']}`
+            : `${styles['chat-bubble']} ${styles['theirs']}`;
 
           return (
             <div key={m.id} className={rowClass}>
               <div className={bubbleClass}>
                 <div>{m.body}</div>
-                <div className="chat-time">
+                <div className={styles['chat-time']}>
                   {new Date(m.createdAt).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -91,21 +95,24 @@ export default function ChatWindow() {
       </div>
 
       {/* Input */}
-      <form className="chat-input-bar" onSubmit={handleSubmit}>
-        <input
-          className="chat-input"
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type a message…"
-          maxLength={5000}
-        />
+      <form className={styles['chat-input-bar']} onSubmit={handleSubmit}>
+        <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
+          <input
+            className={styles['chat-input']}
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Type a message…"
+            maxLength={5000}
+          />
+        </div>
         <button
-          className="chat-send-btn"
+          className={styles['chat-send-btn']}
           type="submit"
           disabled={!text.trim()}
+          title="Send"
         >
-          Send
+          ➤
         </button>
       </form>
     </div>

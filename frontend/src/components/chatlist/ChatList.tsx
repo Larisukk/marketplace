@@ -1,7 +1,7 @@
 // frontend/src/components/ChatList.tsx
 import { useChat } from "../../hooks/useChat";
 import { useAuth } from "../../context/AuthContext";
-import "./ChatList.css";
+import styles from "./ChatList.module.css";
 
 export default function ChatList() {
   const { user } = useAuth();
@@ -16,7 +16,7 @@ export default function ChatList() {
   }
 
   return (
-    <div className="chatlist-container">
+    <div className={styles['chatlist-container']}>
       {conversations.map((c) => {
         const isActive = c.id === activeConversationId;
 
@@ -38,13 +38,21 @@ export default function ChatList() {
             key={c.id}
             type="button"
             onClick={() => actions.openConversation(c.id)}
-            className={`chatlist-row ${isActive ? "active" : ""}`}
+            className={`${styles['chatlist-row']} ${isActive ? styles['active'] : ""}`}
+            title={name}
           >
-            <div className="chatlist-avatar" />
+            <div className={styles['chatlist-avatar']}>
+              {/* Placeholder for avatar image or initial */}
+              {name.charAt(0).toUpperCase()}
+            </div>
 
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div className="chatlist-name">{name}</div>
-              <div className="chatlist-lastmsg">{lastMsg}</div>
+            <div className={styles['chatlist-content']}>
+              <div className={styles['chatlist-header']}>
+                <span className={styles['chatlist-name']}>{name}</span>
+                {/* Optional time placeholder or real data if available */}
+                {/* <span className={styles['chatlist-time']}>12:30</span> */}
+              </div>
+              <div className={styles['chatlist-lastmsg']}>{lastMsg}</div>
             </div>
           </button>
         );

@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Marker, Circle, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
+import styles from "./MapBox.module.css";
 
 type UserLocation = {
     lat: number;
@@ -12,8 +13,8 @@ type UserLocation = {
 // simple blue dot marker
 function createUserIcon() {
     return L.divIcon({
-        className: "user-location-dot",
-        html: `<div class="user-location-inner"></div>`,
+        className: styles["user-location-dot"],
+        html: `<div class="${styles["user-location-inner"]}"></div>`,
         iconSize: [16, 16],
         iconAnchor: [8, 8],
     });
@@ -122,12 +123,12 @@ const LocateMe = () => {
     return (
         <>
             {/* UI buttons overlay */}
-            <div className="locate-controls">
+            <div className={styles["locate-controls"]}>
                 <button onClick={locateOnce}>Locate me</button>
                 <button onClick={toggleFollow} disabled={!loc}>
                     {follow ? "Stop Follow" : "Follow me"}
                 </button>
-                {error && <span className="locate-error">{error}</span>}
+                {error && <span className={styles["locate-error"]}>{error}</span>}
             </div>
 
             {/* draw dot + accuracy */}

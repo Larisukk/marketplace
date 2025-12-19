@@ -1,0 +1,15 @@
+
+> frontend@0.0.0 build
+> tsc && vite build
+
+src/pages/listingpage/ListingPage.tsx(222,26): error TS18048: 'details.lat' is possibly 'undefined'.
+src/pages/listingpage/ListingPage.tsx(222,52): error TS18048: 'details.lon' is possibly 'undefined'.
+src/pages/listingpage/ListingPage.tsx(367,30): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/pages/listingpage/ListingPage.tsx(367,43): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/pages/listingpage/ListingPage.tsx(376,40): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/pages/listingpage/ListingPage.tsx(376,53): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/services/chatApi.ts(32,3): error TS2739: Type 'IPromise<never>' is missing the following properties from type 'Promise<ConversationDTO>': finally, [Symbol.toStringTag]

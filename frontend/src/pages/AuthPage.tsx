@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import "../auth.css";
+import styles from "../auth.module.css";
 
 type FloatingFieldProps = {
     id: string;
@@ -14,14 +14,14 @@ type FloatingFieldProps = {
 };
 
 function FloatingField({
-                           id, label, type = "text", value, onChange, autoComplete,
-                       }: FloatingFieldProps) {
+    id, label, type = "text", value, onChange, autoComplete,
+}: FloatingFieldProps) {
     return (
-        <div className="field">
+        <div className={styles.field}>
             {/* one space for :placeholder-shown */}
             <input
                 id={id}
-                className="input floating"
+                className={`${styles.input} ${styles.floating}`}
                 type={type}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
@@ -30,7 +30,7 @@ function FloatingField({
                 required
             />
 
-            <label htmlFor={id} className="flabel">{label}</label>
+            <label htmlFor={id} className={styles.flabel}>{label}</label>
         </div>
     );
 }
@@ -45,18 +45,18 @@ export default function AuthPage() {
     }
 
     return (
-        <div className="auth-wrap">
+        <div className={styles['auth-wrap']}>
             {/* left hero image */}
-            <div className="hero-left" aria-hidden />
+            <div className={styles['hero-left']} aria-hidden />
 
             {/* ---- RIGHT COLUMN: LOGO + CARD, with fixed gap (no overlap) ---- */}
-            <div className="right-stack">
-                <div className="logo-floating">
-                    <img src="/logo.png" alt="BioBuy" className="logo" />
+            <div className={styles['right-stack']}>
+                <div className={styles['logo-floating']}>
+                    <img src="/logo.png" alt="BioBuy" className={styles.logo} />
                 </div>
 
-                <div className="card single">
-                    <div className="right compact">
+                <div className={`${styles.card} ${styles.single}`}>
+                    <div className={`${styles.right} ${styles.compact}`}>
                         <Tabs tab={tab} onChange={switchTab} />
                         {tab === "signup" ? <SignupForm key="signup" /> : <LoginForm key="login" />}
                         <FooterNote />
@@ -68,15 +68,15 @@ export default function AuthPage() {
 }
 
 function Tabs({
-                  tab,
-                  onChange,
-              }: { tab: "signup" | "login"; onChange: (t: "signup" | "login") => void }) {
+    tab,
+    onChange,
+}: { tab: "signup" | "login"; onChange: (t: "signup" | "login") => void }) {
     return (
-        <div className="tabs" data-active={tab}>
-            <button type="button" className="tab" onClick={() => onChange("signup")}>
+        <div className={styles.tabs} data-active={tab}>
+            <button type="button" className={styles.tab} onClick={() => onChange("signup")}>
                 Înscrieți-vă
             </button>
-            <button type="button" className="tab" onClick={() => onChange("login")}>
+            <button type="button" className={styles.tab} onClick={() => onChange("login")}>
                 Conectare
             </button>
         </div>
@@ -103,8 +103,8 @@ function LoginForm() {
     }
 
     return (
-        <form onSubmit={onSubmit} className="form">
-            {error && <div className="error">{error}</div>}
+        <form onSubmit={onSubmit} className={styles.form}>
+            {error && <div className={styles.error}>{error}</div>}
 
             <FloatingField
                 id="login-email"
@@ -124,7 +124,7 @@ function LoginForm() {
                 autoComplete="current-password"
             />
 
-            <button type="submit" disabled={loading} className="btn">
+            <button type="submit" disabled={loading} className={styles.btn}>
                 {loading ? "Se conectează…" : "Conectați-vă"}
             </button>
         </form>
@@ -142,11 +142,11 @@ function SignupForm() {
 
     // UI rules (aligned with backend regex spirit)
     const rules = [
-        { id: "len",   ok: password.length >= 8 && password.length <= 64, label: "Minim 8 și maxim 64 de caractere" },
-        { id: "lower", ok: /[a-z]/.test(password),                          label: "Cel puțin o literă mică (a-z)" },
-        { id: "upper", ok: /[A-Z]/.test(password),                          label: "Cel puțin o literă mare (A-Z)" },
-        { id: "digit", ok: /\d/.test(password),                             label: "Cel puțin o cifră (0-9)" },
-        { id: "symb",  ok: /[^\w\s]/.test(password),                        label: "Cel puțin un simbol (!@#$% etc.)" },
+        { id: "len", ok: password.length >= 8 && password.length <= 64, label: "Minim 8 și maxim 64 de caractere" },
+        { id: "lower", ok: /[a-z]/.test(password), label: "Cel puțin o literă mică (a-z)" },
+        { id: "upper", ok: /[A-Z]/.test(password), label: "Cel puțin o literă mare (A-Z)" },
+        { id: "digit", ok: /\d/.test(password), label: "Cel puțin o cifră (0-9)" },
+        { id: "symb", ok: /[^\w\s]/.test(password), label: "Cel puțin un simbol (!@#$% etc.)" },
     ];
     const allOk = rules.every(r => r.ok);
     const unmet = rules.filter(r => !r.ok);
@@ -168,8 +168,8 @@ function SignupForm() {
     }
 
     return (
-        <form onSubmit={onSubmit} className="form">
-            {error && <div className="error">{error}</div>}
+        <form onSubmit={onSubmit} className={styles.form}>
+            {error && <div className={styles.error}>{error}</div>}
 
             <FloatingField
                 id="signup-name"
@@ -198,14 +198,14 @@ function SignupForm() {
             />
 
             {showUnmet && (
-                <ul className="pw-rules">
+                <ul className={styles['pw-rules']}>
                     {unmet.map(r => (
                         <li key={r.id} data-ok="false">{r.label}</li>
                     ))}
                 </ul>
             )}
 
-            <button type="submit" disabled={loading} className="btn">
+            <button type="submit" disabled={loading} className={styles.btn}>
                 {loading ? "Se înregistrează…" : "Înregistrați-vă"}
             </button>
         </form>
@@ -214,7 +214,7 @@ function SignupForm() {
 
 function FooterNote() {
     return (
-        <p className="note">
+        <p className={styles.note}>
             Continuând, accepți termenii și politica noastră de confidențialitate.
             Autentificare doar prin contul creat în aplicație.
         </p>

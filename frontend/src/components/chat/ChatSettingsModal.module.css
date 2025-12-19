@@ -1,0 +1,130 @@
+/* src/components/chat/ChatSettingsModal.module.css */
+
+.chat-settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.chat-settings-modal {
+    background: var(--bg-panel);
+    color: var(--text-primary);
+    width: 90%;
+    max-width: 400px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    padding: 24px;
+    animation: scaleIn 0.2s ease-out;
+    border: 1px solid var(--border-light);
+}
+
+.chat-settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.chat-settings-header h3 {
+    margin: 0;
+    font-size: 1.25em;
+    font-weight: 700;
+}
+
+.chat-settings-close {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 4px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    display: flex;
+}
+
+.chat-settings-close:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.chat-settings-section {
+    margin-bottom: 24px;
+}
+
+.chat-settings-section h4 {
+    margin: 0 0 12px;
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.chat-settings-options {
+    display: flex;
+    gap: 12px;
+}
+
+.chat-option-btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--text-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95em;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.chat-option-btn:hover {
+    background: var(--hover-bg);
+    border-color: var(--text-secondary);
+}
+
+.chat-option-btn.active {
+    background: var(--accent-color);
+    color: #ffffff;
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from "../context/AuthContext";
+import styles from "../header/MainHeader.module.css";
 
 const COLORS = {
     DARK_GREEN: '#0F2A1D',
@@ -116,21 +117,21 @@ const Header: React.FC = () => {
     return (
         <>
             {showLoginPopup && (
-                <div className="login-required-overlay">
-                    <div className="login-required-popup">
+                <div className={styles['login-required-overlay']}>
+                    <div className={styles['login-required-popup']}>
                         <h2>Trebuie să fii conectat</h2>
                         <p>Conectează-te pentru a accesa această funcție.</p>
 
-                        <div className="login-required-buttons">
+                        <div className={styles['login-required-buttons']}>
                             <button
-                                className="login-required-confirm"
+                                className={styles['login-required-confirm']}
                                 onClick={() => (window.location.href = "/auth")}
                             >
                                 Conectează-te
                             </button>
 
                             <button
-                                className="login-required-cancel"
+                                className={styles['login-required-cancel']}
                                 onClick={() => setShowLoginPopup(false)}
                             >
                                 Anulează
@@ -142,57 +143,57 @@ const Header: React.FC = () => {
 
             <header
                 ref={headerRef}
-                className={`main-header ${isSearchVisible ? 'search-visible' : ''}`}
+                className={`${styles['main-header']} ${isSearchVisible ? styles['search-visible'] : ''}`}
                 style={{ backgroundColor: COLORS.ACCENT_GREEN }}
             >
-                <div className="header-top-row">
-                    <div className="left-group">
-                        <button className="menu-icon-btn" aria-label="Open menu" style={{ color: COLORS.DARK_GREEN }} onClick={toggleMenu}>
-                            <span className="icon">☰</span>
+                <div className={styles['header-top-row']}>
+                    <div className={styles['left-group']}>
+                        <button className={styles['menu-icon-btn']} aria-label="Open menu" style={{ color: COLORS.DARK_GREEN }} onClick={toggleMenu}>
+                            <span className={styles['icon']}>☰</span>
                         </button>
                     </div>
 
-                    <div className="icon-links">
+                    <div className={styles['icon-links']}>
                         {!user && (
-                            <a href="/auth" className="login-button" aria-label="Conectare sau Autentificare">
-                                <img src="/profile.png" alt="Pictogramă profil" className="icon" />
+                            <a href="/auth" className={styles['login-button']} aria-label="Conectare sau Autentificare">
+                                <img src="/profile.png" alt="Pictogramă profil" className={styles['icon']} />
                                 Conectare
                             </a>
                         )}
                     </div>
                 </div>
 
-                <nav className="main-nav">
-                    <div className="header-search-bar">
+                <nav className={styles['main-nav']}>
+                    <div className={styles['header-search-bar']}>
                         <input type="text" placeholder="Ce produse locale cauți?" />
-                        <span className="divider"></span>
+                        <span className={styles['divider']}></span>
 
                         <CountySelect
                             selectedCounty={headerCounty}
                             onSelectCounty={setHeaderCounty}
-                            className="header-location-select"
+                            className={styles['header-location-select']}
                         />
 
-                        <span className="divider"></span>
-                        <button className="search-button">Căutare</button>
+                        <span className={styles['divider']}></span>
+                        <button className={styles['search-button']}>Căutare</button>
                     </div>
                 </nav>
             </header>
 
             <nav
-                className={`vertical-menu ${isMenuOpen ? 'open' : ''}`}
+                className={`${styles['vertical-menu']} ${isMenuOpen ? styles['open'] : ''}`}
                 style={{ backgroundColor: COLORS.ACCENT_GREEN }}
             >
-                <div className="menu-header">
-                    <span className="menu-title">Meniu</span>
-                    <button className="close-menu-btn" aria-label="Close menu" onClick={toggleMenu}>
+                <div className={styles['menu-header']}>
+                    <span className={styles['menu-title']}>Meniu</span>
+                    <button className={styles['close-menu-btn']} aria-label="Close menu" onClick={toggleMenu}>
                         &times;
                     </button>
                 </div>
 
-                <div className="menu-links">
+                <div className={styles['menu-links']}>
                     <div
-                        className="menu-link"
+                        className={styles['menu-link']}
                         onClick={() => {
                             if (!user) setShowLoginPopup(true);
                             else window.location.href = "/profile";
@@ -201,10 +202,10 @@ const Header: React.FC = () => {
                         Profilul meu
                     </div>
 
-                    <a href="/produse" className="menu-link">Produse</a>
+                    <a href="/produse" className={styles['menu-link']}>Produse</a>
 
                     <div
-                        className="menu-link"
+                        className={styles['menu-link']}
                         onClick={() => {
                             if (!user) setShowLoginPopup(true);
                             else window.location.href = "/upload";
@@ -215,7 +216,7 @@ const Header: React.FC = () => {
                 </div>
             </nav>
 
-            {isMenuOpen && <div className="menu-overlay" onClick={toggleMenu}></div>}
+            {isMenuOpen && <div className={styles['menu-overlay']} onClick={toggleMenu}></div>}
         </>
     );
 };

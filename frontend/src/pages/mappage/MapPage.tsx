@@ -2,8 +2,8 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import MapBox, { type Bbox, type Point } from "../../components/MapBox";
 import Header from "../../components/Header";
-import "./MapPage.css";
-import "../homePage/styles.css";
+import styles from "./MapPage.module.css";
+// import "../homePage/styles.css"; // Removed as it was refactored/moved
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { searchListings } from "@/services/searchApi";
@@ -230,19 +230,19 @@ export default function MapPage() {
     }
 
     return (
-        <div className="mapPage">
+        <div className={styles['mapPage']}>
             <Header />
             {/* Top bar: title */}
-            <header className="mapPage-header">
-                <h2 className="mapPage-title">BioBuy Map</h2>
+            <header className={styles['mapPage-header']}>
+                <h2 className={styles['mapPage-title']}>BioBuy Map</h2>
             </header>
 
             {/* Main layout: left search + list, right map */}
-            <div className="mapPage-content">
+            <div className={styles['mapPage-content']}>
                 {/* LEFT: search panel + results */}
-                <section className="mapPage-list">
-                    <form className="mapPage-filters" onSubmit={handleSubmit}>
-                        <div className="mapPage-field">
+                <section className={styles['mapPage-list']}>
+                    <form className={styles['mapPage-filters']} onSubmit={handleSubmit}>
+                        <div className={styles['mapPage-field']}>
                             <label>Search</label>
                             <input
                                 type="text"
@@ -254,8 +254,8 @@ export default function MapPage() {
                             />
                         </div>
 
-                        <div className="mapPage-fieldRow">
-                            <div className="mapPage-field">
+                        <div className={styles['mapPage-fieldRow']}>
+                            <div className={styles['mapPage-field']}>
                                 <label>Min price</label>
                                 <input
                                     type="number"
@@ -269,7 +269,7 @@ export default function MapPage() {
                                     }
                                 />
                             </div>
-                            <div className="mapPage-field">
+                            <div className={styles['mapPage-field']}>
                                 <label>Max price</label>
                                 <input
                                     type="number"
@@ -286,14 +286,14 @@ export default function MapPage() {
                         </div>
 
                         {/* Sort buttons: Newest / Oldest / Price ↑ / Price ↓ */}
-                        <div className="mapPage-sortGroup">
-                            <span className="mapPage-sortLabel">Sort by:</span>
+                        <div className={styles['mapPage-sortGroup']}>
+                            <span className={styles['mapPage-sortLabel']}>Sort by:</span>
                             <button
                                 type="button"
                                 className={
-                                    "mapPage-sortBtn" +
+                                    styles['mapPage-sortBtn'] +
                                     (filters.sort === "createdAt,desc"
-                                        ? " mapPage-sortBtn--active"
+                                        ? ` ${styles['mapPage-sortBtn--active']}`
                                         : "")
                                 }
                                 onClick={() => updateSort("createdAt,desc")}
@@ -303,9 +303,9 @@ export default function MapPage() {
                             <button
                                 type="button"
                                 className={
-                                    "mapPage-sortBtn" +
+                                    styles['mapPage-sortBtn'] +
                                     (filters.sort === "createdAt,asc"
-                                        ? " mapPage-sortBtn--active"
+                                        ? ` ${styles['mapPage-sortBtn--active']}`
                                         : "")
                                 }
                                 onClick={() => updateSort("createdAt,asc")}
@@ -315,9 +315,9 @@ export default function MapPage() {
                             <button
                                 type="button"
                                 className={
-                                    "mapPage-sortBtn" +
+                                    styles['mapPage-sortBtn'] +
                                     (filters.sort === "price,asc"
-                                        ? " mapPage-sortBtn--active"
+                                        ? ` ${styles['mapPage-sortBtn--active']}`
                                         : "")
                                 }
                                 onClick={() => updateSort("price,asc")}
@@ -327,9 +327,9 @@ export default function MapPage() {
                             <button
                                 type="button"
                                 className={
-                                    "mapPage-sortBtn" +
+                                    styles['mapPage-sortBtn'] +
                                     (filters.sort === "price,desc"
-                                        ? " mapPage-sortBtn--active"
+                                        ? ` ${styles['mapPage-sortBtn--active']}`
                                         : "")
                                 }
                                 onClick={() => updateSort("price,desc")}
@@ -338,8 +338,8 @@ export default function MapPage() {
                             </button>
                         </div>
 
-                        <div className="mapPage-fieldRow mapPage-fieldRow-bottom">
-                            <label className="mapPage-checkbox">
+                        <div className={`${styles['mapPage-fieldRow']} ${styles['mapPage-fieldRow-bottom']}`}>
+                            <label className={styles['mapPage-checkbox']}>
                                 <input
                                     type="checkbox"
                                     checked={filters.available}
@@ -353,7 +353,7 @@ export default function MapPage() {
                                 Only available
                             </label>
 
-                            <div className="mapPage-filterButtons">
+                            <div className={styles['mapPage-filterButtons']}>
                                 <button type="submit" disabled={loading || !bbox}>
                                     {loading ? "Loading..." : "Search"}
                                 </button>
@@ -369,38 +369,38 @@ export default function MapPage() {
                     </form>
 
                     {/* Active filter chips */}
-                    <div className="mapPage-chips">
+                    <div className={styles['mapPage-chips']}>
                         {filters.q && (
-                            <span className="chip chip-main">
+                            <span className={`${styles['chip']} ${styles['chip-main']}`}>
                                 q: "{filters.q}"
                             </span>
                         )}
                         {filters.minPrice && (
-                            <span className="chip">min {filters.minPrice}</span>
+                            <span className={styles['chip']}>min {filters.minPrice}</span>
                         )}
                         {filters.maxPrice && (
-                            <span className="chip">max {filters.maxPrice}</span>
+                            <span className={styles['chip']}>max {filters.maxPrice}</span>
                         )}
                         {filters.available && (
-                            <span className="chip chip-available">
+                            <span className={`${styles['chip']} ${styles['chip-available']}`}>
                                 available
                             </span>
                         )}
                     </div>
 
                     {/* List header info */}
-                    <div className="mapPage-listHeader">
-                        <div className="mapPage-listInfo">
+                    <div className={styles['mapPage-listHeader']}>
+                        <div className={styles['mapPage-listInfo']}>
                             Total: <b>{total}</b> • Page {page + 1} / {totalPages}
                         </div>
                     </div>
 
                     {loading && listings.length === 0 && (
-                        <div className="mapPage-status">Loading...</div>
+                        <div className={styles['mapPage-status']}>Loading...</div>
                     )}
-                    {error && <div className="mapPage-error">{error}</div>}
+                    {error && <div className={styles['mapPage-error']}>{error}</div>}
                     {!loading && !error && listings.length === 0 && (
-                        <div className="mapPage-status">
+                        <div className={styles['mapPage-status']}>
                             No listings in this area. Move the map or adjust
                             filters.
                         </div>
@@ -412,26 +412,26 @@ export default function MapPage() {
                         <article
                             key={l.id}
                             className={
-                                "mapPage-card" +
+                                styles['mapPage-card'] +
                                 (activeId === l.id
-                                    ? " mapPage-card--active"
+                                    ? ` ${styles['mapPage-card--active']}`
                                     : "")
                             }
                             onClick={() => handleCardClick(l)}
                         >
                             {l.thumbnailUrl && (
-                                <div className="mapPage-card-thumb">
+                                <div className={styles['mapPage-card-thumb']}>
                                     <img src={l.thumbnailUrl} alt={l.title} />
                                 </div>
                             )}
 
-                            <div className="mapPage-card-body">
-                                <h3 className="mapPage-card-title">
+                            <div className={styles['mapPage-card-body']}>
+                                <h3 className={styles['mapPage-card-title']}>
                                     {l.title}
                                 </h3>
 
                                 {(l as any).farmerName && (
-                                    <div className="mapPage-card-meta">
+                                    <div className={styles['mapPage-card-meta']}>
                                         Farmer:{" "}
                                         <strong>
                                             {(l as any).farmerName}
@@ -440,33 +440,33 @@ export default function MapPage() {
                                 )}
 
                                 {(l as any).description && (
-                                    <p className="mapPage-card-desc">
+                                    <p className={styles['mapPage-card-desc']}>
                                         {(l as any).description}
                                     </p>
                                 )}
 
-                                <div className="mapPage-card-footer">
+                                <div className={styles['mapPage-card-footer']}>
                                     {l.priceCents != null && l.currency && (
-                                        <span className="mapPage-card-price">
-                        {(l.priceCents / 100).toFixed(0)}{" "}
+                                        <span className={styles['mapPage-card-price']}>
+                                            {(l.priceCents / 100).toFixed(0)}{" "}
                                             {l.currency}
-                    </span>
+                                        </span>
                                     )}
 
                                     {l.productName && (
-                                        <span className="mapPage-card-tag">
-                        {l.productName}
-                    </span>
+                                        <span className={styles['mapPage-card-tag']}>
+                                            {l.productName}
+                                        </span>
                                     )}
                                     {l.categoryName && (
-                                        <span className="mapPage-card-tag">
-                        {l.categoryName}
-                    </span>
+                                        <span className={styles['mapPage-card-tag']}>
+                                            {l.categoryName}
+                                        </span>
                                     )}
                                 </div>
 
                                 {/* 👇 NEW BUTTON GOES HERE */}
-                                <div className="mapPage-card-actions">
+                                <div className={styles['mapPage-card-actions']}>
                                     <button
                                         type="button"
                                         onClick={(e) => {
@@ -484,7 +484,7 @@ export default function MapPage() {
 
                     {/* Pagination – show whenever we have at least one result */}
                     {total > 0 && (
-                        <div className="mapPage-pagination">
+                        <div className={styles['mapPage-pagination']}>
                             <button
                                 type="button"
                                 onClick={handlePrevPage}
@@ -507,12 +507,13 @@ export default function MapPage() {
                 </section>
 
                 {/* RIGHT: map */}
-                <section className="mapPage-mapWrapper">
+                <section className={styles['mapPage-mapWrapper']}>
                     <MapBox
                         center={mapCenter}
                         points={points}
                         onBboxChange={handleBboxChange}
                         activeId={activeId}
+                        className={styles['mapPage-map']}
                     />
                 </section>
             </div>

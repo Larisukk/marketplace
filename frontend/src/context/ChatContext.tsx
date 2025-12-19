@@ -143,7 +143,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     (id: UUID) => {
       setActiveConversationId(id);
       // Check if messages are already loaded using ref
-      if (!messagesRef.current[id]) {
+      // Only fetch if we have a valid ID (not null/undefined)
+      if (id && !messagesRef.current[id]) {
         void loadMessages(id);
       }
     },
