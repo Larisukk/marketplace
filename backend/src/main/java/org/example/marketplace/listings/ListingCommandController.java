@@ -34,8 +34,10 @@ public class ListingCommandController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void uploadImages(
             @PathVariable UUID listingId,
-            @RequestParam("files") List<MultipartFile> files
+            @RequestParam("files") List<MultipartFile> files,
+            Authentication authentication
     ) throws IOException {
-        listings.uploadListingImages(listingId, files);
+        String email = authentication.getName();
+        listings.uploadListingImages(listingId, files, email);
     }
 }

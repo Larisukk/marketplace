@@ -7,7 +7,9 @@ import {
     useMapEvents,
 } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
+import { useNavigate } from "react-router-dom";
 import { listingService } from "../services/listings";
+import styles from "../pages/uploadProductPage/UploadProduct.module.css";
 
 const categories = [
     { value: "fructe", label: "Fructe" },
@@ -66,7 +68,9 @@ const LocationMarker: React.FC<LocationMarkerProps> = ({ position, onSelect }) =
 };
 
 const UploadProduct: React.FC = () => {
+    const navigate = useNavigate();
     const [photos, setPhotos] = useState<File[]>([]);
+    const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
     const [category, setCategory] = useState("");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -92,9 +96,38 @@ const UploadProduct: React.FC = () => {
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
-            setPhotos(Array.from(event.target.files));
+            const files = Array.from(event.target.files);
+            setPhotos(files);
+
+            // Create preview URLs
+            const previews = files.map(file => URL.createObjectURL(file));
+            setPhotoPreviews(previews);
         }
     };
+
+    const removePhoto = (index: number) => {
+        // Revoke the object URL to free memory
+        URL.revokeObjectURL(photoPreviews[index]);
+
+        const newPhotos = photos.filter((_, i) => i !== index);
+        const newPreviews = photoPreviews.filter((_, i) => i !== index);
+        setPhotos(newPhotos);
+        setPhotoPreviews(newPreviews);
+    };
+
+    // Clean up object URLs on unmount
+    useEffect(() => {
+        return () => {
+            // Clean up all preview URLs when component unmounts
+            photoPreviews.forEach(url => {
+                try {
+                    URL.revokeObjectURL(url);
+                } catch (e) {
+                    // Ignore errors when revoking URLs
+                }
+            });
+        };
+    }, []); // Only run cleanup on unmount
 
     // search city: first try our suggestion list, then fall back to OSM geocoding
     const handleCitySearch = async () => {
@@ -209,8 +242,12 @@ const UploadProduct: React.FC = () => {
 
             await listingService.uploadImages(id, photos);
 
+            // Clean up preview URLs
+            photoPreviews.forEach(url => URL.revokeObjectURL(url));
+
             setSubmitSuccess(true);
             setPhotos([]);
+            setPhotoPreviews([]);
             setCategory("");
             setTitle("");
             setDescription("");
@@ -220,12 +257,24 @@ const UploadProduct: React.FC = () => {
             setLat(null);
             setLon(null);
             setMapCenter([45.9432, 24.9668]);
+
+            // Navigate to the new listing after a short delay
+            setTimeout(() => {
+                navigate(`/listings/${id}`);
+            }, 1500);
         } catch (e: any) {
-            setSubmitError(
-                e?.response?.data?.message ??
-                e?.message ??
-                "A apărut o eroare la publicarea anunțului."
-            );
+            console.error("Upload error:", e);
+            let errorMessage = "A apărut o eroare la publicarea anunțului.";
+
+            if (e?.response?.data?.message) {
+                errorMessage = e.response.data.message;
+            } else if (e?.message) {
+                errorMessage = e.message;
+            } else if (typeof e === 'string') {
+                errorMessage = e;
+            }
+
+            setSubmitError(errorMessage);
         } finally {
             setSubmitting(false);
         }
@@ -257,23 +306,23 @@ const UploadProduct: React.FC = () => {
         lat != null && lon != null ? [lat, lon] : null;
 
     return (
-        <div className="upload-form-container">
+        <div className={styles['upload-form-container']}>
             <form onSubmit={handleSubmit}>
-                {submitError && <div className="form-error">{submitError}</div>}
+                {submitError && <div className={styles['form-error']}>{submitError}</div>}
                 {submitSuccess && (
-                    <div className="form-success">Anunțul a fost publicat cu succes.</div>
+                    <div className={styles['form-success']}>Anunțul a fost publicat cu succes.</div>
                 )}
 
                 {/* FOTO */}
-                <div className="form-section photo-upload-section">
-                    <label htmlFor="photo-upload" className="photo-upload-label">
+                <div className={`${styles['form-section']} ${styles['photo-upload-section']}`}>
+                    <label htmlFor="photo-upload" className={styles['photo-upload-label']}>
                         {photos.length === 0 ? (
                             <>
-                                <span className="plus-icon">+</span>
+                                <span className={styles['plus-icon']}>+</span>
                                 <span>Încărcare fotografii</span>
                             </>
                         ) : (
-                            <p>{photos.length} fotografii selectate</p>
+                            <span>{photos.length} {photos.length === 1 ? 'fotografie selectată' : 'fotografii selectate'}</span>
                         )}
                     </label>
                     <input
@@ -284,33 +333,81 @@ const UploadProduct: React.FC = () => {
                         onChange={handleFileChange}
                         style={{ display: "none" }}
                     />
+
+                    {photoPreviews.length > 0 && (
+                        <div style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
+                            gap: "10px",
+                            marginTop: "15px"
+                        }}>
+                            {photoPreviews.map((preview, index) => (
+                                <div key={index} style={{ position: "relative" }}>
+                                    <img
+                                        src={preview}
+                                        alt={`Preview ${index + 1}`}
+                                        style={{
+                                            width: "100%",
+                                            height: "100px",
+                                            objectFit: "cover",
+                                            borderRadius: "8px",
+                                            border: "1px solid #dfe1e5"
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => removePhoto(index)}
+                                        style={{
+                                            position: "absolute",
+                                            top: "5px",
+                                            right: "5px",
+                                            background: "rgba(0,0,0,0.7)",
+                                            color: "white",
+                                            border: "none",
+                                            borderRadius: "50%",
+                                            width: "24px",
+                                            height: "24px",
+                                            cursor: "pointer",
+                                            fontSize: "16px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            lineHeight: "1"
+                                        }}
+                                        aria-label="Remove photo"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* CATEGORIE */}
-                <div className="form-section category-select-wrapper" ref={categoryDropdownRef}>
+                <div className={`${styles['form-section']} ${styles['category-select-wrapper']}`} ref={categoryDropdownRef}>
                     <label>Categorie</label>
 
                     <div
-                        className="category-select-display"
+                        className={styles['category-select-display']}
                         onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
                         aria-expanded={isCategoryDropdownOpen}
                     >
-            <span
-                className={`category-display-text ${!category ? "placeholder" : ""}`}
-            >
-              {selectedCategoryLabel || "Selectează o categorie"}
-            </span>
-                        <span className="dropdown-arrow">▼</span>
+                        <span
+                            className={`${styles['category-display-text']} ${!category ? styles['placeholder'] : ""}`}
+                        >
+                            {selectedCategoryLabel || "Selectează o categorie"}
+                        </span>
+                        <span className={styles['dropdown-arrow']}>▼</span>
                     </div>
 
                     {isCategoryDropdownOpen && (
-                        <div className="category-select-dropdown">
+                        <div className={styles['category-select-dropdown']}>
                             {categories.map((cat) => (
                                 <div
                                     key={cat.value}
-                                    className={`category-select-option ${
-                                        category === cat.value ? "selected" : ""
-                                    }`}
+                                    className={`${styles['category-select-option']} ${category === cat.value ? styles['selected'] : ""
+                                        }`}
                                     onClick={() => {
                                         setCategory(cat.value);
                                         setIsCategoryDropdownOpen(false);
@@ -324,7 +421,7 @@ const UploadProduct: React.FC = () => {
                 </div>
 
                 {/* TITLU */}
-                <div className="form-section">
+                <div className={styles['form-section']}>
                     <label>Titlu</label>
                     <input
                         type="text"
@@ -335,7 +432,7 @@ const UploadProduct: React.FC = () => {
                 </div>
 
                 {/* DESCRIERE */}
-                <div className="form-section">
+                <div className={styles['form-section']}>
                     <label>Descrie articolul</label>
                     <textarea
                         rows={4}
@@ -346,7 +443,7 @@ const UploadProduct: React.FC = () => {
                 </div>
 
                 {/* LOCAȚIE – CĂUTARE ORAȘ + HARTĂ MICĂ */}
-                <div className="form-section">
+                <div className={styles['form-section']}>
                     <label>Locație pe hartă</label>
 
                     <div
@@ -421,35 +518,34 @@ const UploadProduct: React.FC = () => {
                     </div>
 
                     {lat != null && lon != null && (
-                        <p className="location-preview">
+                        <p className={styles['location-preview']}>
                             Locație selectată: Lat {lat.toFixed(5)}, Lon {lon.toFixed(5)}
                         </p>
                     )}
                 </div>
 
                 {/* UNITATE */}
-                <div className="form-section category-select-wrapper" ref={unitDropdownRef}>
+                <div className={`${styles['form-section']} ${styles['category-select-wrapper']}`} ref={unitDropdownRef}>
                     <label>Unitate</label>
 
                     <div
-                        className="category-select-display"
+                        className={styles['category-select-display']}
                         onClick={() => setIsUnitDropdownOpen(!isUnitDropdownOpen)}
                         aria-expanded={isUnitDropdownOpen}
                     >
-            <span className={`category-display-text ${!unit ? "placeholder" : ""}`}>
-              {selectedUnitLabel || "Selectează unitatea"}
-            </span>
-                        <span className="dropdown-arrow">▼</span>
+                        <span className={`${styles['category-display-text']} ${!unit ? styles['placeholder'] : ""}`}>
+                            {selectedUnitLabel || "Selectează unitatea"}
+                        </span>
+                        <span className={styles['dropdown-arrow']}>▼</span>
                     </div>
 
                     {isUnitDropdownOpen && (
-                        <div className="category-select-dropdown">
+                        <div className={styles['category-select-dropdown']}>
                             {unitOptions.map((u) => (
                                 <div
                                     key={u.value}
-                                    className={`category-select-option ${
-                                        unit === u.value ? "selected" : ""
-                                    }`}
+                                    className={`${styles['category-select-option']} ${unit === u.value ? styles['selected'] : ""
+                                        }`}
                                     onClick={() => {
                                         setUnit(u.value);
                                         setIsUnitDropdownOpen(false);
@@ -463,9 +559,9 @@ const UploadProduct: React.FC = () => {
                 </div>
 
                 {/* PREȚ */}
-                <div className="form-section">
+                <div className={styles['form-section']}>
                     <label>Preț</label>
-                    <div className="price-input-wrapper">
+                    <div className={styles['price-input-wrapper']}>
                         <input
                             type="text"
                             value={price}
@@ -480,11 +576,11 @@ const UploadProduct: React.FC = () => {
                                 }
                             }}
                         />
-                        <span className="currency-label">RON</span>
+                        <span className={styles['currency-label']}>RON</span>
                     </div>
                 </div>
 
-                <button type="submit" className="submit-product-btn" disabled={submitting}>
+                <button type="submit" className={styles['submit-product-btn']} disabled={submitting}>
                     {submitting ? "Se publică…" : "Publică Anunțul"}
                 </button>
             </form>

@@ -3,9 +3,9 @@ spring:
     name: marketplace
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASS}
+    url: jdbc:postgresql://localhost:5432/mydb
+    username: postgres
+    password: parola
     driver-class-name: org.postgresql.Driver
 
   jpa:

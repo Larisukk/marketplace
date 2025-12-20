@@ -11,6 +11,7 @@ import {
 import L, { type DivIcon, type LatLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import LocateMe from "./LocateMe";
+import styles from "./MapBox.module.css";
 
 import MarkerClusterGroup from "react-leaflet-cluster";
 
@@ -37,11 +38,13 @@ type MapBoxProps = {
     center: [number, number];
     points: Point[];
     onBboxChange: (bbox: Bbox) => void;
+    activeId?: string | null;
+    className?: string;
 };
 
 /* ---------- helpers ---------- */
 
-function createPriceIcon(p: Point): DivIcon {
+function createPriceIcon(p: Point, isActive: boolean): DivIcon {
     const hasPrice =
         p.priceCents !== null &&
         p.priceCents !== undefined &&
@@ -51,9 +54,11 @@ function createPriceIcon(p: Point): DivIcon {
         ? `${(p.priceCents! / 100).toFixed(0)} ${p.currency || "RON"}`
         : "•";
 
+    const activeClass = isActive ? ` ${styles["price-badge--active"]}` : "";
+
     return L.divIcon({
-        className: "price-marker",
-        html: `<div class="price-badge">${label}</div>`,
+        className: styles["price-marker"],
+        html: `<div class="${styles["price-badge"]}${activeClass}">${label}</div>`,
         iconSize: [0, 0],
         iconAnchor: [0, 0],
     });
@@ -61,14 +66,15 @@ function createPriceIcon(p: Point): DivIcon {
 
 /** Bubble cluster icon (green circle with count) */
 function createClusterIcon(
-    cluster: { getChildCount: () => number }  // <-- aici am înlocuit `any`
+    cluster: { getChildCount: () => number }
 ): DivIcon {
     const count = cluster.getChildCount();
 
     return L.divIcon({
-        html: `<div class="cluster-badge"><span>${count}</span></div>`,
-        // both classes so we override default markercluster CSS cleanly
-        className: "marker-cluster marker-cluster-badge",
+        html: `<div class="${styles["cluster-badge"]}"><span>${count}</span></div>`,
+        // We use our modular class for the badge, but retain 'marker-cluster' for leaflet cluster default behavior if needed
+        // shifting completely to modular class for the badge wrapper
+        className: `${styles["marker-cluster-badge"]}`,
         iconSize: [40, 40],
     });
 }
@@ -133,7 +139,7 @@ function CenterOnProp({ center }: { center: [number, number] }) {
 
 /* ---------- main component ---------- */
 
-export default function MapBox({ center, points, onBboxChange }: MapBoxProps) {
+export default function MapBox({ center, points, onBboxChange, activeId, className }: MapBoxProps) {
     const tileUrl =
         import.meta.env.VITE_TILE_URL ||
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -152,7 +158,7 @@ export default function MapBox({ center, points, onBboxChange }: MapBoxProps) {
             zoom={12}
             minZoom={4}
             scrollWheelZoom
-            className="mapPage-map fullOnDesktop"
+            className={`${styles['mapBox']} ${className || ''}`}
         >
             <TileLayer
                 url={tileUrl}
@@ -168,30 +174,33 @@ export default function MapBox({ center, points, onBboxChange }: MapBoxProps) {
                 chunkedLoading
                 iconCreateFunction={createClusterIcon}
             >
-                {validPoints.map((p) => (
-                    <Marker
-                        key={p.id}
-                        position={[p.lat, p.lon]}
-                        icon={createPriceIcon(p)}
-                    >
-                        <Popup>
-                            <strong>{p.title}</strong>
-                            <br />
-                            {p.productName}
-                            {p.priceCents != null && (
-                                <>
-                                    {" — "}
-                                    {(p.priceCents / 100).toFixed(2)}{" "}
-                                    {p.currency || "RON"}
-                                </>
-                            )}
-                            <br />
-                            {p.farmerName && (
-                                <small>Farmer: {p.farmerName}</small>
-                            )}
-                        </Popup>
-                    </Marker>
-                ))}
+                {validPoints.map((p) => {
+                    const isActive = activeId != null && p.id === activeId;
+                    return (
+                        <Marker
+                            key={p.id}
+                            position={[p.lat, p.lon]}
+                            icon={createPriceIcon(p, isActive)}
+                        >
+                            <Popup>
+                                <strong>{p.title}</strong>
+                                <br />
+                                {p.productName}
+                                {p.priceCents != null && (
+                                    <>
+                                        {" — "}
+                                        {(p.priceCents / 100).toFixed(2)}{" "}
+                                        {p.currency || "RON"}
+                                    </>
+                                )}
+                                <br />
+                                {p.farmerName && (
+                                    <small>Farmer: {p.farmerName}</small>
+                                )}
+                            </Popup>
+                        </Marker>
+                    );
+                })}
             </MarkerClusterGroup>
         </MapContainer>
     );

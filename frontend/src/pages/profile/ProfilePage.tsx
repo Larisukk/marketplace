@@ -1,21 +1,21 @@
 import React from "react";
 import MainHeader from "../../components/MainHeader";
 import Profile from "../../components/Profile";
-import "./Profile.css";
+import styles from "./Profile.module.css";
 
 export default function ProfilePage() {
     return (
-        <div className="profile-page-wrapper">
+        <div className={styles['profile-page-wrapper']}>
             <MainHeader />
 
-            <div className="profile-card-split">
+            <div className={styles['profile-card-split']}>
 
                 {/* STÂNGA */}
                 <Profile />
 
                 {/* DREAPTA — IMAGINEA DIN PUBLIC */}
                 <div
-                    className="profile-right-image"
+                    className={styles['profile-right-image']}
                     style={{
                         backgroundImage: `url("/box_photo.jpg")`,
                         backgroundSize: "cover",
