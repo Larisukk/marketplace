@@ -90,6 +90,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/map/**").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
+                        // ✅ ASTA ITI LIPSEA (poze)
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                        .requestMatchers(HttpMethod.HEAD, "/uploads/**").permitAll()
                         .anyRequest().authenticated()
 
                 )

@@ -8,23 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-/**
- * Concrete repository that runs optimized native SQL against PostgreSQL/PostGIS.
- *
- * Purpose:
- *  - Executes the actual queries with filters for text, price, availability, product/category,
- *    and spatial bbox (ST_Intersects on geography(Point,4326)).
- *  - Maps rows into the DTOs used by the API layer (ListingCardDto / ListingSummaryDto).
- *
- * How it connects:
- *  - Implements ListingSearchRepository, so the controller can depend on the interface.
- *  - Uses NamedParameterJdbcTemplate for clean parameter binding and easy testing.
- *
- * Notes on performance/indexes:
- *  - Spatial filter: uses GiST index on listings.location (geography).
- *  - Text filter: uses trigram GIN indexes on title/description/product name (ILIKE + trigrams).
- *  - Price/availability: standard B-tree indexes.
- */
 @Repository
 public class ListingSearchRepositoryImpl implements ListingSearchRepository {
 
@@ -34,8 +17,6 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
         this.jdbc = jdbc;
     }
 
-    // Shared FROM/JOIN/WHERE clause. Each condition is guarded with a parameter so the
-    // planner can still use indexes when values are present and ignore when null.
     private static final String BASE_FROM = """
     FROM public.listings l
     JOIN public.products p   ON p.id = l.product_id
@@ -65,10 +46,9 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
       ))
     """;
 
-
     @Override
     public List<ListingCardDto> search(String q, Integer minPrice, Integer maxPrice,
-                                       UUID productId, UUID categoryId, Boolean available,   // NOTE: Boolean (nullable)
+                                       UUID productId, UUID categoryId, Boolean available,
                                        Double w, Double s, Double e, Double n,
                                        int limit, int offset, String sortField, String sortDir) {
 
@@ -77,7 +57,6 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
             default -> "l.created_at";
         } + ("asc".equalsIgnoreCase(sortDir) ? " ASC" : " DESC");
 
-        // >>> FIX: ensure spaces around ORDER BY and before LIMIT
         String sql =
                 """
                 SELECT l.id, l.title,
@@ -94,21 +73,23 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                         " LIMIT :limit OFFSET :offset";
 
         MapSqlParameterSource p = baseParams(q, minPrice, maxPrice, productId, categoryId, available, w, s, e, n)
-                .addValue("limit", limit)
-                .addValue("offset", offset);
+                .addValue("limit", Math.max(1, limit))
+                .addValue("offset", Math.max(0, offset));
 
         return jdbc.query(sql, p, (rs, i) -> {
-            String thumb = rs.getString("thumbnail_url");
+            String thumb = rs.getString("thumbnail_url"); // expected "/uploads/...."
+            if (thumb != null && thumb.isBlank()) thumb = null;
+
             return new ListingCardDto(
                     UUID.fromString(rs.getString("id")),
                     rs.getString("title"),
-                    rs.getInt("price_cents"),
+                    (Integer) rs.getObject("price_cents"),
                     rs.getString("currency"),
-                    rs.getDouble("lon"),
-                    rs.getDouble("lat"),
+                    (Double) rs.getObject("lon"),
+                    (Double) rs.getObject("lat"),
                     rs.getString("product_name"),
                     rs.getString("category_name"),
-                    (thumb == null || thumb.isBlank()) ? null : thumb,
+                    thumb,
                     rs.getString("description"),
                     rs.getString("farmer_name")
             );
@@ -135,18 +116,18 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
             WHERE l.id = :id
             """;
         MapSqlParameterSource p = new MapSqlParameterSource().addValue("id", id);
+
         var list = jdbc.query(sql, p, (rs, i) -> new ListingSummaryDto(
                 UUID.fromString(rs.getString("id")),
                 rs.getString("title"),
                 rs.getDouble("lon"),
                 rs.getDouble("lat"),
-                rs.getInt("price_cents"),
+                (Integer) rs.getObject("price_cents"),
                 rs.getString("currency")
         ));
         return list.stream().findFirst();
     }
 
-    // Helper to bind all optional filters safely.
     private MapSqlParameterSource baseParams(String q, Integer minPrice, Integer maxPrice,
                                              UUID productId, UUID categoryId, Boolean available,
                                              Double w, Double s, Double e, Double n) {

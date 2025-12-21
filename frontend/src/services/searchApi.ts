@@ -2,6 +2,7 @@
 import axios from "axios";
 import type {
     ListingCardDto,
+    ListingMapDto,
     ListingSummaryDto,
     PageDto,
     UUID,
@@ -9,18 +10,15 @@ import type {
 
 // Axios instance
 const api = axios.create({
-    baseURL: "", // or import.meta.env.VITE_API_URL || ""
+    // dev: Vite proxy -> "/api"
+    baseURL: "/api",
     timeout: 12000,
-
-    // axios v1 expects paramsSerializer: (params: object) => string
     paramsSerializer: (params: any): string => {
         const sp = new URLSearchParams();
-        Object.entries(params as Record<string, unknown>).forEach(
-            ([key, value]) => {
-                if (value === undefined || value === null) return;
-                sp.append(key, String(value));
-            }
-        );
+        Object.entries(params as Record<string, unknown>).forEach(([key, value]) => {
+            if (value === undefined || value === null) return;
+            sp.append(key, String(value));
+        });
         return sp.toString();
     },
 });
@@ -30,8 +28,10 @@ api.interceptors.request.use((config) => {
     const token =
         localStorage.getItem("jwt") ||
         localStorage.getItem("token") ||
+        localStorage.getItem("accessToken") ||
         sessionStorage.getItem("jwt") ||
-        sessionStorage.getItem("token");
+        sessionStorage.getItem("token") ||
+        sessionStorage.getItem("accessToken");
 
     if (token) {
         config.headers = config.headers ?? {};
@@ -54,14 +54,9 @@ export interface SearchParams {
     sort?: "price,asc" | "price,desc" | "createdAt,asc" | "createdAt,desc";
 }
 
-// ----------------------
-//  NO async / await
-// ----------------------
-
 export function searchListings(params: SearchParams) {
-    return api
-        .get<PageDto<ListingCardDto>>("/api/search/search/listings", { params })
-        .then((r) => r.data);
+    // FINAL URL: /api/search/listings
+    return api.get<PageDto<ListingCardDto>>("/search/listings", { params }).then((r) => r.data);
 }
 
 export interface MapSearchParams {
@@ -76,11 +71,11 @@ export interface MapSearchParams {
 }
 
 export function searchListingsForMap(params: MapSearchParams) {
-    return api.get("/api/listings/map", { params }).then((r) => r.data);
+    // FINAL URL: /api/listings/map
+    return api.get<ListingMapDto[]>("/listings/map", { params }).then((r) => r.data);
 }
 
 export function getListingSummary(id: UUID) {
-    return api
-        .get<ListingSummaryDto>(`/api/search/listings/${id}/summary`)
-        .then((r) => r.data);
+    // FINAL URL: /api/search/listings/{id}/summary
+    return api.get<ListingSummaryDto>(`/search/listings/${id}/summary`).then((r) => r.data);
 }

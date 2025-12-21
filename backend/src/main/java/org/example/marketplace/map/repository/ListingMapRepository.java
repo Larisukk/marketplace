@@ -27,10 +27,31 @@ public class ListingMapRepository {
             Integer limit
     ) {
         StringBuilder sql = new StringBuilder("""
-            SELECT id::text, title, product_name, category_name, farmer_name,
-                   lat, lon, price_cents, currency, quantity, unit::text AS unit,
-                   available, address_text
-            FROM v_listings_public
+            SELECT
+                v.id::text,
+                v.title,
+                v.product_name,
+                v.category_name,
+                v.farmer_name,
+                v.lat,
+                v.lon,
+                v.price_cents,
+                v.currency,
+                v.quantity,
+                v.unit::text AS unit,
+                v.available,
+                v.address_text,
+
+                -- ✅ first image (lowest sort_order)
+                (
+                    SELECT ma.url
+                    FROM listing_images li
+                    JOIN media_assets ma ON ma.id = li.media_asset_id
+                    WHERE li.listing_id = v.id
+                    ORDER BY li.sort_order ASC
+                    LIMIT 1
+                ) AS image_url
+            FROM v_listings_public v
             WHERE 1=1
         """);
 
@@ -38,31 +59,31 @@ public class ListingMapRepository {
 
         if (q != null && !q.isBlank()) {
             sql.append("""
-                AND (title ILIKE :q OR product_name ILIKE :q OR farmer_name ILIKE :q OR address_text ILIKE :q)
+                AND (v.title ILIKE :q OR v.product_name ILIKE :q OR v.farmer_name ILIKE :q OR v.address_text ILIKE :q)
             """);
             p.addValue("q", "%" + q + "%");
         }
         if (category != null && !category.isBlank()) {
-            sql.append(" AND category_name = :cat ");
+            sql.append(" AND v.category_name = :cat ");
             p.addValue("cat", category);
         }
         if (available != null) {
-            sql.append(" AND available = :avail ");
+            sql.append(" AND v.available = :avail ");
             p.addValue("avail", available);
         }
         if (minLon != null && minLat != null && maxLon != null && maxLat != null) {
-            // Use lon/lat from v_listings_public; LEAST/GREATEST handle swapped bounds
+            // LEAST/GREATEST handle swapped bounds
             sql.append("""
-        AND lon BETWEEN LEAST(:minLon, :maxLon) AND GREATEST(:minLon, :maxLon)
-        AND lat BETWEEN LEAST(:minLat, :maxLat) AND GREATEST(:minLat, :maxLat)
-    """);
+                AND v.lon BETWEEN LEAST(:minLon, :maxLon) AND GREATEST(:minLon, :maxLon)
+                AND v.lat BETWEEN LEAST(:minLat, :maxLat) AND GREATEST(:minLat, :maxLat)
+            """);
             p.addValue("minLon", minLon);
             p.addValue("minLat", minLat);
             p.addValue("maxLon", maxLon);
             p.addValue("maxLat", maxLat);
         }
 
-        sql.append(" ORDER BY created_at DESC ");
+        sql.append(" ORDER BY v.created_at DESC ");
         sql.append(" LIMIT :lim ");
         p.addValue("lim", (limit == null || limit <= 0 || limit > 1000) ? 200 : limit);
 
@@ -79,7 +100,8 @@ public class ListingMapRepository {
                 rs.getObject("quantity") == null ? null : ((Number) rs.getObject("quantity")).doubleValue(),
                 rs.getString("unit"),
                 (Boolean) rs.getObject("available"),
-                rs.getString("address_text")
+                rs.getString("address_text"),
+                rs.getString("image_url")
         ));
     }
 

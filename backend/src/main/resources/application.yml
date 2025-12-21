@@ -33,6 +33,8 @@ server:
   port: 8080
 
 app:
+  upload:
+    dir: ${APP_UPLOAD_DIR:D:/biobuy/backend/uploads}
   jwt:
     secret: ${APP_JWT_SECRET}
     expiresSeconds: ${APP_JWT_EXPIRES:3600}
