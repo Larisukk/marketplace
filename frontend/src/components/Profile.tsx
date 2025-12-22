@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import "../pages/profile/profile.css";
+import styles from "../pages/profile/Profile.module.css";
 
 export default function Profile() {
     const { user, logout } = useAuth();
@@ -53,14 +53,14 @@ export default function Profile() {
     return (
         <>
             {showLogoutPopup && (
-                <div className="logout-overlay">
-                    <div className="logout-popup">
+                <div className={styles['logout-overlay']}>
+                    <div className={styles['logout-popup']}>
                         <h2>Sigur vrei să te deconectezi?</h2>
                         <p>Vei fi deconectat din contul tău.</p>
 
-                        <div className="logout-buttons">
+                        <div className={styles['logout-buttons']}>
                             <button
-                                className="logout-confirm"
+                                className={styles['logout-confirm']}
                                 onClick={() => {
                                     logout();
                                     navigate("/auth");
@@ -70,7 +70,7 @@ export default function Profile() {
                             </button>
 
                             <button
-                                className="logout-cancel"
+                                className={styles['logout-cancel']}
                                 onClick={() => setShowLogoutPopup(false)}
                             >
                                 Anulează
@@ -80,27 +80,27 @@ export default function Profile() {
                 </div>
             )}
 
-            <div className="profile-container">
-                <div className="settings-menu">
+            <div className={styles['profile-container']}>
+                <div className={styles['settings-menu']}>
                     <h3>Setări</h3>
 
                     <ul>
                         <li
-                            className={tab === "personal" ? "active" : ""}
+                            className={tab === "personal" ? styles['active'] : ""}
                             onClick={() => setTab("personal")}
                         >
                             Date personale
                         </li>
 
                         <li
-                            className={tab === "security" ? "active" : ""}
+                            className={tab === "security" ? styles['active'] : ""}
                             onClick={() => setTab("security")}
                         >
                             Securitate
                         </li>
 
                         <li
-                            className="logout-item"
+                            className={styles['logout-item']}
                             onClick={() => setShowLogoutPopup(true)}
                         >
                             Deconectare
@@ -108,17 +108,17 @@ export default function Profile() {
                     </ul>
                 </div>
 
-                <div className="profile-left-box">
+                <div className={styles['profile-left-box']}>
                     {tab === "personal" && (
                         <>
                             <h2>Datele contului</h2>
 
-                            <div className="profile-field">
+                            <div className={styles['profile-field']}>
                                 <label>Nume:</label>
                                 <p>{user?.displayName}</p>
                             </div>
 
-                            <div className="profile-field">
+                            <div className={styles['profile-field']}>
                                 <label>Email:</label>
                                 <p>{user?.email}</p>
                             </div>
@@ -129,7 +129,7 @@ export default function Profile() {
                         <>
                             <h2>Securitate</h2>
 
-                            <form onSubmit={handlePasswordChange} className="password-form">
+                            <form onSubmit={handlePasswordChange} className={styles['password-form']}>
                                 <label>Parola veche:</label>
                                 <input
                                     type="password"
@@ -151,10 +151,10 @@ export default function Profile() {
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                 />
 
-                                {error && <p className="error-msg">{error}</p>}
-                                {success && <p className="success-msg">{success}</p>}
+                                {error && <p className={styles['error-msg']}>{error}</p>}
+                                {success && <p className={styles['success-msg']}>{success}</p>}
 
-                                <button type="submit" className="change-pass-btn">
+                                <button type="submit" className={styles['change-pass-btn']}>
                                     Schimbă parola
                                 </button>
                             </form>
