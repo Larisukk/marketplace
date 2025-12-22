@@ -37,4 +37,11 @@ public interface ListingSearchRepository {
      * Returns a minimal summary for a listing (used to pan/open popup).
      */
     Optional<ListingSummaryDto> findSummaryById(UUID id);
+
+    /**
+     * Returns a full card/details view for a single listing (used by the details page).
+     * Reuses {@link ListingCardDto} because it already contains description, thumbnail,
+     * product/category and farmer display info.
+     */
+    Optional<ListingCardDto> findCardById(UUID id);
 }

@@ -3,6 +3,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { searchListings, getListingSummary, type SearchParams } from "@/services/searchApi";
 import type { ListingCardDto, PageDto } from "@/types/search";
 import type { JSX } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useChat } from "../hooks/useChat";
 
 function formatMoney(cents: number | undefined, ccy: string | undefined): string {
     if (cents == null) return "-";
@@ -20,6 +23,9 @@ const DEFAULT_PARAMS: SearchParams = {
 };
 
 export default function SearchTester(): JSX.Element {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const { actions } = useChat();
     const [params, setParams] = useState<SearchParams>(DEFAULT_PARAMS);
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -78,6 +84,22 @@ export default function SearchTester(): JSX.Element {
             const message = e instanceof Error ? e.message : "Failed to load summary";
             setError(message);
         }
+    };
+    // Open listing details page (no auth required; chat is started from ListingPage)
+    const openListingPage = async (item: ListingCardDto): Promise<void> => {
+        if (!item.farmerUserId) {
+            alert("Seller information is not available for this listing.");
+            return;
+        }
+
+        // Always allow opening the listing page, even if not logged in.
+        // Chat/login flow is handled inside ListingPage when the user presses "Start chat".
+        navigate(`/listings/${item.id}`, {
+            state: {
+                sellerId: item.farmerUserId,
+                autoStartChat: false,
+            },
+        });
     };
 
     const clearAll = () => {
@@ -233,23 +255,33 @@ export default function SearchTester(): JSX.Element {
                             <div className="mt-1">{formatMoney(it.priceCents, it.currency)}</div>
 
                             {it.lon != null && it.lat != null && (
-                                <div className="text-xs text-gray-500">lon:{it.lon.toFixed(5)} • lat:{it.lat.toFixed(5)}</div>
+                                <div className="text-xs text-gray-500">lon:{it.lon.toFixed(5)} •
+                                    lat:{it.lat.toFixed(5)}</div>
                             )}
 
                             {it.thumbnailUrl && (
-                                <img src={it.thumbnailUrl} alt="" className="mt-2 w-full h-28 object-cover rounded" />
+                                <img src={it.thumbnailUrl} alt="" className="mt-2 w-full h-28 object-cover rounded"/>
                             )}
 
                             <div className="mt-2 flex gap-2">
-                                <button className="border rounded px-2 py-1 text-sm" onClick={() => void onClickItem(it.id)}>
-                                    Get summary
+                                <button
+                                    className="border rounded px-2 py-1 text-sm"
+                                    onClick={() => void onClickItem(it.id)}
+                                >
+                                    Summary
                                 </button>
-                                {/* Optional: stash coords -> Map page can flyTo on next visit */}
-                                {it.lon != null && it.lat != null && (
+
+                                <button
+                                    className="border rounded px-2 py-1 text-sm"
+                                    onClick={() => void openListingPage(it)}
+                                >
+                                    Open listing page
+                                </button>
+
+                                {typeof window !== "undefined" && window.location.pathname !== "/map" && (
                                     <button
                                         className="border rounded px-2 py-1 text-sm"
                                         onClick={() => {
-                                            sessionStorage.setItem("map:flyTo", JSON.stringify({ lon: it.lon, lat: it.lat, id: it.id }));
                                             window.location.href = "/map";
                                         }}
                                     >

@@ -38,6 +38,45 @@ public class ListingCommandService {
         };
     }
 
+    private UUID findOrCreateCategory(String categoryCode) {
+        if (categoryCode == null || categoryCode.isBlank()) {
+            return null;
+        }
+
+        // Map Romanian category codes to English category names in database
+        String categoryName = switch (categoryCode.toLowerCase()) {
+            case "fructe" -> "Fruits";
+            case "legume" -> "Vegetables";
+            case "lactate" -> "Dairy";
+            case "oua" -> "Dairy";  // Eggs are under Dairy
+            case "altele" -> null;  // No category for "other"
+            default -> null;
+        };
+
+        if (categoryName == null) {
+            return null;  // No category mapping available
+        }
+
+        // Try to find existing category
+        try {
+            UUID categoryId = jdbc.queryForObject(
+                    "SELECT id FROM categories WHERE name = ? LIMIT 1",
+                    UUID.class,
+                    categoryName
+            );
+            return categoryId;
+        } catch (EmptyResultDataAccessException ex) {
+            // Category doesn't exist, create it
+            UUID newCategoryId = UUID.randomUUID();
+            jdbc.update(
+                    "INSERT INTO categories (id, name) VALUES (?, ?)",
+                    newCategoryId,
+                    categoryName
+            );
+            return newCategoryId;
+        }
+    }
+
     @Transactional
     public UUID createListing(CreateListingRequest req, String userEmail) {
         if (req.title() == null || req.title().isBlank()) {
@@ -61,13 +100,16 @@ public class ListingCommandService {
         // Map frontend unit ("kg", "l", "buc") → DB enum ("KG", "L", "BOX")
         String dbUnit = mapUnit(req.unit());
 
-        // 1) insert product (category_id left NULL for now)
+        // Find or create category based on categoryCode
+        UUID categoryId = findOrCreateCategory(req.categoryCode());
+
+        // 1) insert product with category_id
         jdbc.update(
                 """
                 INSERT INTO products (id, name, category_id)
-                VALUES (?, ?, NULL)
+                VALUES (?, ?, ?)
                 """,
-                productId, req.title()
+                productId, req.title(), categoryId
         );
 
         // 2) insert listing WITH location in the same statement
@@ -101,20 +143,29 @@ public class ListingCommandService {
     }
 
     @Transactional
-    public void uploadListingImages(UUID listingId, List<MultipartFile> files) throws IOException {
+    public void uploadListingImages(UUID listingId, List<MultipartFile> files, String userEmail) throws IOException {
         if (files == null || files.isEmpty()) {
             return;
         }
 
-        // Ensure listing exists
+        // Get user ID
+        UserEntity user = users.findByEmailIgnoreCase(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+
+        // Ensure listing exists and user owns it
+        UUID ownerId;
         try {
-            jdbc.queryForObject(
-                    "SELECT 1 FROM listings WHERE id = ?",
-                    Integer.class,
+            ownerId = jdbc.queryForObject(
+                    "SELECT farmer_user_id FROM listings WHERE id = ?",
+                    UUID.class,
                     listingId
             );
         } catch (EmptyResultDataAccessException ex) {
             throw new IllegalArgumentException("Listing not found: " + listingId);
+        }
+
+        if (!ownerId.equals(user.getId())) {
+            throw new IllegalArgumentException("You do not have permission to upload images to this listing");
         }
 
         Path uploadRoot = Paths.get("uploads");

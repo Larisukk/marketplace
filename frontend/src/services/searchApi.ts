@@ -1,11 +1,6 @@
 // frontend/src/services/searchApi.ts
 import axios from "axios";
-import type {
-    ListingCardDto,
-    ListingSummaryDto,
-    PageDto,
-    UUID,
-} from "@/types/search";
+import type { ListingCardDto, ListingSummaryDto, PageDto, UUID } from "@/types/search";
 
 // Axios instance
 const api = axios.create({
@@ -79,5 +74,11 @@ export function searchListingsForMap(params: MapSearchParams) {
 export function getListingSummary(id: UUID) {
     return api
         .get<ListingSummaryDto>(`/api/search/listings/${id}/summary`)
+        .then((r) => r.data);
+}
+
+export function getListingDetails(id: UUID) {
+    return api
+        .get<ListingCardDto>(`/api/search/listings/${id}`)
         .then((r) => r.data);
 }

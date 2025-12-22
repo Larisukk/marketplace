@@ -90,4 +90,15 @@ public class ListingSearchController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+    /**
+     * GET /api/listings/{id}
+     * Full card/details data for the listing details page.
+     */
+    @GetMapping("/listings/{id}")
+    public ResponseEntity<ListingCardDto> details(@PathVariable UUID id) {
+        return repo.findCardById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 }

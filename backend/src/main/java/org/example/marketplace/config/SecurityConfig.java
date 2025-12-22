@@ -8,6 +8,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
@@ -26,6 +27,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -78,7 +80,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // public
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <-- preflight liber
                         .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/verify-email").permitAll()
@@ -88,6 +91,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/map/**").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()  // Allow public access to uploaded images
+
+                        // chat endpoints (require authenticated user w/ role)
+                        .requestMatchers(HttpMethod.POST, "/api/chat/conversations/start").hasAnyRole("USER","FARMER","ADMIN")
+                        .requestMatchers(HttpMethod.GET,  "/api/chat/conversations").hasAnyRole("USER","FARMER","ADMIN")
+                        .requestMatchers(HttpMethod.GET,  "/api/chat/messages").hasAnyRole("USER","FARMER","ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/chat/messages").hasAnyRole("USER","FARMER","ADMIN")
+
+
                         .requestMatchers(HttpMethod.POST, "/api/support/**").permitAll()
 
                         .anyRequest().authenticated()

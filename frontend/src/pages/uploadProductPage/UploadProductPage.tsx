@@ -1,10 +1,12 @@
-import './UploadProduct.css';
+import styles from './UploadProduct.module.css';
 
 import UploadProduct from "../../components/UploadProduct";
 
 const UploadProductPage = () => {
     return (
-        <div className="upload-page-layout page-with-header">
+        <div className={styles['upload-page-layout']}>
+
+            <MainHeader />
             <main>
                 <UploadProduct />
             </main>

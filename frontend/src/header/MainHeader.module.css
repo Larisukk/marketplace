@@ -1,0 +1,449 @@
+:root {
+    --color-dark-green: #0F2A1D;
+    --color-medium-green: #375534;
+    --color-light-green: #E3EED4;
+    --color-accent-green: #AEC3B0;
+    --color-page-background: #F5F9F0;
+    --header-height: 72px;
+}
+
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 3rem;
+
+    /* Acum acest cod va fi aplicat corect */
+    background-color: rgba(174, 195, 176, 0.5) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    /* Fără borduri sau umbre */
+    border: none !important;
+    box-shadow: none !important;
+
+    z-index: 1000;
+    min-height: var(--header-height);
+    box-sizing: border-box;
+}
+
+.header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.left-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.menu-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0;
+    line-height: 1;
+}
+
+.icon-links {
+    display: flex;
+    align-items: center;
+}
+
+.login-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    background-color: #FFFFFF;
+    color: #0F2A1D;
+    border-radius: 9999px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.login-button:hover {
+    background-color: #f7f7f7;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.login-button .icon {
+    width: 24px;
+    height: 24px;
+    object-fit: cover;
+}
+
+.vertical-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 1002;
+    padding: 1.5rem;
+    box-shadow: 4px 0px 15px rgba(0, 0, 0, 0.15);
+    border-radius: 0 15px 15px 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.vertical-menu.open {
+    transform: translateX(0);
+}
+
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid rgba(15, 42, 29, 0.2);
+}
+
+.menu-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-dark-green);
+}
+
+.close-menu-btn {
+    background: none;
+    border: none;
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: var(--color-dark-green);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+
+.menu-links {
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-link {
+    text-decoration: none;
+    color: var(--color-dark-green);
+    font-size: 1.15rem;
+    font-weight: 500;
+    padding: 1rem 0.5rem;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.menu-link:not(:last-child) {
+    border-bottom: 1px solid rgba(15, 42, 29, 0.1);
+}
+
+.menu-link:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateX(5px);
+}
+
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1001;
+    cursor: pointer;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.page-content-spacer {
+    padding-top: var(--header-height);
+}
+
+.login-required-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+}
+
+.login-required-popup {
+    background: #fff;
+    width: 380px;
+    padding: 25px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.login-required-popup h2 {
+    margin-bottom: 10px;
+    color: #0F2A1D;
+}
+
+.login-required-popup p {
+    margin-top: 0;
+    color: #333;
+}
+
+.login-required-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.login-required-confirm {
+    padding: 12px;
+    border-radius: 25px;
+    border: none;
+    background: #2d2d2d;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: .2s;
+}
+
+.login-required-confirm:hover {
+    background: #000;
+}
+
+.login-required-cancel {
+    padding: 12px;
+    border-radius: 25px;
+    border: 1px solid #444;
+    background: transparent;
+    color: #444;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: .2s;
+}
+
+.login-required-cancel:hover {
+    background: #f2f2f2;
+}
+
+/* ==================================================
+   EXTRACTED HEADER STYLES (from homepage/styles.css)
+   ================================================== */
+
+.main-nav {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    opacity: 0;
+    visibility: hidden;
+    padding-top: 0;
+    transform: translateY(-20px);
+    transition: transform 0.3s ease-out, opacity 0.2s ease-out, visibility 0.3s, padding-top 0.3s ease-out;
+}
+
+.main-header.search-visible .main-nav {
+    opacity: 1;
+    visibility: visible;
+    padding-top: 1rem;
+    transform: translateY(0);
+}
+
+.header-search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #FFFFFF;
+    border-radius: 9999px;
+    height: 44px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: visible;
+    position: relative;
+}
+
+.header-search-bar input,
+.header-search-bar .search-button {
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0 1.2rem;
+    font-size: 0.95rem;
+    color: #555;
+    height: 100%;
+}
+
+.header-search-bar input {
+    flex: 1;
+    min-width: 150px;
+    color: var(--color-dark-green);
+}
+
+.header-search-bar input::placeholder {
+    color: #888;
+    opacity: 1;
+}
+
+.header-search-bar .divider {
+    width: 1px;
+    height: 24px;
+    background-color: #e0e0e0;
+}
+
+.header-search-bar .search-button {
+    color: #555;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+.header-search-bar .search-button:hover {
+    background-color: #f5f5f5;
+}
+
+.header-search-bar .header-location-select {
+    padding: 0 1.2rem;
+    font-size: 0.95rem;
+    color: #555;
+    flex-shrink: 0;
+    min-width: 120px;
+}
+
+.header-search-bar .header-location-select .county-display-text {
+    color: #555;
+}
+
+.header-search-bar .header-location-select .county-display-content .county-option-icon {
+    color: #555;
+}
+
+/* COUNTY SELECT DROPDOWN (Shared) */
+.county-select-wrapper {
+    position: relative;
+    cursor: pointer;
+}
+
+.county-select-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.county-display-content {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.county-display-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.county-select-display .dropdown-arrow {
+    font-size: 0.7rem;
+    margin-left: 8px;
+    color: #333;
+    transition: transform 0.2s ease-in-out;
+}
+
+.county-select-display[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.county-option-icon {
+    margin-right: 12px;
+    color: var(--color-medium-green);
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.county-select-dropdown {
+    position: absolute;
+    top: 105%;
+    left: 0;
+    width: 100%;
+    min-width: 280px;
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
+    padding: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 1003;
+    animation: dropdownFadeIn 0.2s ease-out;
+    border: 1px solid #eee;
+}
+
+.county-select-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.county-select-dropdown::-webkit-scrollbar-thumb {
+    background-color: var(--color-accent-green);
+    border-radius: 6px;
+}
+
+.county-select-dropdown::-webkit-scrollbar-track {
+    background-color: #f0f0f0;
+}
+
+.county-select-option {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    font-size: 1rem;
+    color: var(--color-dark-green);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-weight: 500;
+    margin: 2px 0;
+}
+
+.county-select-option:hover {
+    background-color: var(--color-page-background);
+}
+
+.county-select-option.selected {
+    background-color: var(--color-light-green);
+    font-weight: 600;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
