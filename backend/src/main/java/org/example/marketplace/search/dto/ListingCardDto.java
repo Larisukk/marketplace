@@ -14,7 +14,6 @@ import java.util.UUID;
  */
 public record ListingCardDto(
         UUID id,
-        UUID farmerUserId,
         String title,
         Integer priceCents,
         String currency,

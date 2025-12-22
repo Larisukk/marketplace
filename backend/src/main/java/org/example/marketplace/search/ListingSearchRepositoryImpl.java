@@ -142,4 +142,57 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                 .addValue("hasBbox", hasBbox)
                 .addValue("w", w).addValue("s", s).addValue("e", e).addValue("n", n);
     }
+
+    @Override
+    public Optional<ListingCardDto> findCardById(UUID id) {
+        String sql =
+                """
+                SELECT l.id, l.title,
+                       ST_X(l.location::geometry) AS lon,
+                       ST_Y(l.location::geometry) AS lat,
+                       l.price_cents, l.currency,
+                       p.name AS product_name,
+                       c.name AS category_name,
+                       thumb.thumbnail_url,
+                       l.description,
+                       fp.farm_name AS farmer_name
+                FROM public.listings l
+                JOIN public.products p   ON p.id = l.product_id
+                LEFT JOIN public.categories c ON c.id = p.category_id
+                LEFT JOIN public.farmer_profiles fp ON fp.user_id = l.farmer_user_id
+                LEFT JOIN LATERAL (
+                    SELECT ma.url AS thumbnail_url
+                    FROM public.listing_images li
+                    JOIN public.media_assets ma ON ma.id = li.media_asset_id
+                    WHERE li.listing_id = l.id
+                    ORDER BY li.sort_order ASC
+                    LIMIT 1
+                ) thumb ON TRUE
+                WHERE l.id = :id
+                """;
+
+        MapSqlParameterSource p = new MapSqlParameterSource().addValue("id", id);
+
+        var list = jdbc.query(sql, p, (rs, i) -> {
+            String thumb = rs.getString("thumbnail_url");
+            if (thumb != null && thumb.isBlank()) thumb = null;
+
+            return new ListingCardDto(
+                    UUID.fromString(rs.getString("id")),
+                    rs.getString("title"),
+                    (Integer) rs.getObject("price_cents"),
+                    rs.getString("currency"),
+                    (Double) rs.getObject("lon"),
+                    (Double) rs.getObject("lat"),
+                    rs.getString("product_name"),
+                    rs.getString("category_name"),
+                    thumb,
+                    rs.getString("description"),
+                    rs.getString("farmer_name")
+            );
+        });
+
+        return list.stream().findFirst();
+    }
+
 }

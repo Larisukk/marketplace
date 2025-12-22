@@ -1,5 +1,6 @@
 // frontend/src/services/searchApi.ts
 import axios from "axios";
+
 import type {
     ListingCardDto,
     ListingMapDto,
@@ -78,4 +79,9 @@ export function searchListingsForMap(params: MapSearchParams) {
 export function getListingSummary(id: UUID) {
     // FINAL URL: /api/search/listings/{id}/summary
     return api.get<ListingSummaryDto>(`/search/listings/${id}/summary`).then((r) => r.data);
+}
+
+export function getListingDetails(id: UUID) {
+    // FINAL URL: /api/search/listings/{id}
+    return api.get<ListingCardDto>(`/search/listings/${id}`).then((r) => r.data);
 }

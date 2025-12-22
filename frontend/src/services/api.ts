@@ -16,7 +16,7 @@ console.log("BACKEND_ORIGIN =", BACKEND_ORIGIN);
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 function getAccessToken(): string | null {
-    // ✅ unify with axios interceptor behavior
+    // keep compatibility across branches
     return (
         localStorage.getItem("jwt") ||
         localStorage.getItem("token") ||
@@ -47,7 +47,28 @@ export function toAbsoluteUrl(url: string | null | undefined): string | null {
     return `${BACKEND_ORIGIN}/${url}`;
 }
 
-async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
+// Helper to append query params (for search/chat endpoints)
+function buildUrl(path: string, params?: Record<string, any>) {
+    const url = new URL(`${API_BASE}${path}`, window.location.origin);
+
+    if (params) {
+        for (const [key, value] of Object.entries(params)) {
+            if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+            }
+        }
+    }
+
+    return url.toString();
+}
+
+async function request<T>(
+    path: string,
+    opts: RequestInit = {},
+    params?: Record<string, any>
+): Promise<T> {
+    const url = buildUrl(path, params);
+
     const headers = new Headers(opts.headers || {});
     const token = getAccessToken();
     if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -55,11 +76,12 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
     const isFormData =
         typeof FormData !== "undefined" && opts.body instanceof FormData;
 
+    // IMPORTANT: don't set Content-Type for FormData (browser adds boundary)
     if (!isFormData && !headers.has("Content-Type")) {
         headers.set("Content-Type", "application/json");
     }
 
-    const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
+    const res = await fetch(url, { ...opts, headers });
 
     const text = await res.text();
     let data: any = null;
@@ -83,9 +105,10 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
             fields?: Record<string, string>;
             status?: number;
         };
-        err.status = res.status;
 
+        err.status = res.status;
         if (fieldErrors) err.fields = fieldErrors;
+
         throw err;
     }
 
@@ -93,10 +116,20 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-    get: <T>(path: string) => request<T>(path),
+    // GET with optional query params
+    get: <T>(path: string, params?: Record<string, any>) =>
+        request<T>(path, {}, params),
 
     post: <T>(path: string, body?: unknown) =>
         request<T>(path, { method: "POST", body: JSON.stringify(body ?? {}) }),
+
+    // POST with query params (useful for some search/chat APIs)
+    postParams: <T>(path: string, body: unknown, params?: Record<string, any>) =>
+        request<T>(
+            path,
+            { method: "POST", body: JSON.stringify(body ?? {}) },
+            params
+        ),
 
     put: <T>(path: string, body?: unknown) =>
         request<T>(path, { method: "PUT", body: JSON.stringify(body ?? {}) }),
@@ -106,6 +139,7 @@ export const api = {
 
     del: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 
-    postForm: <T>(path: string, form: FormData) =>
-        request<T>(path, { method: "POST", body: form }),
+    // FormData upload
+    postForm: <T>(path: string, form: FormData, params?: Record<string, any>) =>
+        request<T>(path, { method: "POST", body: form }, params),
 };

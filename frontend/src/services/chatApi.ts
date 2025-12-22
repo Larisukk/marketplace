@@ -28,22 +28,28 @@ api.interceptors.request.use((config) => {
 // --- Chat API functions ---
 // --- Chat API functions ---
 
-export function startOrGetConversation(payload: StartConversationRequest): Promise<ConversationDTO> {
-  return api
-    .post<ConversationDTO>('/chat/conversations/start', payload)
-    .then((response) => response.data)
-    .catch((error) => {
-      console.error('Chat API error:', {
-        url: '/chat/conversations/start',
-        payload,
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        data: error?.response?.data,
-        message: error?.message,
-      });
-      throw error;
-    });
+export async function startOrGetConversation(
+    payload: StartConversationRequest
+): Promise<ConversationDTO> {
+    try {
+        const response = await api.post<ConversationDTO>(
+            "/chat/conversations/start",
+            payload
+        );
+        return response.data;
+    } catch (error: any) {
+        console.error("Chat API error:", {
+            url: "/chat/conversations/start",
+            payload,
+            status: error?.response?.status,
+            statusText: error?.response?.statusText,
+            data: error?.response?.data,
+            message: error?.message,
+        });
+        throw error;
+    }
 }
+
 
 
 export function getConversations(userId: UUID) {

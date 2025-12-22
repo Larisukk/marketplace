@@ -41,8 +41,8 @@ public class ListingCommandService {
         if (code == null) throw new IllegalArgumentException("Unit is required");
 
         return switch (code) {
-            case "kg"  -> "KG";
-            case "l"   -> "L";
+            case "kg" -> "KG";
+            case "l" -> "L";
             case "buc" -> "BOX";
             default -> throw new IllegalArgumentException("Unsupported unit: " + code);
         };
@@ -70,8 +70,6 @@ public class ListingCommandService {
 
         String dbUnit = mapUnit(req.unit());
 
-        // NOTE: you currently ignore categoryCode. If you later map categories properly,
-        // you'll want to resolve category_id here. For now we keep NULL like you had.
         jdbc.update(
                 """
                 INSERT INTO products (id, name, category_id)
@@ -109,15 +107,43 @@ public class ListingCommandService {
         return listingId;
     }
 
+    /**
+     * BACKWARD-COMPAT overload (older callers might still call 2-args version).
+     * If you still have any code calling uploadListingImages(listingId, files),
+     * it will continue to compile.
+     */
     @Transactional
     public void uploadListingImages(UUID listingId, List<MultipartFile> files) throws IOException {
+        uploadListingImages(listingId, files, null);
+    }
+
+    /**
+     * New version used by the controller: validates ownership by email (if provided).
+     */
+    @Transactional
+    public void uploadListingImages(UUID listingId, List<MultipartFile> files, String email) throws IOException {
         if (files == null || files.isEmpty()) return;
 
-        // Ensure listing exists
+        // Ensure listing exists + (optional) ownership check
+        UUID ownerUserId;
         try {
-            jdbc.queryForObject("SELECT 1 FROM listings WHERE id = ?", Integer.class, listingId);
+            ownerUserId = jdbc.queryForObject(
+                    "SELECT farmer_user_id FROM listings WHERE id = ?",
+                    UUID.class,
+                    listingId
+            );
         } catch (EmptyResultDataAccessException ex) {
             throw new IllegalArgumentException("Listing not found: " + listingId);
+        }
+
+        // If email is provided, ensure authenticated user owns this listing
+        if (email != null && !email.isBlank()) {
+            UserEntity user = users.findByEmailIgnoreCase(email)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + email));
+
+            if (!user.getId().equals(ownerUserId)) {
+                throw new IllegalArgumentException("Not allowed to upload images for this listing");
+            }
         }
 
         Files.createDirectories(uploadRoot);

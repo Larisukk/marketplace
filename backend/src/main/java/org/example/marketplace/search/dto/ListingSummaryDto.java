@@ -14,7 +14,6 @@ import java.util.UUID;
  */
 public record ListingSummaryDto(
         UUID id,
-        UUID farmerUserId,
         String title,
         double lon,
         double lat,
