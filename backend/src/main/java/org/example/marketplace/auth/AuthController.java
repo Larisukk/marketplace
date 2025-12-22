@@ -49,6 +49,21 @@ public class AuthController {
         return new MeResponse(u.getId(), u.getEmail(), u.getDisplayName(), u.getRole().name());
     }
 
+    @PatchMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestBody @Valid ChangePasswordRequest req
+    ) {
+        service.changePassword(
+                principal.getUsername(),
+                req.oldPassword(),
+                req.newPassword()
+        );
+
+        return ResponseEntity.ok().build();
+    }
+
+
     @GetMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@RequestParam String token) {
         emailVerificationService.verify(token);

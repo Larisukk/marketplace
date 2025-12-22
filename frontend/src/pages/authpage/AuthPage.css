@@ -31,7 +31,7 @@ body.auth-mode .main-header {
 }
 
 body.auth-mode .menu-icon-btn {
-    margin-left: 16px !important;   /* modifică 16 → 20 → 24 etc. până îți place */
+    margin-left: 24px !important;   /* modifică 16 → 20 → 24 etc. până îți place */
 }
 
 .auth-header {
@@ -90,7 +90,10 @@ body.auth-mode .menu-icon-btn {
     background:#f1f4ec;
     border:1px solid var(--border);
     border-radius:22px;
-    padding:36px 28px;
+    padding-top: 0px;
+    padding-left: 28px;
+    padding-right: 28px;
+    padding-bottom: 32px;
     box-shadow:0 10px 26px rgba(52,78,65,.10);
 
     margin-left:auto;
@@ -241,7 +244,7 @@ body.auth-mode .menu-icon-btn {
         width: var(--card-width, 420px);
         display: flex;
         justify-content: center;
-        margin-bottom: 16px;       /* distanță între logo și card */
+        margin-bottom: 0;       /* distanță între logo și card */
         z-index: 5;                /* peste fundal, sub header */
     }
 
@@ -280,7 +283,11 @@ body.auth-mode .menu-icon-btn {
     .right.compact{
         max-width:none; width:100%;
         border:none; border-radius:22px;
-        background:#f1f4ec; padding:36px 28px; margin:0; box-shadow:none;
+        background:#f1f4ec; margin:0; box-shadow:none;
+        padding-top: 0px;      /* 👈 apropie logo-ul */
+        padding-left: 28px;
+        padding-right: 28px;
+        padding-bottom: 32px;
     }
 }
 /* === Compact + centrat peste card (override) === */
@@ -327,6 +334,10 @@ body.auth-mode .menu-icon-btn {
         right: auto; top: auto;
         /* restul stilurilor rămân cum sunt deja setate */
     }
+
+    .logo-floating{
+        margin-bottom: -32px;   /* încearcă -24 / -32 / -40 */
+    }
 }
 
 
@@ -371,3 +382,24 @@ body.auth-mode .menu-icon-btn {
     text-decoration: none;
     list-style: "✓  ";
 }
+.gdpr-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;          /* ⬅️ mai mic (era 10px) */
+    font-size: 0.85rem;
+    color: #555;
+    margin: 6px 0 4px; /* ⬅️ micșorat sus & jos */
+}
+
+
+.gdpr-checkbox a {
+    color: #375534;
+    text-decoration: underline;
+}
+.gdpr-note {
+    font-size: 0.75rem;
+    color: #6b6b6b;
+    line-height: 1.35;
+    margin: 4px 0 8px 0;   /* ⬅️ mai strâns */
+}
+

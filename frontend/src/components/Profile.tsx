@@ -21,6 +21,22 @@ export default function Profile() {
         setError("");
         setSuccess("");
 
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            setError("Toate câmpurile sunt obligatorii");
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setError("Parolele noi nu coincid");
+            return;
+        }
+
+        if (newPassword.length < 8) {
+            setError("Parola nouă trebuie să aibă cel puțin 8 caractere");
+            return;
+        }
+
+
         try {
             const res = await fetch("http://localhost:8080/api/auth/change-password", {
                 method: "PATCH",
@@ -35,10 +51,19 @@ export default function Profile() {
             });
 
             if (!res.ok) {
-                const msg = await res.text();
-                setError(msg || "Eroare la schimbarea parolei");
+                let message = "Eroare la schimbarea parolei";
+
+                try {
+                    const data = await res.json();
+                    message = data.message || message;
+                } catch {
+                    // fallback dacă nu e JSON
+                }
+
+                setError(message);
                 return;
             }
+
 
             setSuccess("Parola a fost schimbată cu succes!");
             setOldPassword("");

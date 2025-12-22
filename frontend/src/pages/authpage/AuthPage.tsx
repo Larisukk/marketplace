@@ -85,7 +85,6 @@ export default function AuthPage() {
                             : <LoginForm key="login" />
                         }
 
-                        <FooterNote />
                     </div>
                 </div>
             </div>
@@ -172,6 +171,8 @@ function SignupForm() {
     const [password, setPassword] = useState("");
     const [submitted, setSubmitted] = useState(false);
 
+    const [accepted, setAccepted] = useState(false);
+
     // Password checks
     const rules = [
         { id: "len", ok: password.length >= 8 && password.length <= 64, label: "Minim 8 și maxim 64 de caractere" },
@@ -209,23 +210,29 @@ function SignupForm() {
                 </ul>
             )}
 
-            <button type="submit" disabled={loading} className="btn">
+            <label className="gdpr-checkbox">
+                <input
+                    type="checkbox"
+                    checked={accepted}
+                    onChange={(e) => setAccepted(e.target.checked)}
+                    required
+                />
+                Accept{" "}
+                <a href="/terms" target="_blank">Termenii</a> și{" "}
+                <a href="/privacy" target="_blank">Politica de confidențialitate</a>
+            </label>
+
+            <p className="gdpr-note">
+                Continuând, accepți Termenii și Politica de confidențialitate.
+                Autentificare doar prin contul creat în aplicație.
+            </p>
+
+            <button type="submit" disabled={!accepted} className="btn">
                 {loading ? "Se înregistrează…" : "Înregistrați-vă"}
             </button>
+
+
+
         </form>
-    );
-}
-
-
-
-// ===============================
-// FOOTER NOTE
-// ===============================
-function FooterNote() {
-    return (
-        <p className="note">
-            Continuând, accepți termenii și politica noastră de confidențialitate.
-            Autentificare doar prin contul creat în aplicație.
-        </p>
     );
 }

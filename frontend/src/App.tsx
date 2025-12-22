@@ -10,8 +10,10 @@ import EmailSentPage from "./pages/authpage/EmailSentPage";
 import EmailVerifiedPage from "./pages/authpage/EmailVerifiedPage";
 import VerifyEmailPage from "./pages/authpage/VerifyEmailPage";
 import ProtectedRoute from "./components/routing/ProtectedRoute";
-
-import Header from "./components/Header"; // GLOBAL header
+import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
+import Terms from "./pages/legal/Terms";
+import Header from "./components/Header";
+import SupportPage from "@/pages/support/SupportPage"; // GLOBAL header
 
 export default function App() {
     const location = useLocation();
@@ -26,6 +28,11 @@ export default function App() {
             {shouldShowHeader && <Header />}
 
             <Routes>
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/support" element={<SupportPage />} />
+
+
                 <Route path="/" element={<Navigate to="/home" replace />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/auth" element={<AuthPage />} />

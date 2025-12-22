@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../header/MainHeader.css";
+import "./MainHeader.css";
 import {useAuth} from "@/context/AuthContext"; // FOARTE IMPORTANT: folosim exact același CSS ca headerul principal
 export default function AuthHeader() {
     const [open, setOpen] = useState(false);
@@ -74,7 +74,7 @@ export default function AuthHeader() {
                         Profilul meu
                     </div>
 
-                    <a href="/map" className="menu-link">Produse</a>
+                    <a href="/map" className="menu-link">Harta</a>
 
                     <div
                         className="menu-link"

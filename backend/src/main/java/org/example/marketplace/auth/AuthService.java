@@ -139,4 +139,25 @@ public class AuthService {
             throw new IllegalStateException("SHA-256 not available", e);
         }
     }
+
+    public void changePassword(String email, String oldPassword, String newPassword) {
+
+        UserEntity user = repo.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User not found"
+                ));
+
+        // verifică parola veche
+        if (!encoder.matches(oldPassword, user.getPasswordHash())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Parola veche este incorectă"
+            );
+        }
+
+        // setează parola nouă (HASH)
+        user.setPasswordHash(encoder.encode(newPassword));
+        repo.save(user);
+    }
+
 }
