@@ -1,0 +1,67 @@
+:root {
+    --color-dark-green: #0F2A1D;
+    --color-accent-green: #AEC3B0;
+}
+
+.menuIcon {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: var(--color-dark-green);
+}
+
+.menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    background: var(--color-accent-green);
+    box-shadow: 4px 0 15px rgba(0,0,0,.15);
+    transform: translateX(-100%);
+    transition: transform .3s ease;
+    z-index: 3000;
+    padding: 1.5rem;
+}
+
+.open {
+    transform: translateX(0);
+}
+
+.menuHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid rgba(15,42,29,.2);
+}
+
+.menuLinks {
+    display: flex;
+    flex-direction: column;
+}
+
+.menuLinks a,
+.menuLinks div {
+    font-size: 1.15rem;
+    font-weight: 500;
+    padding: 1rem .5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .2s, transform .2s;
+}
+
+.menuLinks a:hover,
+.menuLinks div:hover {
+    background: rgba(255,255,255,.3);
+    transform: translateX(5px);
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+    z-index: 2999;
+}

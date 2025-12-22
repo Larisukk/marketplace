@@ -1,8 +1,8 @@
 // src/pages/AuthPage.tsx
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import styles from "../auth.module.css";
+import styles from "./auth.module.css";
 import AuthHeader from "../../header/AuthHeader";
 
 // ===============================
@@ -122,7 +122,9 @@ function LoginForm() {
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
+
         await login(email.trim(), password);
+
         const redirectPath = location.state?.redirectAfterLogin || "/home";
         navigate(redirectPath, {
             state: {
@@ -131,6 +133,8 @@ function LoginForm() {
             },
         });
     }
+
+
 
     return (
         <form onSubmit={onSubmit} className={styles.form}>
@@ -193,17 +197,16 @@ function SignupForm() {
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
         setSubmitted(true);
-        if (!allOk) return; // don't send if password is weak; show unmet list instead
+        if (!allOk) return;
 
         await register(displayName.trim(), email.trim(), password);
-        const redirectPath = location.state?.redirectAfterLogin || "/home";
-        navigate(redirectPath, {
-            state: {
-                sellerId: location.state?.sellerId,
-                autoStartChat: location.state?.autoStartChat,
-            },
+
+        navigate("/email-sent", {
+            state: { email: email.trim() },
         });
+
     }
+
 
     return (
         <form onSubmit={onSubmit} className={styles.form}>
@@ -221,7 +224,7 @@ function SignupForm() {
                 </ul>
             )}
 
-            <label className="gdpr-checkbox">
+            <label className={styles['gdpr-checkbox']}>
                 <input
                     type="checkbox"
                     checked={accepted}
@@ -229,16 +232,18 @@ function SignupForm() {
                     required
                 />
                 Accept{" "}
-                <a href="/terms" target="_blank">Termenii</a> și{" "}
-                <a href="/privacy" target="_blank">Politica de confidențialitate</a>
+                <a href="/terms" target="_blank" rel="noreferrer">Termenii</a>
+                si
+                <a href="/privacy" target="_blank" rel="noreferrer">Politica de confidențialitate</a>
+
             </label>
 
-            <p className="gdpr-note">
+            <p className={styles['gdpr-note']}>
                 Continuând, accepți Termenii și Politica de confidențialitate.
                 Autentificare doar prin contul creat în aplicație.
             </p>
 
-            <button type="submit" disabled={!accepted} className="btn">
+            <button type="submit" disabled={!accepted} className={styles.btn}>
                 {loading ? "Se înregistrează…" : "Înregistrați-vă"}
             </button>
 

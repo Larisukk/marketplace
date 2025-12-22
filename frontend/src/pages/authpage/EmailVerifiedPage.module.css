@@ -10,44 +10,40 @@
     background: var(--card);
     padding: 40px 50px;
     border-radius: 24px;
-    box-shadow: 0 12px 40px rgba(52, 78, 65, 0.12);
     text-align: center;
-    width: 420px;
-}
-
-.verify-icon {
-    margin-bottom: 22px;
 }
 
 .verify-title {
     font-size: 28px;
     font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 10px;
 }
 
 .verify-subtext {
     font-size: 15px;
-    color: var(--muted);
-    margin-bottom: 28px;
 }
-
 .verify-btn {
     display: inline-block;
-    width: 100%;
-    background: var(--primary);
-    color: #edf3ea;
-    padding: 12px 0;
-    font-weight: 600;
-    border-radius: 14px;
+    margin-top: 18px;
+    padding: 12px 24px;
+
+    background: #2f5d50;
+    color: white;
     text-decoration: none;
-    transition: background .2s ease, transform .05s ease;
+    font-weight: 600;
+
+    border-radius: 12px;
+    transition: background 0.2s ease;
 }
 
 .verify-btn:hover {
-    background: var(--primary-700);
+    background: #254b40;
 }
+.verify-card {
+    background: var(--card);
+    padding: 40px 50px;
+    border-radius: 24px;
+    text-align: center;
 
-.verify-btn:active {
-    transform: translateY(1px);
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 40px rgba(52, 78, 65, 0.12);
 }

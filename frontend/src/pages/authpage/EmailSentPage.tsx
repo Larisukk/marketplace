@@ -1,48 +1,29 @@
-import "./EmailSentPage.css";
+import styles from "./EmailSentPage.module.css";
 import { useLocation } from "react-router-dom";
 import { getMailProviderUrl } from "../../utils/emailProviders";
 
 export default function EmailSentPage() {
     const location = useLocation();
     const email = location.state?.email || "";
-
     const providerUrl = email ? getMailProviderUrl(email) : null;
 
     return (
-        <div className="email-sent-wrap">
-            <div className="email-sent-card">
+        <div className={styles["email-sent-wrap"]}>
+            <div className={styles["email-sent-card"]}>
+                <img src="/logo.png" className={styles["email-logo"]} />
 
-                <img src="/logo.png" alt="Logo" className="email-logo" />
+                <h1>Verifica-ti adresa de email</h1>
 
-                <h1>Check your email</h1>
-
-                <p className="email-text">
-                    Your account was created successfully.
-                    Please confirm your email address to activate your account.
-
-                    We’ve sent a verification message to:
-                    <br /><strong>{email}</strong>
+                <p className={styles["email-text"]}>
+                    Am trimis un mesaj de verificare catre <br />
+                    <strong>{email}</strong>
                 </p>
 
-                {providerUrl ? (
-                    <a href={providerUrl} target="_blank" rel="noreferrer" className="open-mail-btn">
-                        Open my email
-                    </a>
-                ) : (
-                    <a
-                        href="#"
-                        className="open-mail-btn"
-                        onClick={(e) => e.preventDefault()}
-                        style={{ opacity: 0.7, cursor: "default" }}
-                    >
-                        Open my email
+                {providerUrl && (
+                    <a href={providerUrl} className={styles["open-mail-btn"]}>
+                        Deschide email-ul meu
                     </a>
                 )}
-
-                <p className="email-note">
-                    Didn’t receive the email? Check your spam folder or wait a few minutes.
-                </p>
-
             </div>
         </div>
     );

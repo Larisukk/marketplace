@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from "react-router-dom";
 import Header from '../../components/Header';
 import HomeHero from '../../components/HomeHero';
 import styles from './Home.module.css'
+import { COUNTY_BBOX } from '@/utils/counties';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -25,7 +27,10 @@ const Home: React.FC = () => {
             <Header />
 
             <main>
-                <HomeHero onSearch={handleSearch} />
+                <HomeHero
+                    onSearch={handleSearch}
+                    counties={Object.keys(COUNTY_BBOX)}
+                />
             </main>
         </div>
     );

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "./SupportPage.module.css";
+import MainHeader from "../../components/MainHeader";
 
 export default function SupportPage() {
     const [email, setEmail] = useState("");
@@ -39,10 +40,11 @@ export default function SupportPage() {
 
     return (
         <div className={styles.page}>
+
             <div className={styles.card}>
                 {/* ⬇️ CLASĂ LIPSĂ */}
                 <h1 className={styles.title}>Contact suport</h1>
-
+                <MainHeader />
                 {/* ⬇️ CLASĂ LIPSĂ */}
                 <form onSubmit={submit} className={styles.form}>
                     <label>Email</label>

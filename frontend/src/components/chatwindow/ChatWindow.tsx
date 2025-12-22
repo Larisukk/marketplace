@@ -41,8 +41,8 @@ export default function ChatWindow() {
 
   const title =
     otherParticipant && otherParticipant.id !== user?.id
-      ? `Chat with ${otherParticipant.displayName}`
-      : "Chat";
+      ? `Conversatie cu ${otherParticipant.displayName}`
+      : "Conversatie";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +60,7 @@ export default function ChatWindow() {
       {/* Messages */}
       <div className={styles['chat-messages']}>
         {loading && list.length === 0 && (
-          <div className={styles['chat-loading']}>Loading messages…</div>
+          <div className={styles['chat-loading']}>Se incarca mesajele…</div>
         )}
 
         {list.map((m) => {
@@ -102,7 +102,7 @@ export default function ChatWindow() {
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Type a message…"
+            placeholder="Scrie un mesaj…"
             maxLength={5000}
           />
         </div>
@@ -110,7 +110,7 @@ export default function ChatWindow() {
           className={styles['chat-send-btn']}
           type="submit"
           disabled={!text.trim()}
-          title="Send"
+          title="Trimite"
         >
           ➤
         </button>

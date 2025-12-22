@@ -1,13 +1,12 @@
 import styles from "./App.module.css";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import MapPage from "./pages/mappage/MapPage";
-import Home from "./pages/homepage/Home";
+import Home from "./pages/homePage/Home";
 import UploadProductPage from "./pages/uploadProductPage/UploadProductPage";
 import AuthPage from "./pages/authpage/AuthPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import ListingPage from "./pages/listingpage/ListingPage";
-import ProtectedRoute from "./components/routing/ProtectedRoute"; //
 import { ChatProvider } from "./context/ChatContext";
 import ChatPage from "./pages/chatpage/ChatPage";
 import EmailSentPage from "./pages/authpage/EmailSentPage";
@@ -16,8 +15,7 @@ import VerifyEmailPage from "./pages/authpage/VerifyEmailPage";
 import ProtectedRoute from "./components/routing/ProtectedRoute";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import Terms from "./pages/legal/Terms";
-import Header from "./components/Header";
-import SupportPage from "@/pages/support/SupportPage"; // GLOBAL header
+import SupportPage from "./pages/support/SupportPage";
 
 export default function App() {
     const location = useLocation();

@@ -10,7 +10,7 @@ import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-import Header from "../../components/Header";
+import MainHeader from "../../components/MainHeader";
 import styles from "./ListingPage.module.css";
 // import "../homePage/styles.css"; // Removed
 
@@ -104,7 +104,7 @@ export default function ListingPage() {
         setActiveImageUrl(first);
       } catch (e: unknown) {
         if (cancelled) return;
-        const msg = e instanceof Error ? e.message : "Failed to load listing details.";
+        const msg = e instanceof Error ? e.message : "Eroare la incarcare detalii produs.";
         setError(msg);
       } finally {
         if (cancelled) return;
@@ -136,7 +136,7 @@ export default function ListingPage() {
         const convo = await actions.startConversation(sellerId as any);
         navigate("/chat", { state: { conversationId: convo.id } });
       } catch (err) {
-        console.error("Failed to auto-start conversation:", err);
+        console.error("Eroare la inceperea unei conversatii:", err);
       }
     })();
   }, [user, sellerId, autoStartChat, isOwner, actions, navigate]);
@@ -144,7 +144,7 @@ export default function ListingPage() {
   const handleStartChat = async () => {
     if (!id) return;
     if (!sellerId) {
-      alert("Seller information is not available for this listing.");
+      alert("Informatiile despre vanzator nu sunt disponibile pentru acest produs.");
       return;
     }
     if (isOwner) return;
@@ -164,8 +164,8 @@ export default function ListingPage() {
       const convo = await actions.startConversation(sellerId as any);
       navigate("/chat", { state: { conversationId: convo.id } });
     } catch (err) {
-      console.error("Failed to start conversation:", err);
-      alert("Failed to start chat. Please try again.");
+      console.error("Eroare la inceperea unei conversatii:", err);
+      alert("Eroare la pornirea unei conversatii. Incercati din nou.");
     }
   };
 
@@ -202,11 +202,11 @@ export default function ListingPage() {
 
   return (
     <>
-      <Header />
+      <MainHeader />
 
       <div className={styles['listingPage']}>
         <div className={styles['listingPage-breadcrumb']}>
-          Home / Listings / <span>{details?.title ?? "Loading…"}</span>
+          Acasa / Produse / <span>{details?.title ?? "Se incarca…"}</span>
         </div>
 
         <header className={styles['listingPage-header']}>
@@ -218,8 +218,8 @@ export default function ListingPage() {
             </span>
 
             {hasCoords && details && (
-              <span>
-                Coords: {details.lat.toFixed(4)}, {details.lon.toFixed(4)}
+                <span>
+                Coords: {details.lat!.toFixed(4)}, {details.lon!.toFixed(4)}
               </span>
             )}
           </div>
@@ -228,7 +228,7 @@ export default function ListingPage() {
         <div className={styles['listingPage-main']}>
           <section className={styles['listingPage-leftCard']}>
             <div className={styles['listingPage-image']}>
-              <div className={styles['listingPage-imageBadge']}>Listing preview</div>
+              <div className={styles['listingPage-imageBadge']}>Previzualizare produs</div>
 
               {activeImageUrl ? (
                 <img
@@ -241,7 +241,7 @@ export default function ListingPage() {
                   }}
                 />
               ) : (
-                <span className={styles['listingPage-imagePlaceholder']}>No images uploaded yet.</span>
+                <span className={styles['listingPage-imagePlaceholder']}>Nicio imagine inca.</span>
               )}
 
               {/* if main image failed and got hidden */}
@@ -269,28 +269,28 @@ export default function ListingPage() {
             )}
 
             <div className={styles['listingPage-description']}>
-              <h2 className={styles['listingPage-subtitle']}>Description</h2>
+              <h2 className={styles['listingPage-subtitle']}>Descriere</h2>
               <p className={styles['listingPage-descriptionText']}>
                 {details?.description && details.description.trim().length > 0
                   ? details.description
-                  : "The seller has not provided a detailed description yet."}
+                  : "Vanzatorul nu a creat o descriere inca."}
               </p>
             </div>
           </section>
 
           <aside className={styles['listingPage-rightColumn']}>
             <div className={styles['listingPage-priceCard']}>
-              <div className={styles['listingPage-priceLabel']}>Price</div>
+              <div className={styles['listingPage-priceLabel']}>Pret</div>
               <div className={styles['listingPage-priceValue']}>{priceText}</div>
               <div className={styles['listingPage-priceHint']}>
-                Chat with the seller to agree on payment and delivery details.
+                Vorbiti cu vanzatorul pentru a stabili metoda de plata si de transport.
               </div>
             </div>
 
             {!isOwner ? (
               <div className={styles['listingPage-sellerCard']}>
                 <div className={styles['listingPage-sellerHeader']}>
-                  <div className={styles['listingPage-sellerLabel']}>Seller</div>
+                  <div className={styles['listingPage-sellerLabel']}>Vanzator</div>
 
                   <div className={styles['listingPage-sellerRow']}>
                     <div className={styles['listingPage-sellerAvatar']}>{sellerInitial}</div>
@@ -298,10 +298,10 @@ export default function ListingPage() {
                     <div>
                       <div className={styles['listingPage-sellerName']}>
                         {(details as any)?.farmerName ||
-                          (sellerId ? "Seller account" : "Unknown seller")}
+                          (sellerId ? "Contul vanzatorului" : "Vanzator necunoscut")}
                       </div>
                       <div className={styles['listingPage-sellerHint']}>
-                        Ask about availability, delivery, and product details.
+                        Intreaba despre disponibilitate, transport si detaliile produsului.
                       </div>
                     </div>
                   </div>
@@ -313,20 +313,20 @@ export default function ListingPage() {
                   disabled={loading || !sellerId}
                   className={styles['listingPage-chatButton'] + (loading ? ` ${styles['is-loading']}` : "")}
                 >
-                  <span>{user ? "Chat with seller" : "Log in to chat"}</span>
+                  <span>{user ? "Discutati cu vanzatorul" : "Conectativa pentru a discuta"}</span>
                 </button>
 
                 {!sellerId && (
                   <p className={styles['listingPage-sellerWarning']}>
-                    Seller information is missing for this listing.
+                    Informatiile despre vanzator lipsesc pentru acest produs.
                   </p>
                 )}
               </div>
             ) : (
               <div className={styles['listingPage-sellerCard']}>
-                <div className={styles['listingPage-sellerLabel']}>Your listing</div>
+                <div className={styles['listingPage-sellerLabel']}>Produsul tau</div>
                 <div className={styles['listingPage-sellerHint']}>
-                  You are the owner of this listing, so chat is disabled.
+                  Tu esti detinatorul acestui produs, deci nu poti porni o conversatie.
                 </div>
               </div>
             )}
@@ -341,7 +341,7 @@ export default function ListingPage() {
             {hasCoords && details && (
               <section className={styles['listingPage-locationCard']}>
                 <div className={styles['listingPage-locationHeader']}>
-                  <h2 className={styles['listingPage-locationTitle']}>Location</h2>
+                  <h2 className={styles['listingPage-locationTitle']}>Locatia</h2>
 
                   <button
                     type="button"
@@ -358,7 +358,7 @@ export default function ListingPage() {
                     }}
                     className={styles['listingPage-locationButton']}
                   >
-                    Show on map
+                    Arata pe mapa
                   </button>
                 </div>
 

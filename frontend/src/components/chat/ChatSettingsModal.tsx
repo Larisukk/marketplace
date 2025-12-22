@@ -24,7 +24,7 @@ export default function ChatSettingsModal({
         <div className={styles['chat-settings-overlay']} onClick={onClose}>
             <div className={styles['chat-settings-modal']} onClick={(e) => e.stopPropagation()}>
                 <div className={styles['chat-settings-header']}>
-                    <h3>Chat Settings</h3>
+                    <h3>Setari conversatie</h3>
                     <button className={styles['chat-settings-close']} onClick={onClose}>
                         ×
                     </button>
@@ -37,13 +37,13 @@ export default function ChatSettingsModal({
                             className={`${styles['chat-option-btn']} ${theme === "light" ? styles['active'] : ""}`}
                             onClick={() => setTheme("light")}
                         >
-                            ☀️ Light
+                            ☀️ Deschis
                         </button>
                         <button
                             className={`${styles['chat-option-btn']} ${theme === "dark" ? styles['active'] : ""}`}
                             onClick={() => setTheme("dark")}
                         >
-                            🌙 Dark
+                            🌙 Inchis
                         </button>
                     </div>
                 </div>
