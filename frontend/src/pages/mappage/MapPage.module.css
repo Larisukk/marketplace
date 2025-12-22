@@ -51,6 +51,26 @@
     width: 100%;
     box-sizing: border-box;
 }
+.mapPage-field select {
+    width: 100%;
+    padding: 0.35rem 0.5rem;
+
+    border-radius: 4px;
+    border: 1px solid #b8d7c3;
+
+    font-size: 0.9rem;
+    background-color: #ffffff;
+
+    color: #9dbba8;              /* 🔹 verde deschis (placeholder) */
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+/* când e ales un județ */
+.mapPage-field select[data-has-value="true"] {
+    color: #143321;              /* 🔹 verde normal */
+}
+
 
 .mapPage-title {
     margin: 0;

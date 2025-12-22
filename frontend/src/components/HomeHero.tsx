@@ -211,9 +211,9 @@ const HomeHero: React.FC<HomeHeroProps> = ({ onSearch, counties }) => {
                 </div>
                 <div className={styles['feature-item']}>
                     <img src="2.jpg" alt="Livrare rapidă" className={styles['feature-image']} />
-                    <h3 className={styles['feature-title']}>Livrare rapidă</h3>
+                    <h3 className={styles['feature-title']}>Conectare directă cu fermierii</h3>
                     <p className={styles['feature-text']}>
-                        Ca un fulger! Comandă sau trimite orice în orașul tău și <mark>livrăm în câteva minute</mark>.
+                        Discută direct cu <mark>producătorii locali</mark>, pune întrebări și stabilește detaliile comenzii fără intermediari.
                     </p>
                 </div>
                 <div className={styles['feature-item']}>

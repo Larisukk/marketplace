@@ -5,7 +5,7 @@ export default function VerifyEmailPage() {
     const [params] = useSearchParams();
     const token = params.get("token");
 
-    const [message, setMessage] = useState("Verifying your email...");
+    const [message, setMessage] = useState("Se verifica adresa de mail...");
     const didRun = useRef(false); // <-- împiedică dublu request
 
     useEffect(() => {
@@ -13,7 +13,7 @@ export default function VerifyEmailPage() {
         didRun.current = true;
 
         if (!token) {
-            setMessage("Invalid verification link.");
+            setMessage("Link invalid de verficare.");
             return;
         }
 
@@ -23,10 +23,10 @@ export default function VerifyEmailPage() {
                     window.location.href = "/email-verified";
                 } else {
                     const text = await res.text();
-                    setMessage("Verification failed: " + text);
+                    setMessage("Verificarea a esuat: " + text);
                 }
             })
-            .catch(() => setMessage("Something went wrong."));
+            .catch(() => setMessage("Ceva nu a mers bine."));
     }, [token]);
 
 

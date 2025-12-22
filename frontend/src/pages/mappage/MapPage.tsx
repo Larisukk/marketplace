@@ -18,11 +18,13 @@ type SortOption =
 
 type Filters = {
     q: string;
-    minPrice: string; // in currency units
+    minPrice: string;
     maxPrice: string;
     available: boolean;
     sort: SortOption;
+    county: string;
 };
+
 
 const DEFAULT_CENTER: [number, number] = [44.4268, 26.1025];
 
@@ -32,7 +34,8 @@ export default function MapPage() {
         minPrice: "",
         maxPrice: "",
         available: true,
-        sort: "createdAt,desc", // Newest by default
+        sort: "createdAt,desc",
+        county: "",
     });
 
     const [bbox, setBbox] = useState<Bbox | null>(null);
@@ -97,15 +100,9 @@ export default function MapPage() {
         setFilters((prev) => ({
             ...prev,
             q: urlQuery,
+            county: urlCounty ?? "",
         }));
 
-        // 4. trigger SAME search logic
-        fetchListingsFor(
-            initialBbox,
-            { ...filters, q: urlQuery },
-            0
-        );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
@@ -239,7 +236,9 @@ export default function MapPage() {
             maxPrice: "",
             available: true,
             sort: "createdAt,desc",
+            county: "",
         };
+
         setFilters(reset);
         setPage(0);
         if (bbox) void fetchListingsFor(bbox, reset, 0);
@@ -261,6 +260,26 @@ export default function MapPage() {
             },
         });
     }
+
+    useEffect(() => {
+        if (!filters.county) return;
+
+        const countyData = COUNTY_BBOX[filters.county];
+        if (!countyData) return;
+
+        // 1. Center map
+        setMapCenter(countyData.center);
+
+        // 2. Set bbox
+        const [minLon, minLat, maxLon, maxLat] = countyData.bbox;
+        const newBbox = { minLon, minLat, maxLon, maxLat };
+        setBbox(newBbox);
+
+        // 3. Search
+        setPage(0);
+        void fetchListingsFor(newBbox, filters, 0);
+    }, [filters.county]);
+
 
     return (
         <div className={styles['mapPage']}>
@@ -286,6 +305,25 @@ export default function MapPage() {
                                 }
                             />
                         </div>
+
+                        <div className={styles['mapPage-field']}>
+                            <label>Județ</label>
+                            <select
+                                value={filters.county}
+                                data-has-value={filters.county !== ""}
+                                onChange={(e) =>
+                                    setFilters((f) => ({ ...f, county: e.target.value }))
+                                }
+                            >
+                                <option value="">Toate județele</option>
+                                {Object.keys(COUNTY_BBOX).map((c) => (
+                                    <option key={c} value={c}>
+                                        {c}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
 
                         <div className={styles['mapPage-fieldRow']}>
                             <div className={styles['mapPage-field']}>

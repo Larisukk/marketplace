@@ -5,7 +5,7 @@ export default function EmailVerifiedPage() {
     return (
         <div className={styles["verify-wrapper"]}>
             <div className={styles["verify-card"]}>
-                <h1 className={styles["verify-title"]}>Email Verified</h1>
+                <h1 className={styles["verify-title"]}>Adresa de email verificata</h1>
                 <p className={styles["verify-subtext"]}>
                     Adresa ta de email a fost verificata cu succes!
                 </p>
