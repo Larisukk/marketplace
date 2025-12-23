@@ -13,5 +13,8 @@ public record ListingMapDTO(
         Double quantity,
         String unit,
         Boolean available,
-        String addressText
+        String addressText,
+
+        // ✅ new: first image for map popup/card
+        String imageUrl
 ) {}

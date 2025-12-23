@@ -93,6 +93,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/map/**").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
+                        // ✅ ASTA ITI LIPSEA (poze)
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                        .requestMatchers(HttpMethod.HEAD, "/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()  // Allow public access to uploaded images
 
                         // chat endpoints (require authenticated user w/ role)

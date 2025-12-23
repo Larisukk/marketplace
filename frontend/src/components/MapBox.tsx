@@ -1,4 +1,4 @@
-// src/components/MapBox.tsx
+// frontend/src/components/MapBox.tsx
 import { useEffect, useRef } from "react";
 import {
     MapContainer,
@@ -11,11 +11,10 @@ import {
 import L, { type DivIcon, type LatLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import LocateMe from "./LocateMe";
-import styles from "./MapBox.module.css";
-
 import MarkerClusterGroup from "react-leaflet-cluster";
+import { toAbsoluteUrl } from "@/services/api"; // ✅ shared helper
 
-/** Single listing point coming from /api/search/search/listings */
+/** Single listing point coming from API */
 export type Point = {
     id: string;
     title: string;
@@ -25,6 +24,9 @@ export type Point = {
     lon: number;
     lat: number;
     farmerName: string | null;
+
+    // can be absolute or "/uploads/.."
+    thumbnailUrl: string | null;
 };
 
 export type Bbox = {
@@ -38,13 +40,11 @@ type MapBoxProps = {
     center: [number, number];
     points: Point[];
     onBboxChange: (bbox: Bbox) => void;
-    activeId?: string | null;
-    className?: string;
 };
 
 /* ---------- helpers ---------- */
 
-function createPriceIcon(p: Point, isActive: boolean): DivIcon {
+function createPriceIcon(p: Point): DivIcon {
     const hasPrice =
         p.priceCents !== null &&
         p.priceCents !== undefined &&
@@ -54,34 +54,27 @@ function createPriceIcon(p: Point, isActive: boolean): DivIcon {
         ? `${(p.priceCents! / 100).toFixed(0)} ${p.currency || "RON"}`
         : "•";
 
-    const activeClass = isActive ? ` ${styles["price-badge--active"]}` : "";
-
     return L.divIcon({
-        className: styles["price-marker"],
-        html: `<div class="${styles["price-badge"]}${activeClass}">${label}</div>`,
+        className: "price-marker",
+        html: `<div class="price-badge">${label}</div>`,
         iconSize: [0, 0],
         iconAnchor: [0, 0],
     });
 }
 
 /** Bubble cluster icon (green circle with count) */
-function createClusterIcon(
-    cluster: { getChildCount: () => number }
-): DivIcon {
+function createClusterIcon(cluster: any): DivIcon {
     const count = cluster.getChildCount();
 
     return L.divIcon({
-        html: `<div class="${styles["cluster-badge"]}"><span>${count}</span></div>`,
-        // We use our modular class for the badge, but retain 'marker-cluster' for leaflet cluster default behavior if needed
-        // shifting completely to modular class for the badge wrapper
-        className: `${styles["marker-cluster-badge"]}`,
+        html: `<div class="cluster-badge"><span>${count}</span></div>`,
+        className: "marker-cluster marker-cluster-badge",
         iconSize: [40, 40],
     });
 }
 
 /** Watches map moves, debounces, and notifies parent with bbox. */
 function BboxWatcher({ onChange }: { onChange: (bbox: Bbox) => void }) {
-    const map = useMapEvents({});
     const timeoutRef = useRef<number | null>(null);
 
     function notify(bounds: LatLngBounds) {
@@ -95,23 +88,24 @@ function BboxWatcher({ onChange }: { onChange: (bbox: Bbox) => void }) {
         });
     }
 
-    function scheduleUpdate() {
+    function scheduleUpdate(bounds: LatLngBounds) {
         if (timeoutRef.current !== null) {
             window.clearTimeout(timeoutRef.current);
         }
         timeoutRef.current = window.setTimeout(() => {
-            notify(map.getBounds());
+            notify(bounds);
         }, 400);
     }
 
-    useMapEvents({
+    const map = useMapEvents({
         moveend() {
-            scheduleUpdate();
+            scheduleUpdate(map.getBounds());
         },
     });
 
     useEffect(() => {
-        scheduleUpdate();
+        // initial bbox (so page loads data without waiting for first move)
+        scheduleUpdate(map.getBounds());
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -139,7 +133,7 @@ function CenterOnProp({ center }: { center: [number, number] }) {
 
 /* ---------- main component ---------- */
 
-export default function MapBox({ center, points, onBboxChange, activeId, className }: MapBoxProps) {
+export default function MapBox({ center, points, onBboxChange }: MapBoxProps) {
     const tileUrl =
         import.meta.env.VITE_TILE_URL ||
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -158,7 +152,7 @@ export default function MapBox({ center, points, onBboxChange, activeId, classNa
             zoom={12}
             minZoom={4}
             scrollWheelZoom
-            className={`${styles['mapBox']} ${className || ''}`}
+            className="mapPage-map fullOnDesktop"
         >
             <TileLayer
                 url={tileUrl}
@@ -169,34 +163,44 @@ export default function MapBox({ center, points, onBboxChange, activeId, classNa
             <LocateMe />
             <BboxWatcher onChange={onBboxChange} />
 
-            {/* clustering for performance, with bubble icons */}
-            <MarkerClusterGroup
-                chunkedLoading
-                iconCreateFunction={createClusterIcon}
-            >
+            <MarkerClusterGroup chunkedLoading iconCreateFunction={createClusterIcon}>
                 {validPoints.map((p) => {
-                    const isActive = activeId != null && p.id === activeId;
+                    const img = toAbsoluteUrl(p.thumbnailUrl);
+
                     return (
-                        <Marker
-                            key={p.id}
-                            position={[p.lat, p.lon]}
-                            icon={createPriceIcon(p, isActive)}
-                        >
+                        <Marker key={p.id} position={[p.lat, p.lon]} icon={createPriceIcon(p)}>
                             <Popup>
+                                {img && (
+                                    <div style={{ marginBottom: 8 }}>
+                                        <img
+                                            src={img}
+                                            alt={p.title}
+                                            style={{
+                                                width: 180,
+                                                height: 120,
+                                                objectFit: "cover",
+                                                borderRadius: 8,
+                                                display: "block",
+                                            }}
+                                            loading="lazy"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = "none";
+                                            }}
+                                        />
+                                    </div>
+                                )}
+
                                 <strong>{p.title}</strong>
                                 <br />
                                 {p.productName}
                                 {p.priceCents != null && (
                                     <>
                                         {" — "}
-                                        {(p.priceCents / 100).toFixed(2)}{" "}
-                                        {p.currency || "RON"}
+                                        {(p.priceCents / 100).toFixed(2)} {p.currency || "RON"}
                                     </>
                                 )}
                                 <br />
-                                {p.farmerName && (
-                                    <small>Farmer: {p.farmerName}</small>
-                                )}
+                                {p.farmerName && <small>Farmer: {p.farmerName}</small>}
                             </Popup>
                         </Marker>
                     );

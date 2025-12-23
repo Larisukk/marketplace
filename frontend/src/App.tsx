@@ -1,24 +1,41 @@
+// frontend/src/App.tsx
 import styles from "./App.module.css";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
+import Home from "./pages/homePage/Home";
 import MapPage from "./pages/mappage/MapPage";
-import Home from "./pages/homepage/Home";
 import UploadProductPage from "./pages/uploadProductPage/UploadProductPage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import ListingPage from "./pages/listingpage/ListingPage";
-import ProtectedRoute from "./components/routing/ProtectedRoute"; //
-import { ChatProvider } from "./context/ChatContext";
+import ProtectedRoute from "./components/routing/ProtectedRoute";
 import ChatPage from "./pages/chatpage/ChatPage";
 
+import { ChatProvider } from "./context/ChatContext";
+import { useAuth } from "./context/AuthContext";
+
 export default function App() {
+    const { user } = useAuth();
+
     return (
         <ChatProvider>
             <Routes>
+                {/* default landing */}
                 <Route path="/" element={<Navigate to="/home" replace />} />
+
+                {/* public pages */}
                 <Route path="/home" element={<Home />} />
-                <Route path="/auth" element={<AuthPage />} />
                 <Route path="/map" element={<MapPage />} />
+                <Route path="/listings/:id" element={<ListingPage />} />
+                <Route path="/chat" element={<ChatPage />} />
+
+                {/* auth page: if already logged in, redirect away */}
+                <Route
+                    path="/auth"
+                    element={!user ? <AuthPage /> : <Navigate to="/home" replace />}
+                />
+
+                {/* protected pages */}
                 <Route
                     path="/profile"
                     element={
@@ -27,7 +44,6 @@ export default function App() {
                         </ProtectedRoute>
                     }
                 />
-
                 <Route
                     path="/upload"
                     element={
@@ -36,8 +52,9 @@ export default function App() {
                         </ProtectedRoute>
                     }
                 />
-                <Route path="/chat" element={<ChatPage />} />
-                <Route path="/listings/:id" element={<ListingPage />} />
+
+                {/* fallback */}
+                <Route path="*" element={<Navigate to="/home" replace />} />
             </Routes>
         </ChatProvider>
     );

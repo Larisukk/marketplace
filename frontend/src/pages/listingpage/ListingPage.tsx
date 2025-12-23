@@ -169,13 +169,19 @@ export default function ListingPage() {
     }
   };
 
-  const priceText = useMemo(() => {
-    if (!details) return "—";
-    const val = (details.priceCents / 100).toFixed(0);
-    return `${val} ${details.currency}`;
-  }, [details]);
+    const priceText = useMemo(() => {
+        if (!details) return "—";
 
-  const sellerInitial = useMemo(() => {
+        const cents = (details as any).priceCents;
+        const currency = (details as any).currency ?? "RON";
+
+        if (typeof cents !== "number") return `— ${currency}`;
+
+        return `${Math.round(cents / 100)} ${currency}`;
+    }, [details]);
+
+
+    const sellerInitial = useMemo(() => {
     const name = (details as any)?.farmerName as string | undefined;
     if (name && name.trim().length > 0) return name.trim()[0].toUpperCase();
     return sellerId ? "S" : "?";
@@ -197,8 +203,10 @@ export default function ListingPage() {
     return urls;
   }, [details]);
 
-  const hasCoords =
-    details && typeof details.lat === "number" && typeof details.lon === "number";
+    const lat = (details as any)?.lat;
+    const lon = (details as any)?.lon;
+
+    const hasCoords = typeof lat === "number" && typeof lon === "number";
 
   return (
     <>
@@ -217,11 +225,12 @@ export default function ListingPage() {
               ID: <code>{id}</code>
             </span>
 
-            {hasCoords && details && (
-              <span>
-                Coords: {details.lat.toFixed(4)}, {details.lon.toFixed(4)}
+              {hasCoords && (
+                  <span>
+                Coords: {lat.toFixed(4)}, {lon.toFixed(4)}
               </span>
-            )}
+              )}
+
           </div>
         </header>
 

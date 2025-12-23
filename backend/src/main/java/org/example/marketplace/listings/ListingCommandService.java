@@ -2,6 +2,7 @@ package org.example.marketplace.listings;
 
 import org.example.marketplace.user.UserEntity;
 import org.example.marketplace.user.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -9,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.*;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -19,62 +22,30 @@ public class ListingCommandService {
     private final JdbcTemplate jdbc;
     private final UserRepository users;
 
-    public ListingCommandService(JdbcTemplate jdbc, UserRepository users) {
+    // One single upload dir, configurable via app.upload.dir
+    private final Path uploadRoot;
+
+    public ListingCommandService(
+            JdbcTemplate jdbc,
+            UserRepository users,
+            @Value("${app.upload.dir:uploads}") String uploadDir
+    ) {
         this.jdbc = jdbc;
         this.users = users;
+
+        // Absolute + normalized => consistent path regardless of working directory
+        this.uploadRoot = Paths.get(uploadDir).toAbsolutePath().normalize();
     }
 
     private String mapUnit(String code) {
-        if (code == null) {
-            throw new IllegalArgumentException("Unit is required");
-        }
+        if (code == null) throw new IllegalArgumentException("Unit is required");
 
-        // Map frontend values → DB enum values from V2__demo_market_data.sql
         return switch (code) {
-            case "kg"  -> "KG";
-            case "l"   -> "L";
-            case "buc" -> "BOX";   // or another enum value if you add one
+            case "kg" -> "KG";
+            case "l" -> "L";
+            case "buc" -> "BOX";
             default -> throw new IllegalArgumentException("Unsupported unit: " + code);
         };
-    }
-
-    private UUID findOrCreateCategory(String categoryCode) {
-        if (categoryCode == null || categoryCode.isBlank()) {
-            return null;
-        }
-
-        // Map Romanian category codes to English category names in database
-        String categoryName = switch (categoryCode.toLowerCase()) {
-            case "fructe" -> "Fruits";
-            case "legume" -> "Vegetables";
-            case "lactate" -> "Dairy";
-            case "oua" -> "Dairy";  // Eggs are under Dairy
-            case "altele" -> null;  // No category for "other"
-            default -> null;
-        };
-
-        if (categoryName == null) {
-            return null;  // No category mapping available
-        }
-
-        // Try to find existing category
-        try {
-            UUID categoryId = jdbc.queryForObject(
-                    "SELECT id FROM categories WHERE name = ? LIMIT 1",
-                    UUID.class,
-                    categoryName
-            );
-            return categoryId;
-        } catch (EmptyResultDataAccessException ex) {
-            // Category doesn't exist, create it
-            UUID newCategoryId = UUID.randomUUID();
-            jdbc.update(
-                    "INSERT INTO categories (id, name) VALUES (?, ?)",
-                    newCategoryId,
-                    categoryName
-            );
-            return newCategoryId;
-        }
     }
 
     @Transactional
@@ -97,22 +68,16 @@ public class ListingCommandService {
         UUID productId = UUID.randomUUID();
         UUID listingId = UUID.randomUUID();
 
-        // Map frontend unit ("kg", "l", "buc") → DB enum ("KG", "L", "BOX")
         String dbUnit = mapUnit(req.unit());
 
-        // Find or create category based on categoryCode
-        UUID categoryId = findOrCreateCategory(req.categoryCode());
-
-        // 1) insert product with category_id
         jdbc.update(
                 """
                 INSERT INTO products (id, name, category_id)
-                VALUES (?, ?, ?)
+                VALUES (?, ?, NULL)
                 """,
-                productId, req.title(), categoryId
+                productId, req.title()
         );
 
-        // 2) insert listing WITH location in the same statement
         jdbc.update(
                 """
                 INSERT INTO listings (
@@ -135,27 +100,34 @@ public class ListingCommandService {
                 "RON",
                 1.0d,
                 dbUnit,
-                req.lon(),   // x = lon
-                req.lat()    // y = lat
+                req.lon(),
+                req.lat()
         );
 
         return listingId;
     }
 
+    /**
+     * BACKWARD-COMPAT overload (older callers might still call 2-args version).
+     * If you still have any code calling uploadListingImages(listingId, files),
+     * it will continue to compile.
+     */
     @Transactional
-    public void uploadListingImages(UUID listingId, List<MultipartFile> files, String userEmail) throws IOException {
-        if (files == null || files.isEmpty()) {
-            return;
-        }
+    public void uploadListingImages(UUID listingId, List<MultipartFile> files) throws IOException {
+        uploadListingImages(listingId, files, null);
+    }
 
-        // Get user ID
-        UserEntity user = users.findByEmailIgnoreCase(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+    /**
+     * New version used by the controller: validates ownership by email (if provided).
+     */
+    @Transactional
+    public void uploadListingImages(UUID listingId, List<MultipartFile> files, String email) throws IOException {
+        if (files == null || files.isEmpty()) return;
 
-        // Ensure listing exists and user owns it
-        UUID ownerId;
+        // Ensure listing exists + (optional) ownership check
+        UUID ownerUserId;
         try {
-            ownerId = jdbc.queryForObject(
+            ownerUserId = jdbc.queryForObject(
                     "SELECT farmer_user_id FROM listings WHERE id = ?",
                     UUID.class,
                     listingId
@@ -164,32 +136,60 @@ public class ListingCommandService {
             throw new IllegalArgumentException("Listing not found: " + listingId);
         }
 
-        if (!ownerId.equals(user.getId())) {
-            throw new IllegalArgumentException("You do not have permission to upload images to this listing");
+        // If email is provided, ensure authenticated user owns this listing
+        if (email != null && !email.isBlank()) {
+            UserEntity user = users.findByEmailIgnoreCase(email)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + email));
+
+            if (!user.getId().equals(ownerUserId)) {
+                throw new IllegalArgumentException("Not allowed to upload images for this listing");
+            }
         }
 
-        Path uploadRoot = Paths.get("uploads");
         Files.createDirectories(uploadRoot);
 
         for (MultipartFile file : files) {
-            if (file.isEmpty()) continue;
+            if (file == null || file.isEmpty()) continue;
+
+            // allow only images
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
+                throw new IllegalArgumentException("Only image files are allowed");
+            }
 
             UUID mediaId = UUID.randomUUID();
-            String fileName = mediaId + "-" + file.getOriginalFilename();
-            Path target = uploadRoot.resolve(fileName);
 
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+            String safeOriginal = sanitizeOriginalFilename(file.getOriginalFilename());
 
+            // Ensure filename has extension (helps browser display)
+            safeOriginal = ensureExtension(safeOriginal, contentType);
+
+            String fileName = mediaId + "-" + safeOriginal;
+
+            // Always inside uploadRoot
+            Path target = uploadRoot.resolve(fileName).normalize();
+            if (!target.startsWith(uploadRoot)) {
+                throw new IllegalArgumentException("Invalid file path");
+            }
+
+            // Save file
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            // URL that frontend uses (served via WebConfig)
             String url = "/uploads/" + fileName;
 
             jdbc.update(
                     """
-                    INSERT INTO media_assets (id, url, mime_type, created_at)
-                    VALUES (?, ?, ?, now())
+                    INSERT INTO media_assets (id, url, storage_path, mime_type, size_bytes, created_at)
+                    VALUES (?, ?, ?, ?, ?, now())
                     """,
                     mediaId,
                     url,
-                    file.getContentType()
+                    target.toString(),
+                    contentType,
+                    file.getSize()
             );
 
             Integer nextSort = jdbc.queryForObject(
@@ -208,5 +208,51 @@ public class ListingCommandService {
                     nextSort
             );
         }
+    }
+
+    private static String sanitizeOriginalFilename(String original) {
+        if (original == null) return "file";
+
+        String name = original.trim();
+        if (name.isEmpty()) return "file";
+
+        // remove any path parts (Windows/mac/Linux)
+        name = name.replace("\\", "/");
+        int slash = name.lastIndexOf("/");
+        if (slash >= 0) name = name.substring(slash + 1);
+
+        // keep only safe chars
+        name = name.replaceAll("[^a-zA-Z0-9._-]", "_");
+        if (name.isBlank()) return "file";
+
+        // optional: limit length
+        if (name.length() > 120) {
+            String ext = "";
+            int dot = name.lastIndexOf('.');
+            if (dot > 0 && dot < name.length() - 1) {
+                ext = name.substring(dot);
+                name = name.substring(0, dot);
+            }
+            name = name.substring(0, Math.min(120, name.length())) + ext;
+        }
+
+        return name;
+    }
+
+    private static String ensureExtension(String name, String contentType) {
+        // already has extension
+        int dot = name.lastIndexOf('.');
+        if (dot > 0 && dot < name.length() - 1) return name;
+
+        String ext = switch (contentType.toLowerCase(Locale.ROOT)) {
+            case "image/png" -> ".png";
+            case "image/jpeg" -> ".jpg";
+            case "image/jpg" -> ".jpg";
+            case "image/webp" -> ".webp";
+            case "image/gif" -> ".gif";
+            default -> ".img";
+        };
+
+        return name + ext;
     }
 }
