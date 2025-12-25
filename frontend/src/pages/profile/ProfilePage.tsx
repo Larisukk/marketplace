@@ -1,7 +1,7 @@
 import React from "react";
-import MainHeader from "../../components/MainHeader";
 import Profile from "../../components/Profile";
 import styles from "./Profile.module.css";
+import MainHeader from "@/components/MainHeader";
 
 export default function ProfilePage() {
     return (

@@ -1,9 +1,13 @@
 // src/pages/AuthPage.tsx
-import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import styles from "../auth.module.css";
+import styles from "./auth.module.css";
+import AuthHeader from "../../header/AuthHeader";
 
+// ===============================
+// Floating Field Component
+// ===============================
 type FloatingFieldProps = {
     id: string;
     label: string;
@@ -25,7 +29,7 @@ function FloatingField({
                 type={type}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                placeholder=" "   // just one space string
+                placeholder=" "
                 autoComplete={autoComplete}
                 required
             />
@@ -35,18 +39,30 @@ function FloatingField({
     );
 }
 
+
+
+// ===============================
+// MAIN PAGE COMPONENT
+// ===============================
 export default function AuthPage() {
     const [tab, setTab] = useState<"signup" | "login">("signup");
     const { clearError } = useAuth();
 
+    // ASCUNDE MainHeader-ul global
+    useEffect(() => {
+        document.body.classList.add("auth-mode");
+        return () => document.body.classList.remove("auth-mode");
+    }, []);
+
     function switchTab(t: "signup" | "login") {
-        clearError();       // clear any backend error when switching tabs
+        clearError();
         setTab(t);
     }
 
     return (
         <div className={styles['auth-wrap']}>
             {/* left hero image */}
+            <AuthHeader />
             <div className={styles['hero-left']} aria-hidden />
 
             {/* ---- RIGHT COLUMN: LOGO + CARD, with fixed gap (no overlap) ---- */}
@@ -58,8 +74,12 @@ export default function AuthPage() {
                 <div className={`${styles.card} ${styles.single}`}>
                     <div className={`${styles.right} ${styles.compact}`}>
                         <Tabs tab={tab} onChange={switchTab} />
-                        {tab === "signup" ? <SignupForm key="signup" /> : <LoginForm key="login" />}
-                        <FooterNote />
+
+                        {tab === "signup"
+                            ? <SignupForm key="signup" />
+                            : <LoginForm key="login" />
+                        }
+
                     </div>
                 </div>
             </div>
@@ -67,6 +87,11 @@ export default function AuthPage() {
     );
 }
 
+
+
+// ===============================
+// TABS
+// ===============================
 function Tabs({
     tab,
     onChange,
@@ -83,6 +108,11 @@ function Tabs({
     );
 }
 
+
+
+// ===============================
+// LOGIN FORM
+// ===============================
 function LoginForm() {
     const { login, loading, error } = useAuth();
     const navigate = useNavigate();
@@ -92,7 +122,9 @@ function LoginForm() {
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
+
         await login(email.trim(), password);
+
         const redirectPath = location.state?.redirectAfterLogin || "/home";
         navigate(redirectPath, {
             state: {
@@ -101,6 +133,8 @@ function LoginForm() {
             },
         });
     }
+
+
 
     return (
         <form onSubmit={onSubmit} className={styles.form}>
@@ -131,6 +165,11 @@ function LoginForm() {
     );
 }
 
+
+
+// ===============================
+// SIGNUP FORM
+// ===============================
 function SignupForm() {
     const { register, loading, error } = useAuth();
     const navigate = useNavigate();
@@ -140,7 +179,9 @@ function SignupForm() {
     const [password, setPassword] = useState("");
     const [submitted, setSubmitted] = useState(false);
 
-    // UI rules (aligned with backend regex spirit)
+    const [accepted, setAccepted] = useState(false);
+
+    // Password checks
     const rules = [
         { id: "len", ok: password.length >= 8 && password.length <= 64, label: "Minim 8 și maxim 64 de caractere" },
         { id: "lower", ok: /[a-z]/.test(password), label: "Cel puțin o literă mică (a-z)" },
@@ -148,54 +189,32 @@ function SignupForm() {
         { id: "digit", ok: /\d/.test(password), label: "Cel puțin o cifră (0-9)" },
         { id: "symb", ok: /[^\w\s]/.test(password), label: "Cel puțin un simbol (!@#$% etc.)" },
     ];
-    const allOk = rules.every(r => r.ok);
+
     const unmet = rules.filter(r => !r.ok);
-    const showUnmet = submitted && !allOk; // show ONLY after submit, and only the unmet ones
+    const allOk = unmet.length === 0;
+    const showUnmet = submitted && !allOk;
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
         setSubmitted(true);
-        if (!allOk) return; // don't send if password is weak; show unmet list instead
+        if (!allOk) return;
 
         await register(displayName.trim(), email.trim(), password);
-        const redirectPath = location.state?.redirectAfterLogin || "/home";
-        navigate(redirectPath, {
-            state: {
-                sellerId: location.state?.sellerId,
-                autoStartChat: location.state?.autoStartChat,
-            },
+
+        navigate("/email-sent", {
+            state: { email: email.trim() },
         });
+
     }
+
 
     return (
         <form onSubmit={onSubmit} className={styles.form}>
             {error && <div className={styles.error}>{error}</div>}
 
-            <FloatingField
-                id="signup-name"
-                label="Nume"
-                value={displayName}
-                onChange={setDisplayName}
-                autoComplete="name"
-            />
-
-            <FloatingField
-                id="signup-email"
-                label="E-mail"
-                type="email"
-                value={email}
-                onChange={setEmail}
-                autoComplete="email"
-            />
-
-            <FloatingField
-                id="signup-password"
-                label="Parolă"
-                type="password"
-                value={password}
-                onChange={setPassword}
-                autoComplete="new-password"
-            />
+            <FloatingField id="signup-name" label="Nume" value={displayName} onChange={setDisplayName} autoComplete="name" />
+            <FloatingField id="signup-email" label="E-mail" type="email" value={email} onChange={setEmail} autoComplete="email" />
+            <FloatingField id="signup-password" label="Parolă" type="password" value={password} onChange={setPassword} autoComplete="new-password" />
 
             {showUnmet && (
                 <ul className={styles['pw-rules']}>
@@ -205,9 +224,31 @@ function SignupForm() {
                 </ul>
             )}
 
-            <button type="submit" disabled={loading} className={styles.btn}>
+            <label className={styles['gdpr-checkbox']}>
+                <input
+                    type="checkbox"
+                    checked={accepted}
+                    onChange={(e) => setAccepted(e.target.checked)}
+                    required
+                />
+                Accept{" "}
+                <a href="/terms" target="_blank" rel="noreferrer">Termenii</a>
+                si
+                <a href="/privacy" target="_blank" rel="noreferrer">Politica de confidențialitate</a>
+
+            </label>
+
+            <p className={styles['gdpr-note']}>
+                Continuând, accepți Termenii și Politica de confidențialitate.
+                Autentificare doar prin contul creat în aplicație.
+            </p>
+
+            <button type="submit" disabled={!accepted} className={styles.btn}>
                 {loading ? "Se înregistrează…" : "Înregistrați-vă"}
             </button>
+
+
+
         </form>
     );
 }

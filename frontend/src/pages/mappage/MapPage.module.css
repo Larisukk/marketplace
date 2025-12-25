@@ -8,7 +8,7 @@
     display: flex;
     flex-direction: column;
     padding: 16px;
-    padding-top: 100px;
+    padding-top: 0px;
     /* Account for fixed header */
     background: linear-gradient(180deg, #e6f3ea, #cde9d6);
     color: #143321;
@@ -20,18 +20,57 @@
         height: calc(100vh - var(--map-nav-h));
         max-height: calc(100vh - var(--map-nav-h));
         box-sizing: border-box;
-        overflow: hidden;
+        overflow: visible;
         /* page itself doesn't scroll; only left list does */
     }
 }
 
 .mapPage-header {
-    padding-bottom: 8px;
-    border-bottom: 1px solid #b8d7c3;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 12px;
+
+    padding: 6px 12px;     /* 🔹 foarte mic */
+    margin: 0;
+
+    border-bottom: 1px solid #b8d7c3;
+    background: #e6f3ea;
+
+    height: auto;
 }
+.mapPage-fieldRow {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.mapPage-field {
+    flex: 1;
+}
+
+.mapPage-field input {
+    width: 100%;
+    box-sizing: border-box;
+}
+.mapPage-field select {
+    width: 100%;
+    padding: 0.35rem 0.5rem;
+
+    border-radius: 4px;
+    border: 1px solid #b8d7c3;
+
+    font-size: 0.9rem;
+    background-color: #ffffff;
+
+    color: #9dbba8;              /* 🔹 verde deschis (placeholder) */
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+/* când e ales un județ */
+.mapPage-field select[data-has-value="true"] {
+    color: #143321;              /* 🔹 verde normal */
+}
+
 
 .mapPage-title {
     margin: 0;
@@ -352,3 +391,29 @@
 }
 
 /* LocateMe, markers, and clusters moved to MapBox.module.css */
+.mapPage-cardActionBtn {
+    margin-top: 0.4rem;
+
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;            /* 🔹 rotunjit */
+    border: none;
+
+    background: #1f7a3a;             /* verde principal */
+    color: #ffffff;
+
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.mapPage-cardActionBtn:hover {
+    background: #186632;
+    transform: translateY(-1px);
+}
+
+.mapPage-cardActionBtn:active {
+    transform: translateY(0);
+}
+

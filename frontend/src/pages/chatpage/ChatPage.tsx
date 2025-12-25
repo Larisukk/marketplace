@@ -68,12 +68,12 @@ export default function ChatPage() {
             <button
               className={styles['chat-settings-btn']}
               onClick={() => setShowSettings(true)}
-              title="Chat Settings"
+              title="Setari"
             >
               ⋮
             </button>
           </div>
-          <div className={styles['chat-sidebar-subtitle']}>{user ? "Online" : "Not connected"}</div>
+          <div className={styles['chat-sidebar-subtitle']}>{user ? "Online" : "Offline"}</div>
         </div>
 
         <ChatList />
@@ -91,15 +91,15 @@ export default function ChatPage() {
             className={styles['chat-back-btn']}
             onClick={() => actions.openConversation(null as any)}
           >
-            ← Back
+            ← inapoi
           </button>
 
           <div className={styles['chat-topbar-center']}>
             <div className={styles['chat-topbar-title']}>
-              {activeConversationId ? "Chat" : "Messages"}
+              {activeConversationId ? "Chat" : "Mesaje"}
             </div>
             <div className={styles['chat-topbar-sub']}>
-              {activeConversationId ? "Conversation open" : hasChats ? "Pick a chat" : "No chats"}
+              {activeConversationId ? "Conversatie deschisa" : hasChats ? "Alege o conversatie" : "Nicio conversatie"}
             </div>
           </div>
 
@@ -109,16 +109,16 @@ export default function ChatPage() {
         {!activeConversationId && hasChats && (
           <div className={styles['chat-select-state']}>
             <div className={styles['chat-select-icon']}>💬</div>
-            <p className={styles['chat-select-message']}>Select a conversation to start chatting</p>
+            <p className={styles['chat-select-message']}>Selecteaza o conversatie pentru a putea incepe sa discutati</p>
           </div>
         )}
 
         {!hasChats && (
           <div className={styles['chat-empty-state']}>
             <div className={styles['chat-empty-state-icon']}>💬</div>
-            <h2 className={styles['chat-empty-state-title']}>No conversations yet</h2>
+            <h2 className={styles['chat-empty-state-title']}>Nicio conversatie inca</h2>
             <p className={styles['chat-empty-state-message']}>
-              Start a new conversation from a listing page to begin chatting.
+              Incepe o noua conversatie din lista cu produse pentru a putea discuta.
             </p>
           </div>
         )}

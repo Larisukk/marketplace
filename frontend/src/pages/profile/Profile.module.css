@@ -222,3 +222,183 @@
     background: #96b59a;
     color: white;
 }
+/* Logout */
+.logout-item {
+    color: #b42318;
+}
+
+.logout-item:hover {
+    background: #fdecea;
+}
+
+.delete-account-item {
+    margin-top: 200px;
+
+    background: none;
+    border: none;
+    padding: 8px 0;
+
+    color: #8b1e1e;        /* roșu închis, elegant */
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+}
+
+/* Hover subtil, fără zgomot vizual */
+.delete-account-item:hover {
+    text-decoration: underline;
+}
+
+.delete-confirm {
+    background: #8b1e1e;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.delete-confirm:hover {
+    background: #a32626;
+}
+.profile-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.edit-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
+}
+
+/* buton minimalist */
+.edit-profile-btn {
+    background: none;
+    border: none;
+    color: #3a5a40;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.edit-profile-btn:hover {
+    text-decoration: underline;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.save-btn {
+    background: #588157;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.cancel-btn {
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+}
+
+/* Logout */
+.logout-item {
+    color: #b42318;
+}
+
+.logout-item:hover {
+    background: #fdecea;
+}
+
+.delete-account-item {
+    margin-top: 200px;
+
+    background: none;
+    border: none;
+    padding: 8px 0;
+
+    color: #8b1e1e;        /* roșu închis, elegant */
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+}
+
+/* Hover subtil, fără zgomot vizual */
+.delete-account-item:hover {
+    text-decoration: underline;
+}
+
+.delete-confirm {
+    background: #8b1e1e;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.delete-confirm:hover {
+    background: #a32626;
+}
+.profile-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.edit-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
+}
+
+/* buton minimalist */
+.edit-profile-btn {
+    background: none;
+    border: none;
+    color: #3a5a40;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.edit-profile-btn:hover {
+    text-decoration: underline;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.save-btn {
+    background: #588157;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.cancel-btn {
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+}
+

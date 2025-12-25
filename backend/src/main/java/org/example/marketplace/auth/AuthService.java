@@ -1,5 +1,7 @@
 package org.example.marketplace.auth;
 
+import org.example.marketplace.emailverification.EmailVerificationService;
+import org.example.marketplace.emailverification.EmailSender;
 import org.example.marketplace.auth.dto.*;
 import org.example.marketplace.user.*;
 import org.springframework.http.HttpStatus;
@@ -26,18 +28,28 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private final JwtService jwt;
     private final AuthSessionRepository sessions;
+    private final EmailVerificationService emailVerificationService;
+    private final EmailSender emailSender;
 
-    public AuthService(UserRepository repo,
-                       PasswordEncoder encoder,
-                       AuthenticationManager authManager,
-                       JwtService jwt,
-                       AuthSessionRepository sessions) {
+
+    public AuthService(
+            UserRepository repo,
+            PasswordEncoder encoder,
+            AuthenticationManager authManager,
+            JwtService jwt,
+            AuthSessionRepository sessions,
+            EmailVerificationService emailVerificationService,
+            EmailSender emailSender
+    ) {
         this.repo = repo;
         this.encoder = encoder;
         this.authManager = authManager;
         this.jwt = jwt;
         this.sessions = sessions;
+        this.emailVerificationService = emailVerificationService;
+        this.emailSender = emailSender;
     }
+
 
     private static String generateOpaqueToken() {
         byte[] bytes = new byte[64];
@@ -54,9 +66,20 @@ public class AuthService {
                 .displayName(r.displayName().trim())
                 .passwordHash(encoder.encode(r.password()))
                 .role(UserRole.USER)
+                .emailVerifiedAt(null)
                 .isActive(true)
                 .build();
         repo.save(user);
+
+        String rawToken = emailVerificationService.createToken(user);
+
+        emailSender.sendEmail(
+                user.getEmail(),
+                "Verify your email",
+                "Click here to verify your account: http://localhost:5173/verify-email?token=" + rawToken
+        );
+
+
     }
 
     public LoginResponse login(LoginRequest r, String userAgent, String ip) {
@@ -68,6 +91,11 @@ public class AuthService {
         }
 
         var user = repo.findByEmailIgnoreCase(r.email()).orElseThrow();
+
+        if (user.getEmailVerifiedAt() == null) {
+            throw new RuntimeException("Email not verified");
+        }
+
 
         var claims = Map.<String, Object>of(
                 "email", user.getEmail(),
@@ -111,4 +139,25 @@ public class AuthService {
             throw new IllegalStateException("SHA-256 not available", e);
         }
     }
+
+    public void changePassword(String email, String oldPassword, String newPassword) {
+
+        UserEntity user = repo.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User not found"
+                ));
+
+        // verifică parola veche
+        if (!encoder.matches(oldPassword, user.getPasswordHash())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Parola veche este incorectă"
+            );
+        }
+
+        // setează parola nouă (HASH)
+        user.setPasswordHash(encoder.encode(newPassword));
+        repo.save(user);
+    }
+
 }

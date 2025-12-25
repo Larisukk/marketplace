@@ -1,0 +1,59 @@
+.county-select-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.county-select-display {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.county-display-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.dropdown-arrow {
+    font-size: 0.7rem;
+    margin-left: 6px;
+    transition: transform 0.2s ease;
+}
+
+.county-select-display[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.county-select-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 260px;
+
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 8px;
+
+    box-shadow:
+            0 10px 25px rgba(0,0,0,.12),
+            0 4px 10px rgba(0,0,0,.08);
+
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 5000;
+}
+
+.county-select-option {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.county-select-option:hover {
+    background: #f5f9f0;
+}

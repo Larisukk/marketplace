@@ -580,6 +580,20 @@ const UploadProduct: React.FC = () => {
                     </div>
                 </div>
 
+            {/* MESAJE EROARE / SUCCES – jos */}
+            {submitError && (
+                <div className="form-error bottom-error">
+                    {submitError}
+                </div>
+            )}
+
+            {submitSuccess && (
+                <div className="form-success bottom-success">
+                    Anunțul a fost publicat cu succes.
+                </div>
+            )}
+
+
                 <button type="submit" className={styles['submit-product-btn']} disabled={submitting}>
                     {submitting ? "Se publică…" : "Publică Anunțul"}
                 </button>

@@ -1,0 +1,139 @@
+.legalPage {
+    padding: 3rem 1.5rem;
+}
+
+/* BREADCRUMB */
+.legalBreadcrumb {
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 1rem;
+}
+
+/* TITLE */
+.legalTitle {
+    font-size: 2.2rem;
+    margin-bottom: 2.5rem;
+    color: #0f2a1d;
+}
+
+/* LAYOUT */
+.legalLayout {
+    display: grid;
+    grid-template-columns: 260px 1fr 260px;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* SIDEBAR */
+.legalSidebar {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+
+.legalSidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.legalSidebar li {
+    padding: 0.75rem 0;
+}
+
+.legalSidebar a {
+    text-decoration: none;
+    color: #444;
+    display: block;
+    padding: 0.75rem 0;
+}
+
+/* ACTIVE LINK */
+.active {
+    font-weight: 700;
+    color: #375534;
+}
+
+/* BACK BUTTON */
+.backBtn {
+    margin-bottom: 1rem;
+    background: none;
+    border: none;
+    color: #6b46c1;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* CONTENT */
+.legalContent {
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 12px;
+}
+
+.legalContent section {
+    margin-bottom: 2rem;
+}
+
+.legalContent h2 {
+    font-size: 1.35rem;
+    margin-bottom: 0.75rem;
+    color: #375534;
+}
+
+.legalContent p,
+.legalContent li {
+    line-height: 1.7;
+    color: #555;
+}
+
+.legalContent ul {
+    padding-left: 1.2rem;
+}
+
+/* ACTIONS */
+.legalActions {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    height: fit-content;
+}
+
+.legalActions h3 {
+    margin-bottom: 1rem;
+}
+
+.legalActions button {
+    width: 100%;
+    padding: 0.7rem;
+    margin-bottom: 0.75rem;
+    border-radius: 8px;
+    border: none;
+    background: #375534;
+    color: white;
+    cursor: pointer;
+}
+
+.legalActions button:hover {
+    opacity: 0.9;
+}
+
+/* FOOTER */
+.legalFooter {
+    margin-top: 2rem;
+    font-size: 0.85rem;
+    color: #777;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .legalLayout {
+        grid-template-columns: 1fr;
+    }
+
+    .legalSidebar,
+    .legalActions {
+        display: none;
+    }
+}

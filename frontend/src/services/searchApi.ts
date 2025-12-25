@@ -4,7 +4,7 @@ import type { ListingCardDto, ListingSummaryDto, PageDto, UUID } from "@/types/s
 
 // Axios instance
 const api = axios.create({
-    baseURL: "", // or import.meta.env.VITE_API_URL || ""
+    baseURL: "http://localhost:8080",
     timeout: 12000,
 
     // axios v1 expects paramsSerializer: (params: object) => string
@@ -22,19 +22,16 @@ const api = axios.create({
 
 // Attach JWT if present
 api.interceptors.request.use((config) => {
-    const token =
-        localStorage.getItem("jwt") ||
-        localStorage.getItem("token") ||
-        sessionStorage.getItem("jwt") ||
-        sessionStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
 
     if (token) {
         config.headers = config.headers ?? {};
-        (config.headers as any).Authorization = `Bearer ${token}`;
+        config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
 });
+
 
 export interface SearchParams {
     q?: string;
@@ -55,7 +52,7 @@ export interface SearchParams {
 
 export function searchListings(params: SearchParams) {
     return api
-        .get<PageDto<ListingCardDto>>("/api/search/search/listings", { params })
+        .get<PageDto<ListingCardDto>>("/api/search/listings", { params })
         .then((r) => r.data);
 }
 

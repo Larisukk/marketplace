@@ -1,15 +1,14 @@
 // frontend/src/pages/MapPage.tsx
 import { FormEvent, useEffect, useRef, useState } from "react";
 import MapBox, { type Bbox, type Point } from "../../components/MapBox";
-import Header from "../../components/Header";
 import styles from "./MapPage.module.css";
-// import "../homePage/styles.css"; // Removed as it was refactored/moved
-import { useLocation, useNavigate } from "react-router-dom";
-
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import BurgerMenu from "@/components/BurgerMenu";
 import { searchListings } from "@/services/searchApi";
 import type { ListingCardDto } from "@/types/search";
 import { useAuth } from "../../context/AuthContext";
 import { useChat } from "../../hooks/useChat";
+import { COUNTY_BBOX } from "@/utils/counties";
 
 type SortOption =
     | "createdAt,desc"
@@ -19,11 +18,13 @@ type SortOption =
 
 type Filters = {
     q: string;
-    minPrice: string; // in currency units
+    minPrice: string;
     maxPrice: string;
     available: boolean;
     sort: SortOption;
+    county: string;
 };
+
 
 const DEFAULT_CENTER: [number, number] = [44.4268, 26.1025];
 
@@ -33,7 +34,8 @@ export default function MapPage() {
         minPrice: "",
         maxPrice: "",
         available: true,
-        sort: "createdAt,desc", // Newest by default
+        sort: "createdAt,desc",
+        county: "",
     });
 
     const [bbox, setBbox] = useState<Bbox | null>(null);
@@ -75,6 +77,34 @@ export default function MapPage() {
         }
         hasAppliedCenterRef.current = true;
     }, [location.state, setMapCenter]);
+
+    const [searchParams] = useSearchParams();
+    const urlQuery = searchParams.get("q") ?? "";
+    const urlCounty = searchParams.get("county");
+
+    useEffect(() => {
+        if (!urlCounty) return;
+
+        const countyData = COUNTY_BBOX[urlCounty];
+        if (!countyData) return;
+
+        // 1. center map
+        setMapCenter(countyData.center);
+
+        // 2. bbox
+        const [minLon, minLat, maxLon, maxLat] = countyData.bbox;
+        const initialBbox = { minLon, minLat, maxLon, maxLat };
+        setBbox(initialBbox);
+
+        // 3. inject search text
+        setFilters((prev) => ({
+            ...prev,
+            q: urlQuery,
+            county: urlCounty ?? "",
+        }));
+
+    }, []);
+
 
     // Convert ListingCardDto -> Point expected by MapBox
     function listingToPoint(l: ListingCardDto): Point {
@@ -143,7 +173,7 @@ export default function MapPage() {
             setTotal(data.total);
         } catch (e) {
             console.error("search error", e);
-            setError("Could not load listings.");
+            setError("EROARE: Nu s-au putut afisa produsele.");
         } finally {
             setLoading(false);
         }
@@ -206,7 +236,9 @@ export default function MapPage() {
             maxPrice: "",
             available: true,
             sort: "createdAt,desc",
+            county: "",
         };
+
         setFilters(reset);
         setPage(0);
         if (bbox) void fetchListingsFor(bbox, reset, 0);
@@ -215,7 +247,7 @@ export default function MapPage() {
     // Handle opening listing (view details only; chat is started from ListingPage)
     async function handleOpenListing(listing: ListingCardDto) {
         if (!listing.farmerUserId) {
-            alert("Seller information is not available for this listing.");
+            alert("Informatiile despre vanzator nu sunt disponibile aici.");
             return;
         }
 
@@ -229,12 +261,32 @@ export default function MapPage() {
         });
     }
 
+    useEffect(() => {
+        if (!filters.county) return;
+
+        const countyData = COUNTY_BBOX[filters.county];
+        if (!countyData) return;
+
+        // 1. Center map
+        setMapCenter(countyData.center);
+
+        // 2. Set bbox
+        const [minLon, minLat, maxLon, maxLat] = countyData.bbox;
+        const newBbox = { minLon, minLat, maxLon, maxLat };
+        setBbox(newBbox);
+
+        // 3. Search
+        setPage(0);
+        void fetchListingsFor(newBbox, filters, 0);
+    }, [filters.county]);
+
+
     return (
         <div className={styles['mapPage']}>
-            <Header />
             {/* Top bar: title */}
             <header className={styles['mapPage-header']}>
-                <h2 className={styles['mapPage-title']}>BioBuy Map</h2>
+                <BurgerMenu />
+                <span className={styles['mapPage-title']}>BioBuy Map</span>
             </header>
 
             {/* Main layout: left search + list, right map */}
@@ -243,10 +295,10 @@ export default function MapPage() {
                 <section className={styles['mapPage-list']}>
                     <form className={styles['mapPage-filters']} onSubmit={handleSubmit}>
                         <div className={styles['mapPage-field']}>
-                            <label>Search</label>
+                            <label>Cautare</label>
                             <input
                                 type="text"
-                                placeholder="tomatoes, apples, cheese..."
+                                placeholder="rosii, mere, branza..."
                                 value={filters.q}
                                 onChange={(e) =>
                                     setFilters((f) => ({ ...f, q: e.target.value }))
@@ -254,9 +306,28 @@ export default function MapPage() {
                             />
                         </div>
 
+                        <div className={styles['mapPage-field']}>
+                            <label>Județ</label>
+                            <select
+                                value={filters.county}
+                                data-has-value={filters.county !== ""}
+                                onChange={(e) =>
+                                    setFilters((f) => ({ ...f, county: e.target.value }))
+                                }
+                            >
+                                <option value="">Toate județele</option>
+                                {Object.keys(COUNTY_BBOX).map((c) => (
+                                    <option key={c} value={c}>
+                                        {c}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+
                         <div className={styles['mapPage-fieldRow']}>
                             <div className={styles['mapPage-field']}>
-                                <label>Min price</label>
+                                <label>Pret minim</label>
                                 <input
                                     type="number"
                                     placeholder="1"
@@ -270,7 +341,7 @@ export default function MapPage() {
                                 />
                             </div>
                             <div className={styles['mapPage-field']}>
-                                <label>Max price</label>
+                                <label>Pret maxim</label>
                                 <input
                                     type="number"
                                     placeholder="999"
@@ -287,7 +358,7 @@ export default function MapPage() {
 
                         {/* Sort buttons: Newest / Oldest / Price ↑ / Price ↓ */}
                         <div className={styles['mapPage-sortGroup']}>
-                            <span className={styles['mapPage-sortLabel']}>Sort by:</span>
+                            <span className={styles['mapPage-sortLabel']}>Sortare dupa:</span>
                             <button
                                 type="button"
                                 className={
@@ -298,7 +369,7 @@ export default function MapPage() {
                                 }
                                 onClick={() => updateSort("createdAt,desc")}
                             >
-                                Newest
+                                Cele mai noi
                             </button>
                             <button
                                 type="button"
@@ -310,7 +381,7 @@ export default function MapPage() {
                                 }
                                 onClick={() => updateSort("createdAt,asc")}
                             >
-                                Oldest
+                                Cele mai vechi
                             </button>
                             <button
                                 type="button"
@@ -322,7 +393,7 @@ export default function MapPage() {
                                 }
                                 onClick={() => updateSort("price,asc")}
                             >
-                                Price ↑
+                                Pret ↑
                             </button>
                             <button
                                 type="button"
@@ -334,7 +405,7 @@ export default function MapPage() {
                                 }
                                 onClick={() => updateSort("price,desc")}
                             >
-                                Price ↓
+                                Pret ↓
                             </button>
                         </div>
 
@@ -350,19 +421,19 @@ export default function MapPage() {
                                         }))
                                     }
                                 />
-                                Only available
+                                Disponibile
                             </label>
 
                             <div className={styles['mapPage-filterButtons']}>
                                 <button type="submit" disabled={loading || !bbox}>
-                                    {loading ? "Loading..." : "Search"}
+                                    {loading ? "Se incarca..." : "Cautare"}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={clearFilters}
                                     disabled={loading}
                                 >
-                                    Clear
+                                    Sterge
                                 </button>
                             </div>
                         </div>
@@ -372,7 +443,7 @@ export default function MapPage() {
                     <div className={styles['mapPage-chips']}>
                         {filters.q && (
                             <span className={`${styles['chip']} ${styles['chip-main']}`}>
-                                q: "{filters.q}"
+                                text: "{filters.q}"
                             </span>
                         )}
                         {filters.minPrice && (
@@ -383,7 +454,7 @@ export default function MapPage() {
                         )}
                         {filters.available && (
                             <span className={`${styles['chip']} ${styles['chip-available']}`}>
-                                available
+                                disponibile
                             </span>
                         )}
                     </div>
@@ -391,7 +462,7 @@ export default function MapPage() {
                     {/* List header info */}
                     <div className={styles['mapPage-listHeader']}>
                         <div className={styles['mapPage-listInfo']}>
-                            Total: <b>{total}</b> • Page {page + 1} / {totalPages}
+                            Total: <b>{total}</b> • Pagini {page + 1} / {totalPages}
                         </div>
                     </div>
 
@@ -401,8 +472,7 @@ export default function MapPage() {
                     {error && <div className={styles['mapPage-error']}>{error}</div>}
                     {!loading && !error && listings.length === 0 && (
                         <div className={styles['mapPage-status']}>
-                            No listings in this area. Move the map or adjust
-                            filters.
+                            Niciun produs in aceasta arie inca. Schimba locatia de pe mapa sau ajusteaza filtrele.
                         </div>
                     )}
 
@@ -469,12 +539,13 @@ export default function MapPage() {
                                 <div className={styles['mapPage-card-actions']}>
                                     <button
                                         type="button"
+                                        className={styles['mapPage-cardActionBtn']}
                                         onClick={(e) => {
-                                            e.stopPropagation(); // don't trigger card click
+                                            e.stopPropagation();
                                             void handleOpenListing(l);
                                         }}
                                     >
-                                        Open listing
+                                        Vezi produs
                                     </button>
                                 </div>
                                 {/* ☝️ NEW BUTTON */}
