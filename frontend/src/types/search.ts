@@ -14,6 +14,7 @@ export interface ListingCardDto {
     thumbnailUrl: string | null;
     description: string | null;
     farmerName: string | null;
+    images: string[] | null;
 }
 
 export interface ListingSummaryDto {
