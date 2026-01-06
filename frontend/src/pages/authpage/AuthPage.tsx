@@ -123,15 +123,19 @@ function LoginForm() {
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
 
-        await login(email.trim(), password);
+        try {
+            await login(email.trim(), password);
 
-        const redirectPath = location.state?.redirectAfterLogin || "/home";
-        navigate(redirectPath, {
-            state: {
-                sellerId: location.state?.sellerId,
-                autoStartChat: location.state?.autoStartChat,
-            },
-        });
+            const redirectPath = location.state?.redirectAfterLogin || "/home";
+            navigate(redirectPath, {
+                state: {
+                    sellerId: location.state?.sellerId,
+                    autoStartChat: location.state?.autoStartChat,
+                },
+            });
+        } catch (err) {
+            // Error is handled by AuthContext
+        }
     }
 
 
@@ -199,11 +203,15 @@ function SignupForm() {
         setSubmitted(true);
         if (!allOk) return;
 
-        await register(displayName.trim(), email.trim(), password);
+        try {
+            await register(displayName.trim(), email.trim(), password);
 
-        navigate("/email-sent", {
-            state: { email: email.trim() },
-        });
+            navigate("/email-sent", {
+                state: { email: email.trim() },
+            });
+        } catch (err) {
+            // Error handled by context
+        }
 
     }
 

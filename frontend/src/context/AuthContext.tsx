@@ -32,12 +32,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!accessToken) return;
     authService.me()
-        .then(setUser)
-        .catch(() => {
-          localStorage.removeItem("accessToken");
-          setAccessToken(null);
-          setUser(null);
-        });
+      .then(setUser)
+      .catch(() => {
+        localStorage.removeItem("accessToken");
+        setAccessToken(null);
+        setUser(null);
+      });
   }, [accessToken]);
 
   // =============================
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
-      const res = await authService.login({email, password});
+      const res = await authService.login({ email, password });
       handleAuthSuccess(res);
     } catch (e: unknown) {
       let message = "Autentificare eșuată";
@@ -76,11 +76,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       throw e;
+    } finally {
+      setLoading(false);
     }
   };
 
 
-    // =============================
+  // =============================
   // REGISTER (FĂRĂ LOGIN AUTOMAT)
   // =============================
   const register = async (displayName: string, email: string, password: string) => {
@@ -88,9 +90,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
-      await authService.register({displayName, email, password});
+      await authService.register({ displayName, email, password });
 
-      navigate("/email-sent", {state: {email}});
+      navigate("/email-sent", { state: { email } });
 
     } catch (e: unknown) {
       let message = "Înregistrare eșuată";
@@ -101,11 +103,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setError(message);
       throw e;
+    } finally {
+      setLoading(false);
     }
   };
 
 
-    // =============================
+  // =============================
   // LOGOUT
   // =============================
   const logout = () => {
