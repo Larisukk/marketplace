@@ -1,353 +1,461 @@
 /* =========================
-   ListingPage — CLEAN Marketplace UI
+   ListingPage — PRETTY Marketplace UI (v2)
    ========================= */
 
-   :root {
-    --max: 1120px;
-    --gap: 24px;
-  
-    --bg: #f9fafb;
-    --card: #ffffff;
-  
-    --text: #0f172a;
-    --muted: #64748b;
-  
-    --border: #e5e7eb;
-    --border-strong: #111827;
-  
-    --shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-  
-    --radius: 12px;
-  }
-  
-  /* PAGE */
-  .listingPage {
-    max-width: var(--max);
-    margin: 0 auto;
-    padding: 96px 16px 56px;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-  }
-  
-  /* BREADCRUMB */
-  .listingPage-breadcrumb {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 12px;
-  }
-  
-  .listingPage-breadcrumb span {
-    color: var(--text);
-    font-weight: 600;
-  }
-  
-  /* HEADER */
-  .listingPage-header {
-    margin-bottom: 16px;
-  }
-  
-  .listingPage-title {
-    font-size: 30px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    letter-spacing: -0.02em;
-  }
-  
-  .listingPage-meta {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    font-size: 13px;
-    color: var(--muted);
-  }
-  
-  .listingPage-meta span {
-    padding: 6px 10px;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-  }
-  
-  /* MAIN GRID */
+:root {
+  --max: 1140px;
+  --gap: 24px;
+
+  --bg: #f7f8fb;
+  --card: rgba(255, 255, 255, 0.82);
+  --card-solid: #ffffff;
+
+  --text: #0b1220;
+  --muted: #667085;
+
+  --border: rgba(15, 23, 42, 0.10);
+  --border-strong: rgba(15, 23, 42, 0.22);
+
+  --shadow-sm: 0 6px 18px rgba(2, 6, 23, 0.06);
+  --shadow-md: 0 14px 38px rgba(2, 6, 23, 0.10);
+
+  --radius: 16px;
+  --radius-lg: 20px;
+
+  --accent: #16a34a;
+  /* green */
+  --accent2: #0ea5e9;
+  /* sky */
+  --danger: #ef4444;
+
+  --ring: 0 0 0 4px rgba(14, 165, 233, 0.15);
+}
+
+/* PAGE */
+.listingPage {
+  position: relative;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 92px 16px 56px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: transparent;
+  /* important: let global bg show */
+  color: var(--text);
+}
+
+/* Ambient gradient + noise-ish overlay */
+.listingPage::before {
+  content: "";
+  position: absolute;
+  inset: -200px 0 auto 50%;
+  transform: translateX(-50%);
+  width: 120vw;
+  height: 700px;
+
+  background:
+    radial-gradient(800px 420px at 50% 0%,
+      rgba(174, 195, 176, 0.28),
+      rgba(174, 195, 176, 0.12) 40%,
+      rgba(255, 255, 255, 0) 70%);
+
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Ensure content sits above the gradient */
+.listingPage-breadcrumb,
+.listingPage-header,
+.listingPage-main {
+  position: relative;
+  z-index: 1;
+}
+
+/* BREADCRUMB */
+.listingPage-breadcrumb {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.listingPage-breadcrumb span {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* HEADER */
+.listingPage-header {
+  margin-bottom: 16px;
+}
+
+.listingPage-title {
+  font-size: 32px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  letter-spacing: -0.03em;
+}
+
+.listingPage-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.listingPage-meta span {
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+}
+
+/* MAIN GRID */
+.listingPage-main {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(320px, 1fr);
+  gap: var(--gap);
+  align-items: start;
+}
+
+/* CARD BASE */
+.listingPage-leftCard,
+.listingPage-priceCard,
+.listingPage-sellerCard,
+.listingPage-locationCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(14px);
+}
+
+/* LEFT CARD */
+.listingPage-leftCard {
+  padding: 16px;
+  overflow: hidden;
+}
+
+/* MAIN IMAGE */
+.listingPage-image {
+  height: 380px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background:
+    radial-gradient(700px 260px at 20% 20%, rgba(14, 165, 233, 0.12) 0%, rgba(14, 165, 233, 0) 60%),
+    radial-gradient(700px 260px at 80% 10%, rgba(22, 163, 74, 0.14) 0%, rgba(22, 163, 74, 0) 60%),
+    #eef2f7;
+  position: relative;
+  border: 1px solid var(--border);
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-md);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listingPage-imageImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.01);
+}
+
+.listingPage-imageBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 7px 11px;
+  background: rgba(17, 24, 39, 0.88);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.listingPage-imagePlaceholder {
+  color: #475569;
+  font-weight: 700;
+  text-align: center;
+  max-width: 320px;
+  padding: 16px;
+}
+
+/* THUMBNAIL GALLERY */
+.listingPage-thumbnails {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 6px 2px 10px;
+  margin-bottom: 16px;
+  scroll-snap-type: x mandatory;
+}
+
+.listingPage-thumbnail {
+  flex: 0 0 auto;
+  width: 92px;
+  height: 66px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--card-solid);
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(2, 6, 23, 0.06);
+  scroll-snap-align: start;
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.listingPage-thumbnail:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: 0 12px 26px rgba(2, 6, 23, 0.10);
+}
+
+.listingPage-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listingPage-thumbnail.is-active {
+  border: 2px solid rgba(14, 165, 233, 0.55);
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.12);
+}
+
+/* DESCRIPTION */
+.listingPage-description {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.listingPage-subtitle {
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.listingPage-descriptionText {
+  font-size: 14px;
+  line-height: 1.75;
+  color: #334155;
+}
+
+/* RIGHT COLUMN */
+.listingPage-rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 92px;
+}
+
+/* PRICE */
+.listingPage-priceCard {
+  padding: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  box-shadow: var(--shadow-md);
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.90) 0%,
+      rgba(255, 255, 255, 0.72) 100%);
+}
+
+.listingPage-priceLabel {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.listingPage-priceValue {
+  font-size: 36px;
+  font-weight: 950;
+  margin: 6px 0;
+  letter-spacing: -0.03em;
+}
+
+.listingPage-priceHint {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* SELLER */
+.listingPage-sellerCard {
+  padding: 16px;
+}
+
+.listingPage-sellerLabel {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.listingPage-sellerRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.listingPage-sellerAvatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background:
+    radial-gradient(16px 16px at 30% 30%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 70%),
+    linear-gradient(135deg, rgba(22, 163, 74, 0.95) 0%, rgba(14, 165, 233, 0.90) 100%);
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.12);
+}
+
+.listingPage-sellerName {
+  font-weight: 900;
+}
+
+.listingPage-sellerHint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* CHAT BUTTON */
+.listingPage-chatButton {
+  margin-top: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.78) 100%);
+  color: white;
+  font-weight: 900;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(2, 6, 23, 0.18);
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+.listingPage-chatButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.22);
+  filter: brightness(1.03);
+}
+
+.listingPage-chatButton:active {
+  transform: translateY(0px);
+  box-shadow: 0 12px 26px rgba(2, 6, 23, 0.18);
+}
+
+.listingPage-chatButton:focus-visible {
+  outline: none;
+  box-shadow: var(--ring), 0 18px 40px rgba(2, 6, 23, 0.22);
+}
+
+.listingPage-chatButton:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* STATUS */
+.listingPage-statusBox {
+  padding: 12px;
+  border-radius: var(--radius);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+/* LOCATION */
+.listingPage-locationCard {
+  padding: 16px;
+}
+
+.listingPage-locationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.listingPage-locationTitle {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.listingPage-locationButton {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.listingPage-locationButton:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  box-shadow: 0 10px 20px rgba(2, 6, 23, 0.10);
+}
+
+.listingPage-mapWrapper {
+  height: 240px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.10);
+}
+
+/* RESPONSIVE */
+@media (max-width: 980px) {
   .listingPage-main {
-    display: grid;
-    grid-template-columns: minmax(0, 2.2fr) minmax(320px, 1fr);
-    gap: var(--gap);
+    grid-template-columns: 1fr;
   }
-  
-  /* CARD BASE */
-  .listingPage-leftCard,
-  .listingPage-priceCard,
-  .listingPage-sellerCard,
-  .listingPage-locationCard {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-  }
-  
-  /* LEFT CARD */
-  .listingPage-leftCard {
-    padding: 16px;
-  }
-  
-  /* MAIN IMAGE */
-  .listingPage-image {
-    height: 360px;
-    border-radius: var(--radius);
-    overflow: hidden;
-    background: #e5e7eb;
-    position: relative;
-    border: 1px solid var(--border);
-    margin-bottom: 12px;
-  
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .listingPage-imageImg {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .listingPage-imageBadge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    padding: 6px 10px;
-    background: rgba(17, 24, 39, 0.92);
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    border-radius: 999px;
-    letter-spacing: 0.06em;
-  }
-  
-  .listingPage-imagePlaceholder {
-    color: #475569;
-    font-weight: 600;
-    text-align: center;
-    max-width: 320px;
-    padding: 16px;
-  }
-  
-  /* THUMBNAIL GALLERY */
-  .listingPage-thumbnails {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    margin-bottom: 16px;
-  }
-  
-  .listingPage-thumbnail {
-    flex: 0 0 auto;
-    width: 88px;
-    height: 64px;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    background: white;
-    cursor: pointer;
-  }
-  
-  .listingPage-thumbnail img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .listingPage-thumbnail.is-active {
-    border: 2px solid var(--border-strong);
-  }
-  
-  /* DESCRIPTION */
-  .listingPage-description {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-  }
-  
-  .listingPage-subtitle {
-    font-size: 16px;
-    font-weight: 800;
-    margin-bottom: 8px;
-  }
-  
-  .listingPage-descriptionText {
-    font-size: 14px;
-    line-height: 1.7;
-    color: #334155;
-  }
-  
-  /* RIGHT COLUMN */
+
   .listingPage-rightColumn {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    position: sticky;
-    top: 96px;
+    position: static;
   }
-  
-  /* PRICE */
-  .listingPage-priceCard {
-    padding: 16px;
-    border: 2px solid var(--border-strong);
+}
+
+@media (max-width: 520px) {
+  .listingPage-title {
+    font-size: 24px;
   }
-  
-  .listingPage-priceLabel {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+
+  .listingPage-image {
+    height: 260px;
+    box-shadow:
+      0 20px 45px rgba(15, 23, 42, 0.12),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+
   }
-  
+
+  .listingPage {
+    padding: 82px 12px 44px;
+  }
+
   .listingPage-priceValue {
-    font-size: 34px;
-    font-weight: 900;
-    margin: 6px 0;
+    font-size: 32px;
   }
-  
-  .listingPage-priceHint {
-    font-size: 13px;
-    color: var(--muted);
-  }
-  
-  /* SELLER */
-  .listingPage-sellerCard {
-    padding: 16px;
-  }
-  
-  .listingPage-sellerLabel {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  
-  .listingPage-sellerRow {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
-  
-  .listingPage-sellerAvatar {
-    width: 44px;
-    height: 44px;
-    background: #111827;
-    color: white;
-    border-radius: 999px;
-    font-weight: 800;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .listingPage-sellerName {
-    font-weight: 800;
-  }
-  
-  .listingPage-sellerHint {
-    font-size: 12px;
-    color: var(--muted);
-  }
-  
-  /* CHAT BUTTON */
-  .listingPage-chatButton {
-    margin-top: 12px;
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 999px;
-    border: none;
-    background: #111827;
-    color: white;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-  
-  .listingPage-chatButton:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  
-  /* STATUS */
-  .listingPage-statusBox {
-    padding: 12px;
-    border-radius: var(--radius);
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #b91c1c;
-    font-size: 13px;
-  }
-  
-  /* LOCATION */
-  .listingPage-locationCard {
-    padding: 16px;
-  }
-  
-  .listingPage-locationHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
-  
-  .listingPage-locationTitle {
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  
-  .listingPage-locationButton {
-    padding: 6px 12px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: white;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  
-  .listingPage-mapWrapper {
-    height: 240px;
-    border-radius: var(--radius);
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  
-  /* RESPONSIVE */
-  @media (max-width: 980px) {
-    .listingPage-main {
-      grid-template-columns: 1fr;
-    }
-  
-    .listingPage-rightColumn {
-      position: static;
-    }
-  }
-  
-  @media (max-width: 520px) {
-    .listingPage-title {
-      font-size: 24px;
-    }
-  
-    .listingPage-image {
-      height: 260px;
-    }
-  
-    .listingPage {
-      padding: 84px 12px 44px;
-    }
-  }
-  
+}

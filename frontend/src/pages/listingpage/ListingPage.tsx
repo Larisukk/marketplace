@@ -98,7 +98,7 @@ export default function ListingPage() {
 
         const first =
           resolveImageUrl(data.thumbnailUrl) ||
-          resolveImageUrl((data as any)?.images?.[0]?.url) ||
+          resolveImageUrl(data.images?.[0]) ||
           null;
 
         setActiveImageUrl(first);
@@ -187,10 +187,9 @@ export default function ListingPage() {
     const thumb = resolveImageUrl(details?.thumbnailUrl);
     if (thumb) urls.push(thumb);
 
-    const extra = (details as any)?.images as Array<{ url?: string }> | undefined;
-    if (Array.isArray(extra)) {
-      for (const img of extra) {
-        const u = resolveImageUrl(img?.url);
+    if (details?.images && Array.isArray(details.images)) {
+      for (const img of details.images) {
+        const u = resolveImageUrl(img);
         if (u && !urls.includes(u)) urls.push(u);
       }
     }
@@ -206,23 +205,14 @@ export default function ListingPage() {
 
       <div className={styles['listingPage']}>
         <div className={styles['listingPage-breadcrumb']}>
-          Acasa / Produse / <span>{details?.title ?? "Se incarca…"}</span>
+          <a href="/home" className={styles['breadcrumb-link']}>Acasa</a> /{" "}
+          <a href="/map" className={styles['breadcrumb-link']}>Produse</a> /{" "}
+          <span>{details?.title ?? "Se incarca…"}</span>
         </div>
 
         <header className={styles['listingPage-header']}>
           <h1 className={styles['listingPage-title']}>{details?.title ?? "Listing details"}</h1>
 
-          <div className={styles['listingPage-meta']}>
-            <span>
-              ID: <code>{id}</code>
-            </span>
-
-            {hasCoords && details && (
-                <span>
-                Coords: {details.lat!.toFixed(4)}, {details.lon!.toFixed(4)}
-              </span>
-            )}
-          </div>
         </header>
 
         <div className={styles['listingPage-main']}>

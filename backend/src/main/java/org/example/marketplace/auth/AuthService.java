@@ -31,7 +31,6 @@ public class AuthService {
     private final EmailVerificationService emailVerificationService;
     private final EmailSender emailSender;
 
-
     public AuthService(
             UserRepository repo,
             PasswordEncoder encoder,
@@ -39,8 +38,7 @@ public class AuthService {
             JwtService jwt,
             AuthSessionRepository sessions,
             EmailVerificationService emailVerificationService,
-            EmailSender emailSender
-    ) {
+            EmailSender emailSender) {
         this.repo = repo;
         this.encoder = encoder;
         this.authManager = authManager;
@@ -49,7 +47,6 @@ public class AuthService {
         this.emailVerificationService = emailVerificationService;
         this.emailSender = emailSender;
     }
-
 
     private static String generateOpaqueToken() {
         byte[] bytes = new byte[64];
@@ -72,14 +69,20 @@ public class AuthService {
         repo.save(user);
 
         String rawToken = emailVerificationService.createToken(user);
+        String verificationLink = "http://localhost:5173/verify-email?token=" + rawToken;
 
-        emailSender.sendEmail(
-                user.getEmail(),
-                "Verify your email",
-                "Click here to verify your account: http://localhost:5173/verify-email?token=" + rawToken
-        );
-
-
+        try {
+            emailSender.sendEmail(
+                    user.getEmail(),
+                    "Verify your email",
+                    "Click here to verify your account: " + verificationLink);
+        } catch (Exception e) {
+            // Log for dev/debug purposes if mail server is not configured
+            System.out.println("----------------------------------------------------------------");
+            System.out.println("Could not send email to " + user.getEmail());
+            System.out.println("Verification Link: " + verificationLink);
+            System.out.println("----------------------------------------------------------------");
+        }
     }
 
     public LoginResponse login(LoginRequest r, String userAgent, String ip) {
@@ -93,19 +96,17 @@ public class AuthService {
         var user = repo.findByEmailIgnoreCase(r.email()).orElseThrow();
 
         if (user.getEmailVerifiedAt() == null) {
-            throw new RuntimeException("Email not verified");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Email not verified");
         }
-
 
         var claims = Map.<String, Object>of(
                 "email", user.getEmail(),
                 "uid", user.getId(),
-                "role", user.getRole().name()
-        );
+                "role", user.getRole().name());
 
         String access = jwt.generateToken(claims, user.getEmail());
 
-        String refreshRaw  = generateOpaqueToken();
+        String refreshRaw = generateOpaqueToken();
         String refreshHash = sha256Base64(refreshRaw);
 
         InetAddress clientIp;
@@ -144,15 +145,13 @@ public class AuthService {
 
         UserEntity user = repo.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "User not found"
-                ));
+                        HttpStatus.NOT_FOUND, "User not found"));
 
         // verifică parola veche
         if (!encoder.matches(oldPassword, user.getPasswordHash())) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Parola veche este incorectă"
-            );
+                    "Parola veche este incorectă");
         }
 
         // setează parola nouă (HASH)

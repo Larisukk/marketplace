@@ -58,6 +58,10 @@ const MainHeader: React.FC = () => {
                         >
                             <span className={styles['icon']}>☰</span>
                         </button>
+
+                        <a href="/home" className={styles['logo-link']}>
+                            <img src="/biobuy-logo.png" alt="BioBuy" className={styles['logo-img']} />
+                        </a>
                     </div>
 
                     <div className={styles['icon-links']}>
@@ -106,6 +110,16 @@ const MainHeader: React.FC = () => {
                         }}
                     >
                         Harta
+                    </div>
+
+                    <div
+                        className={styles['menu-link']}
+                        onClick={() => {
+                            if (!user) setShowLoginPopup(true);
+                            else window.location.href = "/chat";
+                        }}
+                    >
+                        Conversatiile mele
                     </div>
 
 

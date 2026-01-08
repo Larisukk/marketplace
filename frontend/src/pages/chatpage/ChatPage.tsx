@@ -64,6 +64,22 @@ export default function ChatPage() {
       >
         <div className={styles['chat-sidebar-header']}>
           <div className={styles['chat-sidebar-header-row']}>
+            {/* Added home button to leave page */}
+            <a href="/home" className={styles['chat-home-link']} title="Inapoi la acasa">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M19 12H5" />
+                <path d="M12 19l-7-7 7-7" />
+              </svg>
+            </a>
             <h1 className={styles['chat-sidebar-title']}>Chats</h1>
             <button
               className={styles['chat-settings-btn']}
