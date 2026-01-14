@@ -1,5 +1,6 @@
 // frontend/src/pages/mappage/MapPage.tsx
 import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import MapBox, { type Bbox, type Point } from "../../components/MapBox";
 import "./MapPage.css";
 
@@ -24,6 +25,7 @@ type Filters = {
 const DEFAULT_CENTER: [number, number] = [44.4268, 26.1025];
 
 export default function MapPage() {
+    const navigate = useNavigate();
     const [filters, setFilters] = useState<Filters>({
         q: "",
         minPrice: "",
@@ -188,9 +190,7 @@ export default function MapPage() {
 
     return (
         <div className="mapPage">
-            <header className="mapPage-header">
-                <h2 className="mapPage-title">BioBuy Map</h2>
-            </header>
+
 
             <div className="mapPage-content">
                 <section className="mapPage-list">
@@ -371,16 +371,19 @@ export default function MapPage() {
                                     <div className="mapPage-card-footer">
                                         {l.priceCents != null && l.currency && (
                                             <span className="mapPage-card-price">
-                        {(l.priceCents / 100).toFixed(0)} {l.currency}
-                      </span>
+                                                {(l.priceCents / 100).toFixed(0)} {l.currency}
+                                            </span>
                                         )}
 
-                                        {l.productName && (
-                                            <span className="mapPage-card-tag">{l.productName}</span>
-                                        )}
-                                        {l.categoryName && (
-                                            <span className="mapPage-card-tag">{l.categoryName}</span>
-                                        )}
+                                        <button
+                                            className="mapPage-viewBtn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/listings/${l.id}`);
+                                            }}
+                                        >
+                                            View
+                                        </button>
                                     </div>
                                 </div>
                             </article>
@@ -397,8 +400,8 @@ export default function MapPage() {
                                 Prev
                             </button>
                             <span>
-                Page {page + 1} / {totalPages}
-              </span>
+                                Page {page + 1} / {totalPages}
+                            </span>
                             <button
                                 type="button"
                                 onClick={handleNextPage}

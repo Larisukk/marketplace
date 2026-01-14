@@ -7,7 +7,7 @@
 .mapPage {
     display: flex;
     flex-direction: column;
-    padding: 16px;
+    padding: 72px 16px 16px 16px;
     background: linear-gradient(180deg, #e6f3ea, #cde9d6);
     color: #143321;
     min-height: 100vh;
@@ -18,7 +18,8 @@
         height: calc(100vh - var(--map-nav-h));
         max-height: calc(100vh - var(--map-nav-h));
         box-sizing: border-box;
-        overflow: hidden; /* page itself doesn't scroll; only left list does */
+        overflow: hidden;
+        /* page itself doesn't scroll; only left list does */
     }
 }
 
@@ -54,7 +55,8 @@
     flex-direction: column;
     gap: 0.75rem;
     background: rgba(255, 255, 255, 0.8);
-    overflow-y: auto; /* only list scrolls on desktop */
+    overflow-y: auto;
+    /* only list scrolls on desktop */
 }
 
 @media (max-width: 1023px) {
@@ -324,7 +326,8 @@
 
 @media (min-width: 1024px) {
     .mapPage-map {
-        height: 100%; /* fill right column */
+        height: 100%;
+        /* fill right column */
     }
 }
 
@@ -332,6 +335,7 @@
     .mapPage-content {
         flex-direction: column;
     }
+
     .mapPage-map {
         height: var(--map-h);
     }
@@ -372,13 +376,15 @@
 /* Fix: Min/Max price fields should have equal width */
 .mapPage-priceRow .mapPage-priceCol {
     flex: 1 1 0;
-    min-width: 0; /* prevent overflow */
+    min-width: 0;
+    /* prevent overflow */
 }
 
 /* Fix: Input in Max price box becomes too wide – set tighter max width */
 .mapPage-priceRow .mapPage-priceCol input {
     width: 100%;
-    max-width: 120px;  /* adjust this smaller/bigger as you like */
+    max-width: 120px;
+    /* adjust this smaller/bigger as you like */
     box-sizing: border-box;
 }
 
@@ -433,7 +439,8 @@
 
 /* Make Min price and Max price inputs the same smaller size */
 .mapPage-fieldRow .mapPage-field input {
-    max-width: 120px;   /* adjust to 100px or 90px if you want smaller */
+    max-width: 120px;
+    /* adjust to 100px or 90px if you want smaller */
     width: 100%;
     box-sizing: border-box;
 }
@@ -449,7 +456,8 @@
     height: 32px;
     border-radius: 999px;
 
-    background: #1f7a3a;          /* same green as price badges */
+    background: #1f7a3a;
+    /* same green as price badges */
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -462,4 +470,22 @@
 
 .marker-cluster-badge .cluster-badge span {
     line-height: 1;
+}
+
+/* View Listing Button */
+.mapPage-viewBtn {
+    background: #275237;
+    color: #fff;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-left: auto;
+    /* Push to the right */
+    transition: background 0.2s;
+}
+
+.mapPage-viewBtn:hover {
+    background: #1f7a3a;
 }

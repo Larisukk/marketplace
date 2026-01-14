@@ -23,17 +23,16 @@ public class ListingSearchController {
      */
     @GetMapping("/listings")
     public ResponseEntity<PageDto<ListingCardDto>> search(
-            @RequestParam(required = false) String bbox,          // "w,s,e,n"
+            @RequestParam(required = false) String bbox, // "w,s,e,n"
             @RequestParam(required = false) String q,
-            @RequestParam(required = false) Integer minPrice,     // cents
-            @RequestParam(required = false) Integer maxPrice,     // cents
+            @RequestParam(required = false) Integer minPrice, // cents
+            @RequestParam(required = false) Integer maxPrice, // cents
             @RequestParam(required = false) UUID productId,
             @RequestParam(required = false) UUID categoryId,
             @RequestParam(defaultValue = "true") boolean available,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "24") int size,
-            @RequestParam(required = false, defaultValue = "createdAt,desc") String sort
-    ) {
+            @RequestParam(required = false, defaultValue = "createdAt,desc") String sort) {
         // Parse bbox -> (w,s,e,n)
         Double w = null, s = null, e = null, n = null;
         if (bbox != null && !bbox.isBlank()) {
@@ -50,8 +49,10 @@ public class ListingSearchController {
         String[] sortParts = sort.split(",");
         String sortField = sortParts[0];
         String sortDir = sortParts.length > 1 ? sortParts[1] : "desc";
-        if (!List.of("price", "createdAt").contains(sortField)) sortField = "createdAt";
-        if (!List.of("asc", "desc").contains(sortDir)) sortDir = "desc";
+        if (!List.of("price", "createdAt").contains(sortField))
+            sortField = "createdAt";
+        if (!List.of("asc", "desc").contains(sortDir))
+            sortDir = "desc";
 
         long total = repo.countSearch(q, minPrice, maxPrice, productId, categoryId, available, w, s, e, n);
 
@@ -63,6 +64,16 @@ public class ListingSearchController {
         }
 
         return ResponseEntity.ok(new PageDto<>(items, page, size, total));
+    }
+
+    /**
+     * GET /api/search/listings/{id}
+     */
+    @GetMapping("/listings/{id}")
+    public ResponseEntity<ListingCardDto> getById(@PathVariable UUID id) {
+        return repo.findCardById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /**

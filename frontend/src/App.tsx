@@ -1,8 +1,9 @@
 // frontend/src/App.tsx
 import styles from "./App.module.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import MainHeader from "./components/MainHeader";
 
-import Home from "./pages/homePage/Home";
+import Home from "./pages/homepage/Home";
 import MapPage from "./pages/mappage/MapPage";
 import UploadProductPage from "./pages/uploadProductPage/UploadProductPage";
 import AuthPage from "./pages/authpage/AuthPage";
@@ -22,14 +23,16 @@ import { useAuth } from "./context/AuthContext";
 
 export default function App() {
     const location = useLocation();
+    const { user } = useAuth();
 
     // pages where header MUST NOT appear
-    const hideHeaderOn = ["/map"];
+    const hideHeaderOn: string[] = ["/chat"];
 
     const shouldShowHeader = !hideHeaderOn.includes(location.pathname);
 
     return (
         <ChatProvider>
+            {shouldShowHeader && <MainHeader />}
             <Routes>
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<Terms />} />
