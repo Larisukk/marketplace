@@ -30,6 +30,7 @@ export interface ListingCardDto {
 
     description: string | null;
     farmerName: string | null;
+    images: string[] | null;
 }
 
 // -----------------------------

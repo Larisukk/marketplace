@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from '../header/MainHeader.module.css';
 import { useAuth } from "../context/AuthContext";
+import { useLocation } from "react-router-dom";
 
 const COLORS = {
     DARK_GREEN: '#0F2A1D',
@@ -11,6 +12,9 @@ const COLORS = {
 const MainHeader: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { user } = useAuth();
+    const location = useLocation();
+    const isUploadPage = location.pathname === "/upload";
+    const [showLoginPopup, setShowLoginPopup] = useState(false);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -18,6 +22,31 @@ const MainHeader: React.FC = () => {
 
     return (
         <>
+            {showLoginPopup && (
+                <div className={styles['login-required-overlay']}>
+                    <div className={styles['login-required-popup']}>
+                        <h2>Trebuie să fii conectat</h2>
+                        <p>Conectează-te pentru a accesa această funcție.</p>
+
+                        <div className={styles['login-required-buttons']}>
+                            <button
+                                className={styles['login-required-confirm']}
+                                onClick={() => (window.location.href = "/auth")}
+                            >
+                                Conectează-te
+                            </button>
+
+                            <button
+                                className={styles['login-required-cancel']}
+                                onClick={() => setShowLoginPopup(false)}
+                            >
+                                Anulează
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <header className={styles['main-header']}>
                 <div className={styles['header-top-row']}>
                     <div className={styles['left-group']}>
@@ -29,6 +58,10 @@ const MainHeader: React.FC = () => {
                         >
                             <span className={styles['icon']}>☰</span>
                         </button>
+
+                        <a href="/home" className={styles['logo-link']}>
+                            <img src="/biobuy-logo.png" alt="BioBuy" className={styles['logo-img']} />
+                        </a>
                     </div>
 
                     <div className={styles['icon-links']}>
@@ -55,20 +88,50 @@ const MainHeader: React.FC = () => {
 
                 <div className={styles['menu-links']}>
 
+                    <a href="/home" className={styles['menu-link']}>
+                        Acasa
+                    </a>
+
                     {/* PROFIL */}
-                    <a href="/profile" className={styles['menu-link']}>
+                    <div
+                        className={styles['menu-link']}
+                        onClick={() => {
+                            if (!user) setShowLoginPopup(true);
+                            else window.location.href = "/profile";
+                        }}
+                    >
                         Profilul meu
-                    </a>
+                    </div>
 
-                    {/* PRODUSE */}
-                    <a href="/produse" className={styles['menu-link']}>
-                        Produse
-                    </a>
+                    <div
+                        className={styles['menu-link']}
+                        onClick={() => {
+                            window.location.href = "/map";
+                        }}
+                    >
+                        Harta
+                    </div>
 
-                    {/* Vinde un produs */}
-                    <a href="/upload" className={styles['menu-link']}>
+                    <div
+                        className={styles['menu-link']}
+                        onClick={() => {
+                            if (!user) setShowLoginPopup(true);
+                            else window.location.href = "/chat";
+                        }}
+                    >
+                        Conversatiile mele
+                    </div>
+
+
+                    <div
+                        className={styles['menu-link']}
+                        onClick={() => {
+                            if (!user) setShowLoginPopup(true);
+                            else window.location.href = "/upload";
+                        }}
+                    >
                         Vinde un produs
-                    </a>
+                    </div>
                 </div>
             </nav>
 

@@ -10,7 +10,7 @@ export default function ChatList() {
   if (!conversations.length) {
     return (
       <div style={{ padding: 16, fontSize: 14, color: "#777" }}>
-        No conversations yet.
+        Nicio conversatie inca.
       </div>
     );
   }
@@ -31,7 +31,7 @@ export default function ChatList() {
             : "You";
 
         const last = messages[c.id]?.slice(-1)[0];
-        const lastMsg = last?.body || "No messages yet";
+        const lastMsg = last?.body || "Nicio conversatie inca";
 
         return (
           <button

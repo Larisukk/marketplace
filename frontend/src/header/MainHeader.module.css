@@ -44,6 +44,22 @@
     gap: 20px;
 }
 
+.logo-link {
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+.logo-link:hover {
+    transform: scale(1.05);
+}
+
+.logo-img {
+    height: 58px;
+    width: auto;
+    object-fit: contain;
+}
+
 .menu-icon-btn {
     background: none;
     border: none;
@@ -101,6 +117,21 @@
 
 .vertical-menu.open {
     transform: translateX(0);
+}
+
+.vertical-menu .menu-link {
+    font-family: inherit;
+    /* sigur, fără override */
+    font-size: 1.15rem;
+    /* deja ai, îl păstrăm */
+    font-weight: 500;
+    /* 🔴 IMPORTANT */
+    line-height: 1.4;
+    /* 🔴 aerisire verticală */
+    letter-spacing: 0.01em;
+    /* 🔴 face textul mai "soft" */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .menu-header {
@@ -337,103 +368,10 @@
     color: #555;
 }
 
-/* COUNTY SELECT DROPDOWN (Shared) */
-.county-select-wrapper {
-    position: relative;
-    cursor: pointer;
-}
-
-.county-select-display {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-
-.county-display-content {
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-}
-
-.county-display-text {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-weight: 500;
-}
-
-.county-select-display .dropdown-arrow {
+.dropdown-arrow {
     font-size: 0.7rem;
-    margin-left: 8px;
-    color: #333;
-    transition: transform 0.2s ease-in-out;
-}
-
-.county-select-display[aria-expanded="true"] .dropdown-arrow {
-    transform: rotate(180deg);
-}
-
-.county-option-icon {
-    margin-right: 12px;
-    color: var(--color-medium-green);
+    margin-left: 4px;
     flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.county-select-dropdown {
-    position: absolute;
-    top: 105%;
-    left: 0;
-    width: 100%;
-    min-width: 280px;
-    background-color: #FFFFFF;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
-    padding: 8px;
-    max-height: 250px;
-    overflow-y: auto;
-    z-index: 1003;
-    animation: dropdownFadeIn 0.2s ease-out;
-    border: 1px solid #eee;
-}
-
-.county-select-dropdown::-webkit-scrollbar {
-    width: 6px;
-}
-
-.county-select-dropdown::-webkit-scrollbar-thumb {
-    background-color: var(--color-accent-green);
-    border-radius: 6px;
-}
-
-.county-select-dropdown::-webkit-scrollbar-track {
-    background-color: #f0f0f0;
-}
-
-.county-select-option {
-    display: flex;
-    align-items: center;
-    padding: 12px 14px;
-    font-size: 1rem;
-    color: var(--color-dark-green);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-weight: 500;
-    margin: 2px 0;
-}
-
-.county-select-option:hover {
-    background-color: var(--color-page-background);
-}
-
-.county-select-option.selected {
-    background-color: var(--color-light-green);
-    font-weight: 600;
 }
 
 @keyframes dropdownFadeIn {
@@ -446,4 +384,94 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.main-header,
+.vertical-menu {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, Arial, sans-serif;
+
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.auth-variant {
+    min-height: 56px;
+    padding: 0.6rem 3rem;
+}
+
+/* ===== AUTH HEADER VARIANT ===== */
+.vertical-menu {
+    background-color: var(--color-accent-green);
+    backdrop-filter: none;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.county-select-wrapper {
+    position: relative;
+    /* 🔴 CHEIA */
+    display: flex;
+    align-items: center;
+}
+
+
+
+.county-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.county-input {
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    background: transparent;
+    width: 90px;
+    color: var(--color-dark-green);
+}
+
+.county-select-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 260px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 5000;
+}
+
+.search-button {
+    border-radius: 9999px;
+    /* păstrează forma pill */
+    outline: none;
+}
+
+/* când dai hover */
+.search-button:hover {
+    border-radius: 9999px;
+    outline: none;
+}
+
+/* când dai click / focus */
+.search-button:focus,
+.search-button:focus-visible,
+.search-button:active {
+    border-radius: 9999px;
+    outline: none;
+    box-shadow: none;
 }

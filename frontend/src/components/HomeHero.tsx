@@ -3,17 +3,8 @@ import styles from '../pages/homepage/Home.module.css';
 
 interface HomeHeroProps {
     onSearch: (product: string, county: string) => void;
+    counties: string[];
 }
-
-const ROMANIAN_COUNTIES = [
-    "Alba", "Arad", "Argeș", "Bacău", "Bihor", "Bistrița-Năsăud", "Botoșani",
-    "Brașov", "Brăila", "București", "Buzău", "Caraș-Severin", "Călărași",
-    "Cluj", "Constanța", "Covasța", "Dâmbovița", "Dolj", "Galați", "Giurgiu",
-    "Gorj", "Harghita", "Hunedoara", "Ialomița", "Iași", "Ilfov", "Maramureș",
-    "Mehedinți", "Mureș", "Neamț", "Olt", "Prahova", "Sălaj", "Satu Mare",
-    "Sibiu", "Suceava", "Teleorman", "Timiș", "Tulcea", "Vâlcea", "Vaslui",
-    "Vrancea"
-];
 
 const LocationIcon = () => (
     <svg className={styles['county-option-icon']} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -23,12 +14,20 @@ const LocationIcon = () => (
 );
 
 interface CountySelectProps {
+    counties: string[];
     selectedCounty: string;
     onSelectCounty: (county: string) => void;
     className?: string;
 }
 
-const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCounty, className = '' }) => {
+
+const CountySelect: React.FC<CountySelectProps> = ({
+                                                       counties,
+                                                       selectedCounty,
+                                                       onSelectCounty,
+                                                       className = '',
+                                                   }) => {
+
     const [isOpen, setIsOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +39,11 @@ const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCou
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [wrapperRef]);
+    }, []);
+
+    const filteredCounties = counties.filter((county) =>
+        county.toLowerCase().includes(selectedCounty.toLowerCase())
+    );
 
     const handleSelect = (county: string) => {
         onSelectCounty(county);
@@ -57,24 +60,51 @@ const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCou
 
                 <div className={styles['county-display-content']}>
                     <LocationIcon />
-                    <span className={styles['county-display-text']}>{selectedCounty || 'Oraș'}</span>
+                    <input
+                        type="text"
+                        value={selectedCounty}
+                        placeholder="Judet"
+                        onChange={(e) => {
+                            onSelectCounty(e.target.value);
+                            setIsOpen(true);
+                        }}
+                        className={styles['county-input']}
+                    />
                 </div>
-                <span className={styles['dropdown-arrow']}>▼</span>
+                <span
+                    className={styles['dropdown-arrow']}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpen((prev) => !prev);
+                    }}
+                >
+                ▼
+                </span>
             </div>
+            {/* 🔽 SUGESTII FILTRATE */}
             {isOpen && (
                 <div className={styles['county-select-dropdown']}>
-                    {ROMANIAN_COUNTIES.map(county => (
-                        <div
-                            key={county}
-                            className={`${styles['county-select-option']} ${selectedCounty === county ? styles['selected'] : ''}`}
-                            onClick={() => handleSelect(county)}
-                        >
-                            <LocationIcon />
-                            <span className={styles['county-option-text']}>{county}</span>
+                    {filteredCounties.length === 0 ? (
+                        <div className={styles['county-select-option']}>
+                            Niciun județ găsit
                         </div>
-                    ))}
+                    ) : (
+                        filteredCounties.map((county) => (
+                            <div
+                                key={county}
+                                className={`${styles['county-select-option']} ${
+                                    selectedCounty === county ? styles['selected'] : ''
+                                }`}
+                                onClick={() => handleSelect(county)}
+                            >
+                                <LocationIcon />
+                                <span className={styles['county-option-text']}>{county}</span>
+                            </div>
+                        ))
+                    )}
                 </div>
             )}
+
         </div>
     );
 };
@@ -91,7 +121,8 @@ const heroStyle: React.CSSProperties = {
     backgroundColor: COLORS.ACCENT_GREEN,
 };
 
-const HomeHero: React.FC<HomeHeroProps> = ({ onSearch }) => {
+const HomeHero: React.FC<HomeHeroProps> = ({ onSearch, counties }) => {
+
     const [productQuery, setProductQuery] = useState('');
     const [selectedCounty, setSelectedCounty] = useState('');
 
@@ -137,10 +168,12 @@ const HomeHero: React.FC<HomeHeroProps> = ({ onSearch }) => {
                             />
 
                             <CountySelect
+                                counties={counties}
                                 selectedCounty={selectedCounty}
                                 onSelectCounty={setSelectedCounty}
                                 className={styles['hero-county-select']}
                             />
+
 
                             <button
                                 type="submit"
@@ -178,9 +211,9 @@ const HomeHero: React.FC<HomeHeroProps> = ({ onSearch }) => {
                 </div>
                 <div className={styles['feature-item']}>
                     <img src="2.jpg" alt="Livrare rapidă" className={styles['feature-image']} />
-                    <h3 className={styles['feature-title']}>Livrare rapidă</h3>
+                    <h3 className={styles['feature-title']}>Conectare directă cu fermierii</h3>
                     <p className={styles['feature-text']}>
-                        Ca un fulger! Comandă sau trimite orice în orașul tău și <mark>livrăm în câteva minute</mark>.
+                        Discută direct cu <mark>producătorii locali</mark>, pune întrebări și stabilește detaliile comenzii fără intermediari.
                     </p>
                 </div>
                 <div className={styles['feature-item']}>

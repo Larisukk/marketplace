@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from "../context/AuthContext";
 import styles from "../header/MainHeader.module.css";
+import { useNavigate } from "react-router-dom";
 
 const COLORS = {
     DARK_GREEN: '#0F2A1D',
@@ -19,7 +20,7 @@ const ROMANIAN_COUNTIES = [
 ];
 
 const LocationIcon = () => (
-    <svg className="county-option-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={styles['county-option-icon']} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
         <circle cx="12" cy="10" r="3" />
     </svg>
@@ -30,14 +31,22 @@ interface CountySelectProps {
     onSelectCounty: (county: string) => void;
     className?: string;
 }
-
-const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCounty, className = '' }) => {
+const CountySelect: React.FC<CountySelectProps> = ({
+                                                       selectedCounty,
+                                                       onSelectCounty,
+                                                       className = ''
+                                                   }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [inputValue, setInputValue] = useState(selectedCounty);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
+    const filteredCounties = ROMANIAN_COUNTIES.filter(c =>
+        c.toLowerCase().includes(inputValue.toLowerCase())
+    );
+
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
                 setIsOpen(false);
             }
         };
@@ -45,35 +54,44 @@ const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCou
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleSelect = (county: string) => {
+    const selectCounty = (county: string) => {
+        setInputValue(county);
         onSelectCounty(county);
         setIsOpen(false);
     };
 
     return (
-        <div className={`county-select-wrapper ${className}`} ref={wrapperRef}>
-            <div
-                className={`county-select-display ${!selectedCounty ? 'placeholder' : ''}`}
-                onClick={() => setIsOpen(!isOpen)}
-                aria-expanded={isOpen}
-            >
-                <div className="county-display-content">
-                    <LocationIcon />
-                    <span className="county-display-text">{selectedCounty || 'Oraș'}</span>
-                </div>
-                <span className="dropdown-arrow">▼</span>
+        <div
+            ref={wrapperRef}
+            className={`${styles['county-select-wrapper']} ${className}`}
+        >
+            <div className={styles['county-input-wrapper']}>
+                <LocationIcon />
+
+                <input
+                    className={styles['county-input']}
+                    placeholder="Județ"
+                    value={inputValue}
+                    onFocus={() => setIsOpen(true)}
+                    onChange={(e) => {
+                        setInputValue(e.target.value);
+                        setIsOpen(true);
+                    }}
+                />
+
+                <span className={styles['dropdown-arrow']}>▼</span>
             </div>
 
-            {isOpen && (
-                <div className="county-select-dropdown">
-                    {ROMANIAN_COUNTIES.map(county => (
+            {isOpen && filteredCounties.length > 0 && (
+                <div className={styles['county-select-dropdown']}>
+                    {filteredCounties.map(county => (
                         <div
                             key={county}
-                            className={`county-select-option ${selectedCounty === county ? 'selected' : ''}`}
-                            onClick={() => handleSelect(county)}
+                            className={styles['county-select-option']}
+                            onClick={() => selectCounty(county)}
                         >
                             <LocationIcon />
-                            <span className="county-option-text">{county}</span>
+                            {county}
                         </div>
                     ))}
                 </div>
@@ -81,6 +99,7 @@ const CountySelect: React.FC<CountySelectProps> = ({ selectedCounty, onSelectCou
         </div>
     );
 };
+
 
 const Header: React.FC = () => {
     const { user } = useAuth();
@@ -90,6 +109,10 @@ const Header: React.FC = () => {
     const heroSearchRef = useRef<HTMLElement | null>(null);
     const [headerCounty, setHeaderCounty] = useState('');
     const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+    const navigate = useNavigate();
+    const [searchText, setSearchText] = useState('');
+
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -175,7 +198,15 @@ const Header: React.FC = () => {
                         />
 
                         <span className={styles['divider']}></span>
-                        <button className={styles['search-button']}>Căutare</button>
+                        <button
+                            className={styles['search-button']}
+                            onClick={() => {
+                                navigate(`/map?query=${encodeURIComponent(searchText)}&county=${encodeURIComponent(headerCounty)}`);
+                            }}
+                        >
+                            Căutare
+                        </button>
+
                     </div>
                 </nav>
             </header>
@@ -192,6 +223,7 @@ const Header: React.FC = () => {
                 </div>
 
                 <div className={styles['menu-links']}>
+                    <a href="/home" className={styles['menu-link']}>Acasă</a>
                     <div
                         className={styles['menu-link']}
                         onClick={() => {
@@ -202,7 +234,15 @@ const Header: React.FC = () => {
                         Profilul meu
                     </div>
 
-                    <a href="/produse" className={styles['menu-link']}>Produse</a>
+                    <div
+                        className={styles['menu-link']}
+                        onClick={() => {
+                            window.location.href = "/map";
+                        }}
+                    >
+                        Harta
+                    </div>
+
 
                     <div
                         className={styles['menu-link']}

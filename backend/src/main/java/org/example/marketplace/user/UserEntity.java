@@ -13,6 +13,7 @@ import org.hibernate.type.SqlTypes;
 @Table(name = "users")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class UserEntity {
+
     @Id
     @GeneratedValue
     private UUID id;
@@ -30,6 +31,9 @@ public class UserEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "role", nullable = false, columnDefinition = "user_role")
     private UserRole role = UserRole.USER;
+
+    @Column(name = "email_verified_at")
+    private OffsetDateTime emailVerifiedAt;
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;

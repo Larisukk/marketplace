@@ -16,6 +16,10 @@
   font-family: system-ui, sans-serif;
   background-color: var(--color-page-background);
   color: var(--color-medium-green);
+}
+
+/* Only the home page layout is offset below the header */
+.home-page-layout {
   padding-top: 4rem;
   min-height: 100vh;
 }
@@ -993,4 +997,22 @@ DROPDOWN ORAȘE
     opacity: 1;
     transform: translateY(0);
   }
+}
+.county-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  width: 120px;
+}
+.search-form-inline .cta-button.glovo-button {
+  border-radius: 0 50px 50px 0; /* DOAR colțurile din dreapta */
+}
+.search-form-inline .cta-button.glovo-button:focus,
+.search-form-inline .cta-button.glovo-button:active {
+  outline: none;
+  box-shadow: none;
+}
+.search-form-inline .cta-button.glovo-button:focus-visible {
+  outline: none;
 }

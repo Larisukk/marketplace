@@ -9,8 +9,9 @@ import type {
 
 // Create the Axios client
 const api = axios.create({
-  // if VITE_API_URL = "http://localhost:8080", this becomes "http://localhost:8080/api"
-  baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:8080') + '/api'
+  // Use VITE_API_URL if defined, otherwise default to relative "/api"
+  // which allows the Vite proxy to forward requests to the backend.
+  baseURL: (import.meta.env.VITE_API_URL ?? '/api')
 })
 
 // Attach JWT from localStorage to every request
@@ -29,33 +30,33 @@ api.interceptors.request.use((config) => {
 // --- Chat API functions ---
 
 export async function startOrGetConversation(
-    payload: StartConversationRequest
+  payload: StartConversationRequest
 ): Promise<ConversationDTO> {
-    try {
-        const response = await api.post<ConversationDTO>(
-            "/chat/conversations/start",
-            payload
-        );
-        return response.data;
-    } catch (error: any) {
-        console.error("Chat API error:", {
-            url: "/chat/conversations/start",
-            payload,
-            status: error?.response?.status,
-            statusText: error?.response?.statusText,
-            data: error?.response?.data,
-            message: error?.message,
-        });
-        throw error;
-    }
+  try {
+    const response = await api.post<ConversationDTO>(
+      '/chat/conversations/start',
+      payload
+    )
+    return response.data
+  } catch (error: any) {
+    console.error('Chat API error:', {
+      url: '/chat/conversations/start',
+      payload,
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      message: error?.message,
+    })
+    throw error
+  }
 }
 
 
 
 export function getConversations(userId: UUID) {
   return api
-      .get<ConversationDTO[]>('/chat/conversations', { params: { userId } })
-      .then(response => response.data)
+    .get<ConversationDTO[]>('/chat/conversations', { params: { userId } })
+    .then(response => response.data)
 }
 
 export function sendMessage(payload: SendMessageRequest) {
@@ -67,21 +68,21 @@ export function sendMessage(payload: SendMessageRequest) {
 
 export function getMessages(conversationId: UUID, page = 0, size = 50) {
   return api
-      .get<MessageDTO[]>('/chat/messages', {
-        params: { conversationId, page, size }
-      })
-      .then(response => response.data)
-      .catch((error) => {
-        console.error('Chat API error (getMessages):', {
-          url: '/chat/messages',
-          conversationId,
-          page,
-          size,
-          status: error?.response?.status,
-          statusText: error?.response?.statusText,
-          data: error?.response?.data,
-          message: error?.message,
-        });
-        throw error;
+    .get<MessageDTO[]>('/chat/messages', {
+      params: { conversationId, page, size }
+    })
+    .then(response => response.data)
+    .catch((error) => {
+      console.error('Chat API error (getMessages):', {
+        url: '/chat/messages',
+        conversationId,
+        page,
+        size,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        message: error?.message,
       });
+      throw error;
+    });
 }
