@@ -109,7 +109,6 @@ const UploadProduct: React.FC<UploadProductProps> = ({ listingId }) => {
         if (!listingId) return;
 
         getListingDetails(listingId as any).then(data => {
-            console.log("Fetched listing details:", data);
             setTitle(data.title || "");
             setDescription(data.description || "");
 

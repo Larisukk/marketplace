@@ -8,10 +8,8 @@ const BACKEND_ORIGIN: string =
     (import.meta as any).env?.VITE_BACKEND_ORIGIN ?? "http://localhost:8080";
 
 // (optional debug)
-// @ts-ignore
-console.log("API_BASE =", API_BASE);
-// @ts-ignore
-console.log("BACKEND_ORIGIN =", BACKEND_ORIGIN);
+// console.log("API_BASE =", API_BASE);
+// console.log("BACKEND_ORIGIN =", BACKEND_ORIGIN);
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
