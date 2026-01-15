@@ -34,7 +34,9 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
               AND (:minPrice::int     IS NULL OR l.price_cents >= :minPrice::int)
               AND (:maxPrice::int     IS NULL OR l.price_cents <= :maxPrice::int)
               AND (:productId::uuid   IS NULL OR l.product_id   = :productId::uuid)
+              AND (:productId::uuid   IS NULL OR l.product_id   = :productId::uuid)
               AND (:categoryId::uuid  IS NULL OR p.category_id  = :categoryId::uuid)
+              AND (:farmerId::uuid    IS NULL OR l.farmer_user_id = :farmerId::uuid)
               AND (:q::text IS NULL OR (
                     l.title       ILIKE '%' || :q || '%'
                  OR l.description ILIKE '%' || :q || '%'
@@ -49,6 +51,7 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
     @Override
     public List<ListingCardDto> search(String q, Integer minPrice, Integer maxPrice,
             UUID productId, UUID categoryId, Boolean available,
+            UUID farmerId,
             Double w, Double s, Double e, Double n,
             int limit, int offset, String sortField, String sortDir) {
 
@@ -66,12 +69,14 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                        c.name AS category_name,
                        thumb.thumbnail_url,
                        l.description,
-                       fp.farm_name AS farmer_name
+                       fp.farm_name AS farmer_name,
+                       l.unit
                 """ + BASE_FROM +
                 " ORDER BY " + sortSql +
                 " LIMIT :limit OFFSET :offset";
 
-        MapSqlParameterSource p = baseParams(q, minPrice, maxPrice, productId, categoryId, available, w, s, e, n)
+        MapSqlParameterSource p = baseParams(q, minPrice, maxPrice, productId, categoryId, available, farmerId, w, s, e,
+                n)
                 .addValue("limit", Math.max(1, limit))
                 .addValue("offset", Math.max(0, offset));
 
@@ -93,6 +98,7 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                     thumb,
                     rs.getString("description"),
                     rs.getString("farmer_name"),
+                    rs.getString("unit"),
                     Collections.emptyList());
         });
     }
@@ -100,9 +106,11 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
     @Override
     public long countSearch(String q, Integer minPrice, Integer maxPrice,
             UUID productId, UUID categoryId, Boolean available,
+            UUID farmerId,
             Double w, Double s, Double e, Double n) {
         String sql = "SELECT COUNT(*) " + BASE_FROM;
-        MapSqlParameterSource p = baseParams(q, minPrice, maxPrice, productId, categoryId, available, w, s, e, n);
+        MapSqlParameterSource p = baseParams(q, minPrice, maxPrice, productId, categoryId, available, farmerId, w, s, e,
+                n);
         return jdbc.queryForObject(sql, p, Long.class);
     }
 
@@ -129,7 +137,7 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
     }
 
     private MapSqlParameterSource baseParams(String q, Integer minPrice, Integer maxPrice,
-            UUID productId, UUID categoryId, Boolean available,
+            UUID productId, UUID categoryId, Boolean available, UUID farmerId,
             Double w, Double s, Double e, Double n) {
         boolean hasBbox = (w != null && s != null && e != null && n != null);
         return new MapSqlParameterSource()
@@ -139,6 +147,7 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                 .addValue("productId", productId)
                 .addValue("categoryId", categoryId)
                 .addValue("available", available)
+                .addValue("farmerId", farmerId)
                 .addValue("hasBbox", hasBbox)
                 .addValue("w", w).addValue("s", s).addValue("e", e).addValue("n", n);
     }
@@ -154,7 +163,8 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                        c.name AS category_name,
                        thumb.thumbnail_url,
                        l.description,
-                       fp.farm_name AS farmer_name
+                       fp.farm_name AS farmer_name,
+                       l.unit
                 FROM public.listings l
                 JOIN public.products p   ON p.id = l.product_id
                 LEFT JOIN public.categories c ON c.id = p.category_id
@@ -199,6 +209,7 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                     thumb,
                     rs.getString("description"),
                     rs.getString("farmer_name"),
+                    rs.getString("unit"),
                     images);
         });
 

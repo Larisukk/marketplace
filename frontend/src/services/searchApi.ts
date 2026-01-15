@@ -49,6 +49,7 @@ export interface SearchParams {
     productId?: UUID;
     categoryId?: UUID;
     available?: boolean;
+    farmerId?: UUID;
     bbox?: string; // "w,s,e,n"
     page?: number;
     size?: number;

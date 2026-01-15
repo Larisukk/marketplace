@@ -23,11 +23,20 @@ public class ListingCommandController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateListingResponse create(
             @RequestBody CreateListingRequest req,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
         String email = authentication.getName();
         UUID id = listings.createListing(req, email);
         return new CreateListingResponse(id);
+    }
+
+    @PutMapping("/{listingId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void update(
+            @PathVariable UUID listingId,
+            @RequestBody UpdateListingRequest req,
+            Authentication authentication) {
+        String email = authentication.getName();
+        listings.updateListing(listingId, req, email);
     }
 
     @PostMapping("/{listingId}/images")
@@ -35,9 +44,18 @@ public class ListingCommandController {
     public void uploadImages(
             @PathVariable UUID listingId,
             @RequestParam("files") List<MultipartFile> files,
-            Authentication authentication
-    ) throws IOException {
+            Authentication authentication) throws IOException {
         String email = authentication.getName();
         listings.uploadListingImages(listingId, files, email);
+    }
+
+    @DeleteMapping("/{listingId}/images")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteImage(
+            @PathVariable UUID listingId,
+            @RequestParam("url") String url,
+            Authentication authentication) {
+        String email = authentication.getName();
+        listings.deleteListingImage(listingId, url, email);
     }
 }

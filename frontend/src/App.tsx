@@ -5,6 +5,8 @@ import MainHeader from "./components/MainHeader";
 
 import Home from "./pages/homepage/Home";
 import MapPage from "./pages/mappage/MapPage";
+import MyListingsPage from "./pages/mylistings/MyListingsPage";
+import EditListingPage from "./pages/mylistings/EditListingPage";
 import UploadProductPage from "./pages/uploadProductPage/UploadProductPage";
 import AuthPage from "./pages/authpage/AuthPage";
 import ProfilePage from "./pages/profile/ProfilePage";
@@ -75,6 +77,24 @@ export default function App() {
 
                 <Route path="/chat" element={<ChatPage />} />
                 <Route path="/listings/:id" element={<ListingPage />} />
+
+                {/* My Listings */}
+                <Route
+                    path="/my-listings"
+                    element={
+                        <ProtectedRoute>
+                            <MyListingsPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/my-listings/edit/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditListingPage />
+                        </ProtectedRoute>
+                    }
+                />
             </Routes>
         </ChatProvider>
     );

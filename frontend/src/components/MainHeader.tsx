@@ -116,6 +116,16 @@ const MainHeader: React.FC = () => {
                         className={styles['menu-link']}
                         onClick={() => {
                             if (!user) setShowLoginPopup(true);
+                            else window.location.href = "/my-listings";
+                        }}
+                    >
+                        Anunțurile mele
+                    </div>
+
+                    <div
+                        className={styles['menu-link']}
+                        onClick={() => {
+                            if (!user) setShowLoginPopup(true);
                             else window.location.href = "/chat";
                         }}
                     >

@@ -30,6 +30,7 @@ public class ListingSearchController {
             @RequestParam(required = false) UUID productId,
             @RequestParam(required = false) UUID categoryId,
             @RequestParam(defaultValue = "true") boolean available,
+            @RequestParam(required = false) UUID farmerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "24") int size,
             @RequestParam(required = false, defaultValue = "createdAt,desc") String sort) {
@@ -54,12 +55,12 @@ public class ListingSearchController {
         if (!List.of("asc", "desc").contains(sortDir))
             sortDir = "desc";
 
-        long total = repo.countSearch(q, minPrice, maxPrice, productId, categoryId, available, w, s, e, n);
+        long total = repo.countSearch(q, minPrice, maxPrice, productId, categoryId, available, farmerId, w, s, e, n);
 
         List<ListingCardDto> items = Collections.emptyList();
         if (total > 0) {
             int offset = Math.max(page, 0) * Math.max(size, 1);
-            items = repo.search(q, minPrice, maxPrice, productId, categoryId, available,
+            items = repo.search(q, minPrice, maxPrice, productId, categoryId, available, farmerId,
                     w, s, e, n, size, offset, sortField, sortDir);
         }
 

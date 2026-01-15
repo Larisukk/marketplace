@@ -9,6 +9,8 @@ import {
 import type { LatLngExpression } from "leaflet";
 import { useNavigate } from "react-router-dom";
 import { listingService } from "../services/listings";
+import { getListingDetails } from "../services/searchApi";
+import { toAbsoluteUrl } from "../services/api";
 import styles from "../pages/uploadProductPage/UploadProduct.module.css";
 
 const categories = [
@@ -26,7 +28,6 @@ const unitOptions = [
 ];
 
 // Cities used only as quick suggestions in the datalist.
-// Search will also work for any other town via OSM.
 const cityOptions = [
     { label: "Cluj-Napoca", lat: 46.7712, lon: 23.6236 },
     { label: "București", lat: 44.4268, lon: 26.1025 },
@@ -49,7 +50,6 @@ const MapCenterUpdater: React.FC<MapCenterUpdaterProps> = ({ center }) => {
     const map = useMap();
 
     useEffect(() => {
-        // zoom 14 = very close to the city
         map.setView(center, 14);
     }, [center, map]);
 
@@ -67,10 +67,20 @@ const LocationMarker: React.FC<LocationMarkerProps> = ({ position, onSelect }) =
     return <Marker position={position} />;
 };
 
-const UploadProduct: React.FC = () => {
+interface UploadProductProps {
+    listingId?: string; // If present, Edit Mode
+}
+
+const UploadProduct: React.FC<UploadProductProps> = ({ listingId }) => {
     const navigate = useNavigate();
+
+    // Existing images (from backend) - Edit Mode only
+    const [existingImages, setExistingImages] = useState<string[]>([]);
+
+    // New images to upload
     const [photos, setPhotos] = useState<File[]>([]);
     const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+
     const [category, setCategory] = useState("");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -94,47 +104,104 @@ const UploadProduct: React.FC = () => {
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [submitSuccess, setSubmitSuccess] = useState(false);
 
+    // Load existing data if editing
+    useEffect(() => {
+        if (!listingId) return;
+
+        getListingDetails(listingId as any).then(data => {
+            console.log("Fetched listing details:", data);
+            setTitle(data.title || "");
+            setDescription(data.description || "");
+
+            // Price
+            if (data.priceCents != null) {
+                setPrice((data.priceCents / 100).toString());
+            }
+
+            // Unit
+            if (data.unit) {
+                setUnit(data.unit);
+            }
+
+            // Category
+            if (data.categoryName) {
+                const norm = data.categoryName.toLowerCase().trim();
+                const foundCat = categories.find(c => c.label.toLowerCase() === norm || c.value === norm);
+                if (foundCat) {
+                    setCategory(foundCat.value);
+                } else {
+                    console.warn("Category not found for:", data.categoryName);
+                }
+            }
+
+            if (data.lat && data.lon) {
+                setLat(data.lat);
+                setLon(data.lon);
+                setMapCenter([data.lat, data.lon]);
+            }
+
+            // Images
+            if (data.images && Array.isArray(data.images)) {
+                const imgs = data.images as any[];
+                if (imgs.length > 0 && typeof imgs[0] === 'string') {
+                    setExistingImages(imgs as string[]);
+                } else if (imgs.length > 0 && typeof imgs[0] === 'object') {
+                    setExistingImages(imgs.map((i: any) => i.url));
+                } else {
+                    setExistingImages([]);
+                }
+            }
+        }).catch(err => {
+            console.error(err);
+            setSubmitError("Nu am putut încărca detaliile anunțului.");
+        });
+    }, [listingId]);
+
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             const files = Array.from(event.target.files);
-            setPhotos(files);
+            setPhotos([...photos, ...files]);
 
             // Create preview URLs
             const previews = files.map(file => URL.createObjectURL(file));
-            setPhotoPreviews(previews);
+            setPhotoPreviews([...photoPreviews, ...previews]);
         }
     };
 
     const removePhoto = (index: number) => {
-        // Revoke the object URL to free memory
         URL.revokeObjectURL(photoPreviews[index]);
-
         const newPhotos = photos.filter((_, i) => i !== index);
         const newPreviews = photoPreviews.filter((_, i) => i !== index);
         setPhotos(newPhotos);
         setPhotoPreviews(newPreviews);
     };
 
+    const removeExistingImage = async (url: string) => {
+        if (!listingId) return;
+        if (!window.confirm("Ștergi această poză?")) return;
+
+        try {
+            await listingService.deleteImage(listingId, url);
+            setExistingImages(prev => prev.filter(p => p !== url));
+        } catch (e) {
+            console.error(e);
+            alert("Eroare la ștergerea imaginii.");
+        }
+    };
+
     // Clean up object URLs on unmount
     useEffect(() => {
         return () => {
-            // Clean up all preview URLs when component unmounts
             photoPreviews.forEach(url => {
-                try {
-                    URL.revokeObjectURL(url);
-                } catch (e) {
-                    // Ignore errors when revoking URLs
-                }
+                try { URL.revokeObjectURL(url); } catch (e) { }
             });
         };
-    }, []); // Only run cleanup on unmount
+    }, []);
 
-    // search city: first try our suggestion list, then fall back to OSM geocoding
     const handleCitySearch = async () => {
         const query = cityQuery.trim();
         if (!query) return;
 
-        // 1) try local suggestions
         const normalized = query.toLowerCase();
         const fromList =
             cityOptions.find((c) => c.label.toLowerCase() === normalized) ||
@@ -145,31 +212,14 @@ const UploadProduct: React.FC = () => {
             return;
         }
 
-        // 2) fall back to OpenStreetMap Nominatim for any town
         try {
-            const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ro&q=${encodeURIComponent(
-                query
-            )}`;
-
-            const response = await fetch(url, {
-                headers: {
-                    // browser will set UA; this just asks for Romanian names if possible
-                    "Accept-Language": "ro",
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error("Search request failed");
-            }
-
-            type NominatimResult = { lat: string; lon: string; display_name: string };
-
-            const data: NominatimResult[] = await response.json();
+            const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ro&q=${encodeURIComponent(query)}`;
+            const response = await fetch(url, { headers: { "Accept-Language": "ro" } });
+            if (!response.ok) throw new Error("Search request failed");
+            const data: any[] = await response.json();
 
             if (!data.length) {
-                setSubmitError(
-                    "Nu am găsit orașul/localitatea respectivă. Poți încerca să dai zoom și să dai click direct pe hartă."
-                );
+                setSubmitError("Nu am găsit orașul respective. Încearcă zoom pe hartă.");
                 return;
             }
 
@@ -178,27 +228,21 @@ const UploadProduct: React.FC = () => {
             const lonNum = parseFloat(result.lon);
 
             if (Number.isNaN(latNum) || Number.isNaN(lonNum)) {
-                setSubmitError(
-                    "Nu am putut interpreta coordonatele pentru această locație."
-                );
+                setSubmitError("Coordonate invalide.");
                 return;
             }
 
             setSubmitError(null);
             setMapCenter([latNum, lonNum]);
-            // user can still click exact spot to fine-tune marker
         } catch (err) {
             console.error(err);
-            setSubmitError(
-                "A apărut o eroare la căutarea locației. Încearcă din nou sau pune markerul direct pe hartă."
-            );
+            setSubmitError("Eroare la căutare.");
         }
     };
 
     const handleMapSelect = (latitude: number, longitude: number) => {
         setLat(latitude);
         setLon(longitude);
-        setMapCenter([latitude, longitude]);
     };
 
     const handleSubmit = async (event: React.FormEvent) => {
@@ -206,18 +250,23 @@ const UploadProduct: React.FC = () => {
         setSubmitError(null);
         setSubmitSuccess(false);
 
-        if (!category || !title || !unit || !price) {
-            setSubmitError("Completează categoria, titlul, unitatea și prețul.");
+        // Validation limits relaxed for Edit? No, same validation.
+        // Validation
+        if (!listingId) {
+            // Strict validation for creation
+            if (!category || !title || !unit || !price) {
+                setSubmitError("Completează categoria, titlul, unitatea și prețul.");
+                return;
+            }
+        }
+
+        if (!listingId && (lat == null || lon == null)) {
+            setSubmitError("Selectează locația pe hartă.");
             return;
         }
 
-        if (lat == null || lon == null) {
-            setSubmitError("Te rog să selectezi locația pe hartă (click pe hartă).");
-            return;
-        }
-
-        if (photos.length === 0) {
-            setSubmitError("Adaugă cel puțin o fotografie pentru anunț.");
+        if (!listingId && photos.length === 0) {
+            setSubmitError("Adaugă cel puțin o fotografie.");
             return;
         }
 
@@ -229,51 +278,67 @@ const UploadProduct: React.FC = () => {
 
         try {
             setSubmitting(true);
+            let targetId = listingId;
 
-            const { id } = await listingService.create({
-                title,
-                description,
-                categoryCode: category,
-                unit,
-                priceRon: priceNumber,
-                lat,
-                lon,
-            });
+            if (listingId) {
+                // UPDATE
+                await listingService.update(listingId, {
+                    title,
+                    description,
+                    categoryCode: category,
+                    unit,
+                    priceRon: priceNumber,
+                    lat: lat ?? undefined,
+                    lon: lon ?? undefined,
+                });
+            } else {
+                // CREATE
+                const res = await listingService.create({
+                    title,
+                    description,
+                    categoryCode: category,
+                    unit,
+                    priceRon: priceNumber,
+                    lat: lat!,
+                    lon: lon!,
+                });
+                targetId = res.id;
+            }
 
-            await listingService.uploadImages(id, photos);
+            // Upload NEW images if any
+            if (photos.length > 0 && targetId) {
+                await listingService.uploadImages(targetId, photos);
+            }
 
-            // Clean up preview URLs
+            // Cleanup
             photoPreviews.forEach(url => URL.revokeObjectURL(url));
 
             setSubmitSuccess(true);
-            setPhotos([]);
-            setPhotoPreviews([]);
-            setCategory("");
-            setTitle("");
-            setDescription("");
-            setPrice("");
-            setUnit("");
-            setCityQuery("");
-            setLat(null);
-            setLon(null);
-            setMapCenter([45.9432, 24.9668]);
-
-            // Navigate to the new listing after a short delay
-            setTimeout(() => {
-                navigate(`/listings/${id}`);
-            }, 1500);
-        } catch (e: any) {
-            console.error("Upload error:", e);
-            let errorMessage = "A apărut o eroare la publicarea anunțului.";
-
-            if (e?.response?.data?.message) {
-                errorMessage = e.response.data.message;
-            } else if (e?.message) {
-                errorMessage = e.message;
-            } else if (typeof e === 'string') {
-                errorMessage = e;
+            if (!listingId) {
+                // Reset form only if creating new
+                setPhotos([]);
+                setPhotoPreviews([]);
+                setCategory("");
+                setTitle("");
+                setDescription("");
+                setPrice("");
+                setUnit("");
+                setCityQuery("");
+                setLat(null);
+                setLon(null);
+                setMapCenter([45.9432, 24.9668]);
             }
 
+            // Redirect
+            setTimeout(() => {
+                navigate(`/listings/${targetId}`);
+            }, 1500);
+
+        } catch (e: any) {
+            console.error("Submit error:", e);
+            let errorMessage = "A apărut o eroare.";
+            if (e?.response?.data?.message) errorMessage = e.response.data.message;
+            else if (e?.message) errorMessage = e.message;
             setSubmitError(errorMessage);
         } finally {
             setSubmitting(false);
@@ -282,16 +347,10 @@ const UploadProduct: React.FC = () => {
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (
-                categoryDropdownRef.current &&
-                !categoryDropdownRef.current.contains(event.target as Node)
-            ) {
+            if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
                 setIsCategoryDropdownOpen(false);
             }
-            if (
-                unitDropdownRef.current &&
-                !unitDropdownRef.current.contains(event.target as Node)
-            ) {
+            if (unitDropdownRef.current && !unitDropdownRef.current.contains(event.target as Node)) {
                 setIsUnitDropdownOpen(false);
             }
         };
@@ -301,117 +360,125 @@ const UploadProduct: React.FC = () => {
 
     const selectedCategoryLabel = categories.find((c) => c.value === category)?.label;
     const selectedUnitLabel = unitOptions.find((u) => u.value === unit)?.label;
-
-    const markerPosition: LatLngExpression | null =
-        lat != null && lon != null ? [lat, lon] : null;
+    const markerPosition: LatLngExpression | null = lat != null && lon != null ? [lat, lon] : null;
 
     return (
         <div className={styles['upload-form-container']}>
             <form onSubmit={handleSubmit}>
+                <h2 style={{ color: '#0F2A1D', marginBottom: '20px' }}>
+                    {listingId ? "Editează Anunțul" : "Publică un Anunț Nou"}
+                </h2>
+
                 {submitError && <div className={styles['form-error']}>{submitError}</div>}
                 {submitSuccess && (
-                    <div className={styles['form-success']}>Anunțul a fost publicat cu succes.</div>
+                    <div className={styles['form-success']}>
+                        {listingId ? "Anunțul a fost actualizat!" : "Anunțul a fost publicat!"}
+                    </div>
                 )}
 
-                {/* FOTO */}
+                {/* FOTO - Existing + New */}
                 <div className={`${styles['form-section']} ${styles['photo-upload-section']}`}>
-                    <label htmlFor="photo-upload" className={styles['photo-upload-label']}>
-                        {photos.length === 0 ? (
-                            <>
-                                <span className={styles['plus-icon']}>+</span>
-                                <span>Încărcare fotografii</span>
-                            </>
-                        ) : (
-                            <span>{photos.length} {photos.length === 1 ? 'fotografie selectată' : 'fotografii selectate'}</span>
-                        )}
-                    </label>
-                    <input
-                        type="file"
-                        id="photo-upload"
-                        multiple
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        style={{ display: "none" }}
-                    />
+                    <label className={styles['photo-upload-label']}>FOTOGRAFII</label>
+                    <div style={{ marginBottom: '10px' }}>
+                        <label htmlFor="photo-upload" style={{ cursor: 'pointer', color: '#16a34a', fontWeight: 'bold' }}>
+                            + Adaugă poze noi
+                        </label>
+                        <input
+                            type="file"
+                            id="photo-upload"
+                            multiple
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            style={{ display: "none" }}
+                        />
+                    </div>
 
-                    {photoPreviews.length > 0 && (
-                        <div style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
-                            gap: "10px",
-                            marginTop: "15px"
-                        }}>
-                            {photoPreviews.map((preview, index) => (
-                                <div key={index} style={{ position: "relative" }}>
-                                    <img
-                                        src={preview}
-                                        alt={`Preview ${index + 1}`}
-                                        style={{
-                                            width: "100%",
-                                            height: "100px",
-                                            objectFit: "cover",
-                                            borderRadius: "8px",
-                                            border: "1px solid #dfe1e5"
-                                        }}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => removePhoto(index)}
-                                        style={{
-                                            position: "absolute",
-                                            top: "5px",
-                                            right: "5px",
-                                            background: "rgba(0,0,0,0.7)",
-                                            color: "white",
-                                            border: "none",
-                                            borderRadius: "50%",
-                                            width: "24px",
-                                            height: "24px",
-                                            cursor: "pointer",
-                                            fontSize: "16px",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            lineHeight: "1"
-                                        }}
-                                        aria-label="Remove photo"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    <div style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
+                        gap: "10px",
+                        marginTop: "5px"
+                    }}>
+                        {/* Existing Images */}
+                        {existingImages.map((url, index) => (
+                            <div key={`existing-${index}`} style={{ position: "relative" }}>
+                                <img
+                                    src={toAbsoluteUrl(url) || ""}
+                                    alt="Existing"
+                                    style={{
+                                        width: "100%",
+                                        height: "100px",
+                                        objectFit: "cover",
+                                        borderRadius: "8px",
+                                        border: "2px solid #aec3b0"
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => removeExistingImage(url)}
+                                    style={{
+                                        position: "absolute",
+                                        top: "5px", right: "5px",
+                                        background: "red", color: "white",
+                                        border: "none", borderRadius: "50%",
+                                        width: "20px", height: "20px",
+                                        cursor: "pointer", display: "flex",
+                                        alignItems: "center", justifyContent: "center"
+                                    }}
+                                >×</button>
+                            </div>
+                        ))}
+
+                        {/* New Previews */}
+                        {photoPreviews.map((preview, index) => (
+                            <div key={`new-${index}`} style={{ position: "relative" }}>
+                                <img
+                                    src={preview}
+                                    alt={`New ${index}`}
+                                    style={{
+                                        width: "100%", height: "100px",
+                                        objectFit: "cover",
+                                        borderRadius: "8px",
+                                        border: "2px dashed #16a34a"
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => removePhoto(index)}
+                                    style={{
+                                        position: "absolute",
+                                        top: "5px", right: "5px",
+                                        background: "rgba(0,0,0,0.7)", color: "white",
+                                        border: "none", borderRadius: "50%",
+                                        width: "20px", height: "20px",
+                                        cursor: "pointer", display: "flex",
+                                        alignItems: "center", justifyContent: "center"
+                                    }}
+                                >×</button>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* CATEGORIE */}
                 <div className={`${styles['form-section']} ${styles['category-select-wrapper']}`} ref={categoryDropdownRef}>
                     <label>Categorie</label>
-
                     <div
                         className={styles['category-select-display']}
                         onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                        aria-expanded={isCategoryDropdownOpen}
                     >
-                        <span
-                            className={`${styles['category-display-text']} ${!category ? styles['placeholder'] : ""}`}
-                        >
+                        <span className={`${styles['category-display-text']} ${!category ? styles['placeholder'] : ""}`}>
                             {selectedCategoryLabel || "Selectează o categorie"}
                         </span>
                         <span className={styles['dropdown-arrow']}>▼</span>
                     </div>
-
                     {isCategoryDropdownOpen && (
                         <div className={styles['category-select-dropdown']}>
                             {categories.map((cat) => (
                                 <div
                                     key={cat.value}
-                                    className={`${styles['category-select-option']} ${category === cat.value ? styles['selected'] : ""
-                                        }`}
-                                    onClick={() => {
-                                        setCategory(cat.value);
-                                        setIsCategoryDropdownOpen(false);
-                                    }}
+                                    className={`${styles['category-select-option']} ${category === cat.value ? styles['selected'] : ""}`}
+                                    onClick={() => { setCategory(cat.value); setIsCategoryDropdownOpen(false); }}
                                 >
                                     {cat.label}
                                 </div>
@@ -425,7 +492,7 @@ const UploadProduct: React.FC = () => {
                     <label>Titlu</label>
                     <input
                         type="text"
-                        placeholder="Spune cumpărătorilor ce vinzi"
+                        placeholder="Ex: Mere Idared"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                     />
@@ -433,123 +500,33 @@ const UploadProduct: React.FC = () => {
 
                 {/* DESCRIERE */}
                 <div className={styles['form-section']}>
-                    <label>Descrie articolul</label>
+                    <label>Descriere</label>
                     <textarea
                         rows={4}
-                        placeholder="Oferă detalii cumpărătorilor"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                     />
                 </div>
 
-                {/* LOCAȚIE – CĂUTARE ORAȘ + HARTĂ MICĂ */}
-                <div className={styles['form-section']}>
-                    <label>Locație pe hartă</label>
-
-                    <div
-                        style={{
-                            display: "flex",
-                            gap: "8px",
-                            alignItems: "center",
-                            marginBottom: "8px",
-                        }}
-                    >
-                        <input
-                            type="text"
-                            placeholder="Caută orașul/localitatea (ex. Baia Mare)"
-                            value={cityQuery}
-                            onChange={(e) => setCityQuery(e.target.value)}
-                            list="upload-city-options"
-                            style={{
-                                flex: 1,
-                                border: "none",
-                                outline: "none",
-                                fontSize: "16px",
-                                backgroundColor: "transparent",
-                            }}
-                        />
-                        <button
-                            type="button"
-                            onClick={handleCitySearch}
-                            style={{
-                                border: "none",
-                                borderRadius: "999px",
-                                padding: "6px 12px",
-                                fontSize: "13px",
-                                fontWeight: 600,
-                                cursor: "pointer",
-                                backgroundColor: "#AEC3B0",
-                                color: "#0F2A1D",
-                                whiteSpace: "nowrap",
-                            }}
-                        >
-                            Caută
-                        </button>
-                    </div>
-
-                    <datalist id="upload-city-options">
-                        {cityOptions.map((c) => (
-                            <option key={c.label} value={c.label} />
-                        ))}
-                    </datalist>
-
-                    <div
-                        style={{
-                            width: "100%",
-                            height: "220px",
-                            borderRadius: "10px",
-                            overflow: "hidden",
-                            border: "1px solid #dfe1e5",
-                        }}
-                    >
-                        <MapContainer
-                            center={mapCenter}
-                            zoom={11}
-                            scrollWheelZoom={false}
-                            style={{ width: "100%", height: "100%" }}
-                        >
-                            <TileLayer
-                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            />
-                            <MapCenterUpdater center={mapCenter} />
-                            <LocationMarker position={markerPosition} onSelect={handleMapSelect} />
-                        </MapContainer>
-                    </div>
-
-                    {lat != null && lon != null && (
-                        <p className={styles['location-preview']}>
-                            Locație selectată: Lat {lat.toFixed(5)}, Lon {lon.toFixed(5)}
-                        </p>
-                    )}
-                </div>
-
                 {/* UNITATE */}
                 <div className={`${styles['form-section']} ${styles['category-select-wrapper']}`} ref={unitDropdownRef}>
-                    <label>Unitate</label>
-
+                    <label>Unitate de măsură</label>
                     <div
                         className={styles['category-select-display']}
                         onClick={() => setIsUnitDropdownOpen(!isUnitDropdownOpen)}
-                        aria-expanded={isUnitDropdownOpen}
                     >
                         <span className={`${styles['category-display-text']} ${!unit ? styles['placeholder'] : ""}`}>
                             {selectedUnitLabel || "Selectează unitatea"}
                         </span>
                         <span className={styles['dropdown-arrow']}>▼</span>
                     </div>
-
                     {isUnitDropdownOpen && (
                         <div className={styles['category-select-dropdown']}>
                             {unitOptions.map((u) => (
                                 <div
                                     key={u.value}
-                                    className={`${styles['category-select-option']} ${unit === u.value ? styles['selected'] : ""
-                                        }`}
-                                    onClick={() => {
-                                        setUnit(u.value);
-                                        setIsUnitDropdownOpen(false);
-                                    }}
+                                    className={`${styles['category-select-option']} ${unit === u.value ? styles['selected'] : ""}`}
+                                    onClick={() => { setUnit(u.value); setIsUnitDropdownOpen(false); }}
                                 >
                                     {u.label}
                                 </div>
@@ -560,42 +537,47 @@ const UploadProduct: React.FC = () => {
 
                 {/* PREȚ */}
                 <div className={styles['form-section']}>
-                    <label>Preț</label>
-                    <div className={styles['price-input-wrapper']}>
+                    <label>Preț (RON)</label>
+                    <input
+                        type="text"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                    />
+                </div>
+
+                {/* MAP */}
+                <div className={styles['form-section']}>
+                    <label>Locație</label>
+                    <div className={styles['location-search-row']} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                         <input
                             type="text"
-                            value={price}
-                            onChange={(e) => {
-                                let value = e.target.value.replace(",", ".");
-                                if (value === "") {
-                                    setPrice("");
-                                    return;
-                                }
-                                if (/^\d+(\.\d{0,2})?$/.test(value)) {
-                                    setPrice(value);
-                                }
-                            }}
+                            value={cityQuery}
+                            onChange={(e) => setCityQuery(e.target.value)}
+                            placeholder="Caută oraș..."
+                            style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }}
                         />
-                        <span className={styles['currency-label']}>RON</span>
+                        <button type="button" onClick={handleCitySearch} style={{ padding: '8px 16px', borderRadius: '6px', background: '#aec3b0', border: 'none', cursor: 'pointer' }}>Caută</button>
                     </div>
+                    <div style={{ height: '250px', borderRadius: '8px', overflow: 'hidden' }}>
+                        <MapContainer
+                            center={mapCenter}
+                            zoom={11}
+                            scrollWheelZoom={false}
+                            style={{ width: "100%", height: "100%" }}
+                        >
+                            <TileLayer
+                                attribution='&copy; OSM'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            />
+                            <MapCenterUpdater center={mapCenter} />
+                            <LocationMarker position={markerPosition} onSelect={handleMapSelect} />
+                        </MapContainer>
+                    </div>
+                    {lat && lon && <small>Lat: {lat.toFixed(4)}, Lon: {lon.toFixed(4)}</small>}
                 </div>
-
-            {/* MESAJE EROARE / SUCCES – jos */}
-            {submitError && (
-                <div className="form-error bottom-error">
-                    {submitError}
-                </div>
-            )}
-
-            {submitSuccess && (
-                <div className="form-success bottom-success">
-                    Anunțul a fost publicat cu succes.
-                </div>
-            )}
-
 
                 <button type="submit" className={styles['submit-product-btn']} disabled={submitting}>
-                    {submitting ? "Se publică…" : "Publică Anunțul"}
+                    {submitting ? "Se salvează..." : (listingId ? "Actualizează Anunțul" : "Publică Anunțul")}
                 </button>
             </form>
         </div>

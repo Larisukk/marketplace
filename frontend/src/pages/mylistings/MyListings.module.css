@@ -1,0 +1,121 @@
+.myListings-layout {
+    min-height: 100vh;
+    background-color: #f7f9f7;
+    padding-top: 72px;
+    /* Header space */
+    display: flex;
+    flex-direction: column;
+}
+
+.myListings-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.myListings-title {
+    font-size: 2rem;
+    color: #0F2A1D;
+    margin-bottom: 2rem;
+}
+
+.myListings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.listing-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s;
+}
+
+.listing-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.card-thumb {
+    height: 200px;
+    background-color: #f0f0f0;
+    position: relative;
+}
+
+.card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.card-title {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0F2A1D;
+}
+
+.card-price {
+    font-weight: 700;
+    color: #16a34a;
+    margin-bottom: 0.5rem;
+}
+
+.card-actions {
+    margin-top: auto;
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 1rem;
+}
+
+.edit-btn,
+.view-btn {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.edit-btn {
+    background-color: #AEC3B0;
+    color: #0F2A1D;
+}
+
+.edit-btn:hover {
+    background-color: #9cb19e;
+}
+
+.view-btn {
+    background-color: #f3f3f3;
+    color: #333;
+}
+
+.view-btn:hover {
+    background-color: #e5e5e5;
+}
+
+.loading,
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+    font-size: 1.1rem;
+}
