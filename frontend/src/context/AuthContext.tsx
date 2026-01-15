@@ -22,22 +22,29 @@ const Context = createContext<AuthCtx | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<MeResponse | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(() => localStorage.getItem("accessToken"));
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!localStorage.getItem("accessToken"));
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // =============================
   // LOAD USER IF TOKEN EXISTS
   // =============================
+  // =============================
+  // LOAD USER IF TOKEN EXISTS
+  // =============================
   useEffect(() => {
     if (!accessToken) return;
+
+    // If we have a token but no user, we are loading
+    setLoading(true);
     authService.me()
       .then(setUser)
       .catch(() => {
         localStorage.removeItem("accessToken");
         setAccessToken(null);
         setUser(null);
-      });
+      })
+      .finally(() => setLoading(false));
   }, [accessToken]);
 
   // =============================

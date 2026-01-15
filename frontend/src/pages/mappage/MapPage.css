@@ -7,9 +7,7 @@
 .mapPage {
     display: flex;
     flex-direction: column;
-    padding: 16px;
-    padding-top: 0px;
-    /* Account for fixed header */
+    padding: 72px 16px 16px 16px;
     background: linear-gradient(180deg, #e6f3ea, #cde9d6);
     color: #143321;
     min-height: 100vh;
@@ -20,57 +18,18 @@
         height: calc(100vh - var(--map-nav-h));
         max-height: calc(100vh - var(--map-nav-h));
         box-sizing: border-box;
-        overflow: visible;
+        overflow: hidden;
         /* page itself doesn't scroll; only left list does */
     }
 }
 
 .mapPage-header {
+    padding-bottom: 8px;
+    border-bottom: 1px solid #b8d7c3;
     display: flex;
     align-items: center;
-    gap: 12px;
-
-    padding: 6px 12px;     /* 🔹 foarte mic */
-    margin: 0;
-
-    border-bottom: 1px solid #b8d7c3;
-    background: #e6f3ea;
-
-    height: auto;
+    justify-content: space-between;
 }
-.mapPage-fieldRow {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.mapPage-field {
-    flex: 1;
-}
-
-.mapPage-field input {
-    width: 100%;
-    box-sizing: border-box;
-}
-.mapPage-field select {
-    width: 100%;
-    padding: 0.35rem 0.5rem;
-
-    border-radius: 4px;
-    border: 1px solid #b8d7c3;
-
-    font-size: 0.9rem;
-    background-color: #ffffff;
-
-    color: #9dbba8;              /* 🔹 verde deschis (placeholder) */
-    box-sizing: border-box;
-    cursor: pointer;
-}
-
-/* când e ales un județ */
-.mapPage-field select[data-has-value="true"] {
-    color: #143321;              /* 🔹 verde normal */
-}
-
 
 .mapPage-title {
     margin: 0;
@@ -382,38 +341,151 @@
     }
 }
 
+/* Price markers */
+.mapPage .price-marker .price-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 10px;
+    min-width: 34px;
+
+    background: #1f7a3a;
+    color: #ffffff;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    white-space: nowrap;
+}
+
+.mapPage .price-marker .price-badge::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -5px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #1f7a3a;
+}
+
+/* Fix: Min/Max price fields should have equal width */
+.mapPage-priceRow .mapPage-priceCol {
+    flex: 1 1 0;
+    min-width: 0;
+    /* prevent overflow */
+}
 
 /* Fix: Input in Max price box becomes too wide – set tighter max width */
 .mapPage-priceRow .mapPage-priceCol input {
     width: 100%;
     max-width: 120px;
+    /* adjust this smaller/bigger as you like */
     box-sizing: border-box;
 }
 
-/* LocateMe, markers, and clusters moved to MapBox.module.css */
-.mapPage-cardActionBtn {
-    margin-top: 0.4rem;
 
-    padding: 0.45rem 0.9rem;
-    border-radius: 999px;            /* 🔹 rotunjit */
-    border: none;
+/* LocateMe overlay */
+.locate-controls {
+    position: absolute;
+    z-index: 1000;
+    top: 10px;
+    right: 10px;
+    left: auto;
 
-    background: #1f7a3a;             /* verde principal */
-    color: #ffffff;
+    background: #fff;
+    padding: 4px 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 0.9rem;
+}
 
-    font-size: 0.85rem;
-    font-weight: 600;
-
+.locate-controls button {
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #f8f8f8;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease;
 }
 
-.mapPage-cardActionBtn:hover {
-    background: #186632;
-    transform: translateY(-1px);
+.locate-controls button:disabled {
+    opacity: 0.5;
+    cursor: default;
 }
 
-.mapPage-cardActionBtn:active {
-    transform: translateY(0);
+.user-location-dot {
+    border-radius: 999px;
 }
 
+.user-location-inner {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: rgba(0, 120, 255, 1);
+    box-shadow: 0 0 0 4px rgba(0, 120, 255, 0.3);
+}
+
+.locate-error {
+    color: #d00;
+    font-size: 0.75rem;
+}
+
+/* Make Min price and Max price inputs the same smaller size */
+.mapPage-fieldRow .mapPage-field input {
+    max-width: 120px;
+    /* adjust to 100px or 90px if you want smaller */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* --- Cluster bubbles --- */
+.marker-cluster-badge {
+    background: transparent;
+    border: none;
+}
+
+.marker-cluster-badge .cluster-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+
+    background: #1f7a3a;
+    /* same green as price badges */
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 0 0 3px rgba(31, 122, 58, 0.35);
+}
+
+.marker-cluster-badge .cluster-badge span {
+    line-height: 1;
+}
+
+/* View Listing Button */
+.mapPage-viewBtn {
+    background: #275237;
+    color: #fff;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-left: auto;
+    /* Push to the right */
+    transition: background 0.2s;
+}
+
+.mapPage-viewBtn:hover {
+    background: #1f7a3a;
+}

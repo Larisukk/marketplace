@@ -1,13 +1,18 @@
+// frontend/src/App.tsx
 import styles from "./App.module.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import MainHeader from "./components/MainHeader";
 
+import Home from "./pages/homepage/Home";
 import MapPage from "./pages/mappage/MapPage";
-import Home from "./pages/homePage/Home";
+import MyListingsPage from "./pages/mylistings/MyListingsPage";
+import EditListingPage from "./pages/mylistings/EditListingPage";
 import UploadProductPage from "./pages/uploadProductPage/UploadProductPage";
 import AuthPage from "./pages/authpage/AuthPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import ListingPage from "./pages/listingpage/ListingPage";
 import { ChatProvider } from "./context/ChatContext";
+import AdminPage from "./pages/admin/AdminPage";
 import ChatPage from "./pages/chatpage/ChatPage";
 import EmailSentPage from "./pages/authpage/EmailSentPage";
 import EmailVerifiedPage from "./pages/authpage/EmailVerifiedPage";
@@ -17,25 +22,40 @@ import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import Terms from "./pages/legal/Terms";
 import SupportPage from "./pages/support/SupportPage";
 
+import { useAuth } from "./context/AuthContext";
+
 export default function App() {
     const location = useLocation();
+    const { user } = useAuth();
 
     // pages where header MUST NOT appear
-    const hideHeaderOn = ["/map"];
+    const hideHeaderOn: string[] = ["/chat"];
 
     const shouldShowHeader = !hideHeaderOn.includes(location.pathname);
 
     return (
         <ChatProvider>
+            {shouldShowHeader && <MainHeader />}
             <Routes>
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/support" element={<SupportPage />} />
 
                 <Route path="/" element={<Navigate to="/home" replace />} />
+
+                {/* public pages */}
                 <Route path="/home" element={<Home />} />
-                <Route path="/auth" element={<AuthPage />} />
                 <Route path="/map" element={<MapPage />} />
+                <Route path="/listings/:id" element={<ListingPage />} />
+                <Route path="/chat" element={<ChatPage />} />
+
+                {/* auth page: if already logged in, redirect away */}
+                <Route
+                    path="/auth"
+                    element={!user ? <AuthPage /> : <Navigate to="/home" replace />}
+                />
+
+                {/* protected pages */}
                 <Route
                     path="/profile"
                     element={
@@ -44,7 +64,6 @@ export default function App() {
                         </ProtectedRoute>
                     }
                 />
-
                 <Route
                     path="/upload"
                     element={
@@ -59,6 +78,32 @@ export default function App() {
 
                 <Route path="/chat" element={<ChatPage />} />
                 <Route path="/listings/:id" element={<ListingPage />} />
+
+                {/* My Listings */}
+                <Route
+                    path="/my-listings"
+                    element={
+                        <ProtectedRoute>
+                            <MyListingsPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/my-listings/edit/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditListingPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin"
+                    element={
+                        <ProtectedRoute>
+                            <AdminPage />
+                        </ProtectedRoute>
+                    }
+                />
             </Routes>
         </ChatProvider>
     );

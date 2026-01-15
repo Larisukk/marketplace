@@ -8,7 +8,10 @@ export type CreateListingRequest = {
     priceRon: number;
     lat: number;
     lon: number;
+    available?: boolean;
 };
+
+export type UpdateListingRequest = Partial<CreateListingRequest> & { available?: boolean };
 
 export type CreateListingResponse = {
     id: string;
@@ -19,6 +22,18 @@ export const listingService = {
     create(payload: CreateListingRequest) {
         // hits POST /api/listings
         return api.post<CreateListingResponse>("/listings", payload);
+    },
+
+    update(id: string, payload: UpdateListingRequest) {
+        return api.put(`/listings/${id}`, payload);
+    },
+
+    deleteImage(id: string, url: string) {
+        return api.del(`/listings/${id}/images?url=${encodeURIComponent(url)}`);
+    },
+
+    delete(id: string) {
+        return api.del(`/listings/${id}`);
     },
 
     // Multipart upload – we DO NOT use api.post here

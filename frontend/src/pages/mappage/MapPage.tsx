@@ -1,14 +1,13 @@
-// frontend/src/pages/MapPage.tsx
-import { FormEvent, useEffect, useRef, useState } from "react";
+// frontend/src/pages/mappage/MapPage.tsx
+import { FormEvent, useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import MapBox, { type Bbox, type Point } from "../../components/MapBox";
-import styles from "./MapPage.module.css";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import BurgerMenu from "@/components/BurgerMenu";
+import "./MapPage.css";
+
 import { searchListings } from "@/services/searchApi";
 import type { ListingCardDto } from "@/types/search";
-import { useAuth } from "../../context/AuthContext";
-import { useChat } from "../../hooks/useChat";
-import { COUNTY_BBOX } from "@/utils/counties";
+import { toAbsoluteUrl } from "@/services/api"; // ✅ shared helper
+import { COUNTY_BBOX } from "../../utils/counties";
 
 type SortOption =
     | "createdAt,desc"
@@ -18,41 +17,52 @@ type SortOption =
 
 type Filters = {
     q: string;
-    minPrice: string;
+    minPrice: string; // in currency units
     maxPrice: string;
     available: boolean;
     sort: SortOption;
-    county: string;
 };
-
 
 const DEFAULT_CENTER: [number, number] = [44.4268, 26.1025];
 
 export default function MapPage() {
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
     const [filters, setFilters] = useState<Filters>({
-        q: "",
-        minPrice: "",
-        maxPrice: "",
+        q: searchParams.get("q") || "",
+        minPrice: searchParams.get("minPrice") || "",
+        maxPrice: searchParams.get("maxPrice") || "",
         available: true,
         sort: "createdAt,desc",
-        county: "",
     });
 
+    useEffect(() => {
+        const q = searchParams.get("q") || "";
+        const county = searchParams.get("county");
+        const minP = searchParams.get("minPrice") || "";
+        const maxP = searchParams.get("maxPrice") || "";
+
+        setFilters(prev => ({
+            ...prev,
+            q,
+            minPrice: minP,
+            maxPrice: maxP
+        }));
+
+        if (county && COUNTY_BBOX[county]) {
+            setMapCenter(COUNTY_BBOX[county].center);
+        }
+    }, [searchParams]);
+
     const [bbox, setBbox] = useState<Bbox | null>(null);
-    const navigate = useNavigate();
-    const location = useLocation() as {
-        state?: { center?: { lat: number; lon: number; listingId?: string } };
-    };
-    const { user } = useAuth();
-    const { actions } = useChat();
 
     const [listings, setListings] = useState<ListingCardDto[]>([]);
     const [points, setPoints] = useState<Point[]>([]);
-    const [mapCenter, setMapCenter] =
-        useState<[number, number]>(DEFAULT_CENTER);
+    const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
 
     const [page, setPage] = useState(0);
-    const [pageSize] = useState(10); // show 10 per page
+    const [pageSize] = useState(10);
     const [total, setTotal] = useState(0);
 
     const [loading, setLoading] = useState(false);
@@ -60,54 +70,12 @@ export default function MapPage() {
     const [activeId, setActiveId] = useState<string | null>(null);
 
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
-    const hasAppliedCenterRef = useRef(false);
-
-    // If we arrive from ListingPage with a center in location.state,
-    // center the map on that listing once.
-    useEffect(() => {
-        if (hasAppliedCenterRef.current) return;
-        const center = location.state?.center;
-        if (!center) return;
-
-        if (typeof center.lat === "number" && typeof center.lon === "number") {
-            setMapCenter([center.lat, center.lon]);
-        }
-        if (center.listingId) {
-            setActiveId(center.listingId);
-        }
-        hasAppliedCenterRef.current = true;
-    }, [location.state, setMapCenter]);
-
-    const [searchParams] = useSearchParams();
-    const urlQuery = searchParams.get("q") ?? "";
-    const urlCounty = searchParams.get("county");
-
-    useEffect(() => {
-        if (!urlCounty) return;
-
-        const countyData = COUNTY_BBOX[urlCounty];
-        if (!countyData) return;
-
-        // 1. center map
-        setMapCenter(countyData.center);
-
-        // 2. bbox
-        const [minLon, minLat, maxLon, maxLat] = countyData.bbox;
-        const initialBbox = { minLon, minLat, maxLon, maxLat };
-        setBbox(initialBbox);
-
-        // 3. inject search text
-        setFilters((prev) => ({
-            ...prev,
-            q: urlQuery,
-            county: urlCounty ?? "",
-        }));
-
-    }, []);
-
 
     // Convert ListingCardDto -> Point expected by MapBox
     function listingToPoint(l: ListingCardDto): Point {
+        const best =
+            (l.images?.length ? l.images[0].url : null) ?? l.thumbnailUrl ?? null;
+
         return {
             id: l.id,
             title: l.title,
@@ -117,6 +85,9 @@ export default function MapPage() {
             lon: l.lon ?? 0,
             lat: l.lat ?? 0,
             farmerName: l.farmerName ?? null,
+
+            // MapBox will call toAbsoluteUrl too, but it's ok to normalize here as well
+            thumbnailUrl: toAbsoluteUrl(best),
         };
     }
 
@@ -173,7 +144,7 @@ export default function MapPage() {
             setTotal(data.total);
         } catch (e) {
             console.error("search error", e);
-            setError("EROARE: Nu s-au putut afisa produsele.");
+            setError("Could not load listings.");
         } finally {
             setLoading(false);
         }
@@ -182,10 +153,10 @@ export default function MapPage() {
     // MapBox → bbox changed
     function handleBboxChange(newBbox: Bbox) {
         setBbox(newBbox);
-        void fetchListingsFor(newBbox, filters, 0); // reset to first page
+        void fetchListingsFor(newBbox, filters, 0);
     }
 
-    // Change sort (Newest / Oldest / Price ↑ / Price ↓) and refetch
+    // Change sort and refetch
     function updateSort(next: SortOption) {
         setFilters((prev) => {
             const updated: Filters = { ...prev, sort: next };
@@ -197,7 +168,6 @@ export default function MapPage() {
         });
     }
 
-    // Filters form submit (left side panel)
     function handleSubmit(e: FormEvent) {
         e.preventDefault();
         if (!bbox) return;
@@ -205,7 +175,6 @@ export default function MapPage() {
         void fetchListingsFor(bbox, filters, 0);
     }
 
-    // Pagination
     function handlePrevPage() {
         if (!bbox) return;
         if (page <= 0) return;
@@ -220,15 +189,13 @@ export default function MapPage() {
         void fetchListingsFor(bbox, filters, nextPage);
     }
 
-    // Click on card → center map + highlight
     function handleCardClick(l: ListingCardDto) {
         setActiveId(l.id);
         if (l.lat != null && l.lon != null) {
-            setMapCenter([l.lat, l.lon]); // MapBox expects [lat, lon]
+            setMapCenter([l.lat, l.lon]);
         }
     }
 
-    // Clear all filters
     function clearFilters() {
         const reset: Filters = {
             q: "",
@@ -236,69 +203,24 @@ export default function MapPage() {
             maxPrice: "",
             available: true,
             sort: "createdAt,desc",
-            county: "",
         };
-
         setFilters(reset);
         setPage(0);
         if (bbox) void fetchListingsFor(bbox, reset, 0);
     }
 
-    // Handle opening listing (view details only; chat is started from ListingPage)
-    async function handleOpenListing(listing: ListingCardDto) {
-        if (!listing.farmerUserId) {
-            alert("Informatiile despre vanzator nu sunt disponibile aici.");
-            return;
-        }
-
-        // Always allow opening the listing page, even if not logged in.
-        // Chat/login flow is handled inside ListingPage when the user presses "Start chat".
-        navigate(`/listings/${listing.id}`, {
-            state: {
-                sellerId: listing.farmerUserId,
-                autoStartChat: false,
-            },
-        });
-    }
-
-    useEffect(() => {
-        if (!filters.county) return;
-
-        const countyData = COUNTY_BBOX[filters.county];
-        if (!countyData) return;
-
-        // 1. Center map
-        setMapCenter(countyData.center);
-
-        // 2. Set bbox
-        const [minLon, minLat, maxLon, maxLat] = countyData.bbox;
-        const newBbox = { minLon, minLat, maxLon, maxLat };
-        setBbox(newBbox);
-
-        // 3. Search
-        setPage(0);
-        void fetchListingsFor(newBbox, filters, 0);
-    }, [filters.county]);
-
-
     return (
-        <div className={styles['mapPage']}>
-            {/* Top bar: title */}
-            <header className={styles['mapPage-header']}>
-                <BurgerMenu />
-                <span className={styles['mapPage-title']}>BioBuy Map</span>
-            </header>
+        <div className="mapPage">
 
-            {/* Main layout: left search + list, right map */}
-            <div className={styles['mapPage-content']}>
-                {/* LEFT: search panel + results */}
-                <section className={styles['mapPage-list']}>
-                    <form className={styles['mapPage-filters']} onSubmit={handleSubmit}>
-                        <div className={styles['mapPage-field']}>
-                            <label>Cautare</label>
+
+            <div className="mapPage-content">
+                <section className="mapPage-list">
+                    <form className="mapPage-filters" onSubmit={handleSubmit}>
+                        <div className="mapPage-field">
+                            <label>Search</label>
                             <input
                                 type="text"
-                                placeholder="rosii, mere, branza..."
+                                placeholder="tomatoes, apples, cheese..."
                                 value={filters.q}
                                 onChange={(e) =>
                                     setFilters((f) => ({ ...f, q: e.target.value }))
@@ -306,256 +228,191 @@ export default function MapPage() {
                             />
                         </div>
 
-                        <div className={styles['mapPage-field']}>
-                            <label>Județ</label>
-                            <select
-                                value={filters.county}
-                                data-has-value={filters.county !== ""}
-                                onChange={(e) =>
-                                    setFilters((f) => ({ ...f, county: e.target.value }))
-                                }
-                            >
-                                <option value="">Toate județele</option>
-                                {Object.keys(COUNTY_BBOX).map((c) => (
-                                    <option key={c} value={c}>
-                                        {c}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-
-                        <div className={styles['mapPage-fieldRow']}>
-                            <div className={styles['mapPage-field']}>
-                                <label>Pret minim</label>
+                        <div className="mapPage-fieldRow">
+                            <div className="mapPage-field">
+                                <label>Min price</label>
                                 <input
                                     type="number"
                                     placeholder="1"
                                     value={filters.minPrice}
                                     onChange={(e) =>
-                                        setFilters((f) => ({
-                                            ...f,
-                                            minPrice: e.target.value,
-                                        }))
+                                        setFilters((f) => ({ ...f, minPrice: e.target.value }))
                                     }
                                 />
                             </div>
-                            <div className={styles['mapPage-field']}>
-                                <label>Pret maxim</label>
+                            <div className="mapPage-field">
+                                <label>Max price</label>
                                 <input
                                     type="number"
                                     placeholder="999"
                                     value={filters.maxPrice}
                                     onChange={(e) =>
-                                        setFilters((f) => ({
-                                            ...f,
-                                            maxPrice: e.target.value,
-                                        }))
+                                        setFilters((f) => ({ ...f, maxPrice: e.target.value }))
                                     }
                                 />
                             </div>
                         </div>
 
-                        {/* Sort buttons: Newest / Oldest / Price ↑ / Price ↓ */}
-                        <div className={styles['mapPage-sortGroup']}>
-                            <span className={styles['mapPage-sortLabel']}>Sortare dupa:</span>
+                        <div className="mapPage-sortGroup">
+                            <span className="mapPage-sortLabel">Sort by:</span>
                             <button
                                 type="button"
                                 className={
-                                    styles['mapPage-sortBtn'] +
+                                    "mapPage-sortBtn" +
                                     (filters.sort === "createdAt,desc"
-                                        ? ` ${styles['mapPage-sortBtn--active']}`
+                                        ? " mapPage-sortBtn--active"
                                         : "")
                                 }
                                 onClick={() => updateSort("createdAt,desc")}
                             >
-                                Cele mai noi
+                                Newest
                             </button>
                             <button
                                 type="button"
                                 className={
-                                    styles['mapPage-sortBtn'] +
+                                    "mapPage-sortBtn" +
                                     (filters.sort === "createdAt,asc"
-                                        ? ` ${styles['mapPage-sortBtn--active']}`
+                                        ? " mapPage-sortBtn--active"
                                         : "")
                                 }
                                 onClick={() => updateSort("createdAt,asc")}
                             >
-                                Cele mai vechi
+                                Oldest
                             </button>
                             <button
                                 type="button"
                                 className={
-                                    styles['mapPage-sortBtn'] +
+                                    "mapPage-sortBtn" +
                                     (filters.sort === "price,asc"
-                                        ? ` ${styles['mapPage-sortBtn--active']}`
+                                        ? " mapPage-sortBtn--active"
                                         : "")
                                 }
                                 onClick={() => updateSort("price,asc")}
                             >
-                                Pret ↑
+                                Price ↑
                             </button>
                             <button
                                 type="button"
                                 className={
-                                    styles['mapPage-sortBtn'] +
+                                    "mapPage-sortBtn" +
                                     (filters.sort === "price,desc"
-                                        ? ` ${styles['mapPage-sortBtn--active']}`
+                                        ? " mapPage-sortBtn--active"
                                         : "")
                                 }
                                 onClick={() => updateSort("price,desc")}
                             >
-                                Pret ↓
+                                Price ↓
                             </button>
                         </div>
 
-                        <div className={`${styles['mapPage-fieldRow']} ${styles['mapPage-fieldRow-bottom']}`}>
-                            <label className={styles['mapPage-checkbox']}>
+                        <div className="mapPage-fieldRow mapPage-fieldRow-bottom">
+                            <label className="mapPage-checkbox">
                                 <input
                                     type="checkbox"
                                     checked={filters.available}
                                     onChange={(e) =>
-                                        setFilters((f) => ({
-                                            ...f,
-                                            available: e.target.checked,
-                                        }))
+                                        setFilters((f) => ({ ...f, available: e.target.checked }))
                                     }
                                 />
-                                Disponibile
+                                Only available
                             </label>
 
-                            <div className={styles['mapPage-filterButtons']}>
+                            <div className="mapPage-filterButtons">
                                 <button type="submit" disabled={loading || !bbox}>
-                                    {loading ? "Se incarca..." : "Cautare"}
+                                    {loading ? "Loading..." : "Search"}
                                 </button>
-                                <button
-                                    type="button"
-                                    onClick={clearFilters}
-                                    disabled={loading}
-                                >
-                                    Sterge
+                                <button type="button" onClick={clearFilters} disabled={loading}>
+                                    Clear
                                 </button>
                             </div>
                         </div>
                     </form>
 
-                    {/* Active filter chips */}
-                    <div className={styles['mapPage-chips']}>
-                        {filters.q && (
-                            <span className={`${styles['chip']} ${styles['chip-main']}`}>
-                                text: "{filters.q}"
-                            </span>
-                        )}
-                        {filters.minPrice && (
-                            <span className={styles['chip']}>min {filters.minPrice}</span>
-                        )}
-                        {filters.maxPrice && (
-                            <span className={styles['chip']}>max {filters.maxPrice}</span>
-                        )}
-                        {filters.available && (
-                            <span className={`${styles['chip']} ${styles['chip-available']}`}>
-                                disponibile
-                            </span>
-                        )}
+                    <div className="mapPage-chips">
+                        {filters.q && <span className="chip chip-main">q: "{filters.q}"</span>}
+                        {filters.minPrice && <span className="chip">min {filters.minPrice}</span>}
+                        {filters.maxPrice && <span className="chip">max {filters.maxPrice}</span>}
+                        {filters.available && <span className="chip chip-available">available</span>}
                     </div>
 
-                    {/* List header info */}
-                    <div className={styles['mapPage-listHeader']}>
-                        <div className={styles['mapPage-listInfo']}>
-                            Total: <b>{total}</b> • Pagini {page + 1} / {totalPages}
+                    <div className="mapPage-listHeader">
+                        <div className="mapPage-listInfo">
+                            Total: <b>{total}</b> • Page {page + 1} / {totalPages}
                         </div>
                     </div>
 
                     {loading && listings.length === 0 && (
-                        <div className={styles['mapPage-status']}>Loading...</div>
+                        <div className="mapPage-status">Loading...</div>
                     )}
-                    {error && <div className={styles['mapPage-error']}>{error}</div>}
+                    {error && <div className="mapPage-error">{error}</div>}
                     {!loading && !error && listings.length === 0 && (
-                        <div className={styles['mapPage-status']}>
-                            Niciun produs in aceasta arie inca. Schimba locatia de pe mapa sau ajusteaza filtrele.
+                        <div className="mapPage-status">
+                            No listings in this area. Move the map or adjust filters.
                         </div>
                     )}
 
-                    {/* Result cards */}
-                    {/* Result cards */}
-                    {listings.map((l) => (
-                        <article
-                            key={l.id}
-                            className={
-                                styles['mapPage-card'] +
-                                (activeId === l.id
-                                    ? ` ${styles['mapPage-card--active']}`
-                                    : "")
-                            }
-                            onClick={() => handleCardClick(l)}
-                        >
-                            {l.thumbnailUrl && (
-                                <div className={styles['mapPage-card-thumb']}>
-                                    <img src={l.thumbnailUrl} alt={l.title} />
-                                </div>
-                            )}
+                    {listings.map((l) => {
+                        const best =
+                            (l.images?.length ? l.images[0].url : null) ?? l.thumbnailUrl ?? null;
 
-                            <div className={styles['mapPage-card-body']}>
-                                <h3 className={styles['mapPage-card-title']}>
-                                    {l.title}
-                                </h3>
+                        const imgUrl = toAbsoluteUrl(best) ?? "/placeholder.jpg";
 
-                                {(l as any).farmerName && (
-                                    <div className={styles['mapPage-card-meta']}>
-                                        Farmer:{" "}
-                                        <strong>
-                                            {(l as any).farmerName}
-                                        </strong>
-                                    </div>
-                                )}
-
-                                {(l as any).description && (
-                                    <p className={styles['mapPage-card-desc']}>
-                                        {(l as any).description}
-                                    </p>
-                                )}
-
-                                <div className={styles['mapPage-card-footer']}>
-                                    {l.priceCents != null && l.currency && (
-                                        <span className={styles['mapPage-card-price']}>
-                                            {(l.priceCents / 100).toFixed(0)}{" "}
-                                            {l.currency}
-                                        </span>
-                                    )}
-
-                                    {l.productName && (
-                                        <span className={styles['mapPage-card-tag']}>
-                                            {l.productName}
-                                        </span>
-                                    )}
-                                    {l.categoryName && (
-                                        <span className={styles['mapPage-card-tag']}>
-                                            {l.categoryName}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* 👇 NEW BUTTON GOES HERE */}
-                                <div className={styles['mapPage-card-actions']}>
-                                    <button
-                                        type="button"
-                                        className={styles['mapPage-cardActionBtn']}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            void handleOpenListing(l);
+                        return (
+                            <article
+                                key={l.id}
+                                className={
+                                    "mapPage-card" +
+                                    (activeId === l.id ? " mapPage-card--active" : "")
+                                }
+                                onClick={() => handleCardClick(l)}
+                            >
+                                <div className="mapPage-card-thumb">
+                                    <img
+                                        src={imgUrl}
+                                        alt={l.title}
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            if (e.currentTarget.src.endsWith("/placeholder.jpg")) return;
+                                            e.currentTarget.src = "/placeholder.jpg";
                                         }}
-                                    >
-                                        Vezi produs
-                                    </button>
+                                    />
                                 </div>
-                                {/* ☝️ NEW BUTTON */}
-                            </div>
-                        </article>
-                    ))}
 
-                    {/* Pagination – show whenever we have at least one result */}
+                                <div className="mapPage-card-body">
+                                    <h3 className="mapPage-card-title">{l.title}</h3>
+
+                                    {l.farmerName && (
+                                        <div className="mapPage-card-meta">
+                                            Farmer: <strong>{l.farmerName}</strong>
+                                        </div>
+                                    )}
+
+                                    {l.description && <p className="mapPage-card-desc">{l.description}</p>}
+
+                                    <div className="mapPage-card-footer">
+                                        {l.priceCents != null && l.currency && (
+                                            <span className="mapPage-card-price">
+                                                {(l.priceCents / 100).toFixed(0)} {l.currency}
+                                            </span>
+                                        )}
+
+                                        <button
+                                            className="mapPage-viewBtn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/listings/${l.id}`);
+                                            }}
+                                        >
+                                            View
+                                        </button>
+                                    </div>
+                                </div>
+                            </article>
+                        );
+                    })}
+
                     {total > 0 && (
-                        <div className={styles['mapPage-pagination']}>
+                        <div className="mapPage-pagination">
                             <button
                                 type="button"
                                 onClick={handlePrevPage}
@@ -577,15 +434,8 @@ export default function MapPage() {
                     )}
                 </section>
 
-                {/* RIGHT: map */}
-                <section className={styles['mapPage-mapWrapper']}>
-                    <MapBox
-                        center={mapCenter}
-                        points={points}
-                        onBboxChange={handleBboxChange}
-                        activeId={activeId}
-                        className={styles['mapPage-map']}
-                    />
+                <section className="mapPage-mapWrapper">
+                    <MapBox center={mapCenter} points={points} onBboxChange={handleBboxChange} />
                 </section>
             </div>
         </div>

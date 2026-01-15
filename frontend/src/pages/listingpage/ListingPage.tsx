@@ -33,7 +33,7 @@ export default function ListingPage() {
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
 
   const sellerId = location.state?.sellerId ?? (details as any)?.farmerUserId;
-  const autoStartChat = location.state?.autoStartChat !== false;
+  const autoStartChat = location.state?.autoStartChat === true;
 
   // If your backend base is different, set VITE_API_BASE=http://localhost:8080 in .env
   const apiBase =

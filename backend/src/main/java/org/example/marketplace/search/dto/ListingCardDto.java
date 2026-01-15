@@ -14,17 +14,18 @@ import java.util.UUID;
  * - Used directly by the frontend to render cards + highlight markers.
  */
 public record ListingCardDto(
-                UUID id,
-                UUID farmerUserId,
-                String title,
-                Integer priceCents,
-                String currency,
-                double lon,
-                double lat,
-                String productName,
-                String categoryName,
-                String thumbnailUrl,
-                String description,
-                String farmerName,
-                java.util.List<String> images) {
+        UUID id,
+        UUID farmerUserId,
+        String title,
+        Integer priceCents,
+        String currency,
+        double lon,
+        double lat,
+        String productName,
+        String categoryName,
+        String thumbnailUrl,
+        String description,
+        String farmerName,
+        String unit,
+        java.util.List<String> images) {
 }
