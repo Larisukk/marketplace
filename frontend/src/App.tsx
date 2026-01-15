@@ -12,6 +12,7 @@ import AuthPage from "./pages/authpage/AuthPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import ListingPage from "./pages/listingpage/ListingPage";
 import { ChatProvider } from "./context/ChatContext";
+import AdminPage from "./pages/admin/AdminPage";
 import ChatPage from "./pages/chatpage/ChatPage";
 import EmailSentPage from "./pages/authpage/EmailSentPage";
 import EmailVerifiedPage from "./pages/authpage/EmailVerifiedPage";
@@ -92,6 +93,14 @@ export default function App() {
                     element={
                         <ProtectedRoute>
                             <EditListingPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin"
+                    element={
+                        <ProtectedRoute>
+                            <AdminPage />
                         </ProtectedRoute>
                     }
                 />

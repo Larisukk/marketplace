@@ -99,6 +99,10 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Email not verified");
         }
 
+        if (!user.isActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is disabled");
+        }
+
         var claims = Map.<String, Object>of(
                 "email", user.getEmail(),
                 "uid", user.getId(),

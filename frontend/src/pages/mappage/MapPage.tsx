@@ -1,12 +1,13 @@
 // frontend/src/pages/mappage/MapPage.tsx
-import { FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { FormEvent, useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import MapBox, { type Bbox, type Point } from "../../components/MapBox";
 import "./MapPage.css";
 
 import { searchListings } from "@/services/searchApi";
 import type { ListingCardDto } from "@/types/search";
 import { toAbsoluteUrl } from "@/services/api"; // ✅ shared helper
+import { COUNTY_BBOX } from "../../utils/counties";
 
 type SortOption =
     | "createdAt,desc"
@@ -26,13 +27,33 @@ const DEFAULT_CENTER: [number, number] = [44.4268, 26.1025];
 
 export default function MapPage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
     const [filters, setFilters] = useState<Filters>({
-        q: "",
-        minPrice: "",
-        maxPrice: "",
+        q: searchParams.get("q") || "",
+        minPrice: searchParams.get("minPrice") || "",
+        maxPrice: searchParams.get("maxPrice") || "",
         available: true,
         sort: "createdAt,desc",
     });
+
+    useEffect(() => {
+        const q = searchParams.get("q") || "";
+        const county = searchParams.get("county");
+        const minP = searchParams.get("minPrice") || "";
+        const maxP = searchParams.get("maxPrice") || "";
+
+        setFilters(prev => ({
+            ...prev,
+            q,
+            minPrice: minP,
+            maxPrice: maxP
+        }));
+
+        if (county && COUNTY_BBOX[county]) {
+            setMapCenter(COUNTY_BBOX[county].center);
+        }
+    }, [searchParams]);
 
     const [bbox, setBbox] = useState<Bbox | null>(null);
 

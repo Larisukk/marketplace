@@ -42,7 +42,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService uds, PasswordEncoder encoder) {
@@ -53,7 +55,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtAuthFilter jwtAuthFilter(JwtService jwt) { return new JwtAuthFilter(jwt); }
+    public JwtAuthFilter jwtAuthFilter(JwtService jwt) {
+        return new JwtAuthFilter(jwt);
+    }
 
     // --- CORS
     @Bean
@@ -61,9 +65,8 @@ public class SecurityConfig {
         var cfg = new CorsConfiguration();
         cfg.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://localhost:5174"
-        ));
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+                "http://localhost:5174"));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setExposedHeaders(List.of("Authorization"));
         cfg.setAllowCredentials(true);
@@ -94,17 +97,20 @@ public class SecurityConfig {
                         // ✅ ASTA ITI LIPSEA (poze)
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.HEAD, "/uploads/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()  // Allow public access to uploaded images
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll() // Allow public access to uploaded
+                                                                                    // images
 
                         // chat endpoints (require authenticated user w/ role)
-                        .requestMatchers(HttpMethod.POST, "/api/chat/conversations/start").hasAnyRole("USER","FARMER","ADMIN")
-                        .requestMatchers(HttpMethod.GET,  "/api/chat/conversations").hasAnyRole("USER","FARMER","ADMIN")
-                        .requestMatchers(HttpMethod.GET,  "/api/chat/messages").hasAnyRole("USER","FARMER","ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/chat/messages").hasAnyRole("USER","FARMER","ADMIN")
-
+                        .requestMatchers(HttpMethod.POST, "/api/chat/conversations/start")
+                        .hasAnyRole("USER", "FARMER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/chat/conversations")
+                        .hasAnyRole("USER", "FARMER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/chat/messages").hasAnyRole("USER", "FARMER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/chat/messages").hasAnyRole("USER", "FARMER", "ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/api/support/**").permitAll()
 
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
 
                 )

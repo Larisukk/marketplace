@@ -142,6 +142,18 @@ const MainHeader: React.FC = () => {
                     >
                         Vinde un produs
                     </div>
+
+                    {user?.role === 'ADMIN' && (
+                        <div
+                            className={styles['menu-link']}
+                            onClick={() => {
+                                window.location.href = "/admin";
+                            }}
+                            style={{ color: '#cc0000', fontWeight: 'bold' }}
+                        >
+                            Admin Dashboard
+                        </div>
+                    )}
                 </div>
             </nav>
 

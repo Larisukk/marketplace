@@ -173,19 +173,37 @@ public class ListingCommandService {
     }
 
     @Transactional
+    public void deleteListing(UUID listingId, String userEmail) {
+        // Ownership check
+        UserEntity user = users.findByEmailIgnoreCase(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        UUID ownerId = jdbc.queryForObject("SELECT farmer_user_id FROM listings WHERE id = ?", UUID.class, listingId);
+
+        boolean isAdmin = user.getRole().name().equals("ADMIN");
+        if (!user.getId().equals(ownerId) && !isAdmin) {
+            throw new IllegalArgumentException("Not allowed to delete this listing");
+        }
+
+        // Deletion cascading is handled by DB FKs usually, but let's be explicit if
+        // needed
+        // Assuming ON DELETE CASCADE in SQL for listing_images, etc.
+        jdbc.update("DELETE FROM listings WHERE id = ?", listingId);
+    }
+
+    @Transactional
     public void deleteListingImage(UUID listingId, String imageUrl, String userEmail) {
         // Ownership check
         UserEntity user = users.findByEmailIgnoreCase(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         UUID ownerId = jdbc.queryForObject("SELECT farmer_user_id FROM listings WHERE id = ?", UUID.class, listingId);
 
-        if (!user.getId().equals(ownerId)) {
+        boolean isAdmin = user.getRole().name().equals("ADMIN");
+        if (!user.getId().equals(ownerId) && !isAdmin) {
             throw new IllegalArgumentException("Not allowed");
         }
 
         // Find media asset id from URL (simple check)
-        // URL format is /uploads/UUID-filename. We can search by URL in media_assets
-        // But listing_images links them.
         String sql = """
                     SELECT li.media_asset_id
                     FROM listing_images li

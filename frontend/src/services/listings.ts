@@ -32,6 +32,10 @@ export const listingService = {
         return api.del(`/listings/${id}/images?url=${encodeURIComponent(url)}`);
     },
 
+    delete(id: string) {
+        return api.del(`/listings/${id}`);
+    },
+
     // Multipart upload – we DO NOT use api.post here
     uploadImages(listingId: string, files: File[]) {
         const formData = new FormData();

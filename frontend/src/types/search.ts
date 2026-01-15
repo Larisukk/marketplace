@@ -12,6 +12,7 @@ export interface ListingImageDto {
 // -----------------------------
 export interface ListingCardDto {
     id: UUID;
+    farmerUserId: UUID;
     title: string;
     priceCents: number | null;
     currency: string | null;

@@ -39,6 +39,15 @@ public class ListingCommandController {
         listings.updateListing(listingId, req, email);
     }
 
+    @DeleteMapping("/{listingId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteListing(
+            @PathVariable UUID listingId,
+            Authentication authentication) {
+        String email = authentication.getName();
+        listings.deleteListing(listingId, email);
+    }
+
     @PostMapping("/{listingId}/images")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void uploadImages(
