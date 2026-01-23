@@ -21,6 +21,7 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
             FROM public.listings l
             JOIN public.products p   ON p.id = l.product_id
             LEFT JOIN public.categories c ON c.id = p.category_id
+            LEFT JOIN public.users u ON u.id = l.farmer_user_id
             LEFT JOIN public.farmer_profiles fp ON fp.user_id = l.farmer_user_id
             LEFT JOIN LATERAL (
                 SELECT ma.url AS thumbnail_url
@@ -69,7 +70,7 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                        c.name AS category_name,
                        thumb.thumbnail_url,
                        l.description,
-                       fp.farm_name AS farmer_name,
+                       COALESCE(fp.farm_name, u.display_name) AS farmer_name,
                        l.unit
                 """ + BASE_FROM +
                 " ORDER BY " + sortSql +
@@ -163,11 +164,12 @@ public class ListingSearchRepositoryImpl implements ListingSearchRepository {
                        c.name AS category_name,
                        thumb.thumbnail_url,
                        l.description,
-                       fp.farm_name AS farmer_name,
+                       COALESCE(fp.farm_name, u.display_name) AS farmer_name,
                        l.unit
                 FROM public.listings l
                 JOIN public.products p   ON p.id = l.product_id
                 LEFT JOIN public.categories c ON c.id = p.category_id
+                LEFT JOIN public.users u ON u.id = l.farmer_user_id
                 LEFT JOIN public.farmer_profiles fp ON fp.user_id = l.farmer_user_id
                 LEFT JOIN LATERAL (
                     SELECT ma.url AS thumbnail_url

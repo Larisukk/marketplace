@@ -172,7 +172,11 @@ export default function ListingPage() {
   const priceText = useMemo(() => {
     if (!details) return "—";
     const val = (details.priceCents / 100).toFixed(0);
-    return `${val} ${details.currency}`;
+    const price = `${val} ${details.currency}`;
+    if (details.unit) {
+      return `${price} / ${details.unit}`;
+    }
+    return price;
   }, [details]);
 
   const sellerInitial = useMemo(() => {

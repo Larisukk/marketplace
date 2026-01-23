@@ -284,7 +284,8 @@
 .main-nav {
     display: flex;
     justify-content: center;
-    width: 100%;
+    flex: 1;
+    /* Allow it to take available space */
     opacity: 0;
     visibility: hidden;
     padding-top: 0;

@@ -1,113 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from '../pages/homepage/Home.module.css';
 
+import CountySelect from './CountySelect';
+
 interface HomeHeroProps {
     onSearch: (product: string, county: string) => void;
     counties: string[];
 }
-
-const LocationIcon = () => (
-    <svg className={styles['county-option-icon']} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-        <circle cx="12" cy="10" r="3" />
-    </svg>
-);
-
-interface CountySelectProps {
-    counties: string[];
-    selectedCounty: string;
-    onSelectCounty: (county: string) => void;
-    className?: string;
-}
-
-
-const CountySelect: React.FC<CountySelectProps> = ({
-                                                       counties,
-                                                       selectedCounty,
-                                                       onSelectCounty,
-                                                       className = '',
-                                                   }) => {
-
-    const [isOpen, setIsOpen] = useState(false);
-    const wrapperRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    const filteredCounties = counties.filter((county) =>
-        county.toLowerCase().includes(selectedCounty.toLowerCase())
-    );
-
-    const handleSelect = (county: string) => {
-        onSelectCounty(county);
-        setIsOpen(false);
-    };
-
-    return (
-        <div className={`${styles['county-select-wrapper']} ${className}`} ref={wrapperRef}>
-            <div
-                className={`${styles['county-select-display']} ${!selectedCounty ? styles['placeholder'] : ''}`}
-                onClick={() => setIsOpen(!isOpen)}
-                aria-expanded={isOpen}
-            >
-
-                <div className={styles['county-display-content']}>
-                    <LocationIcon />
-                    <input
-                        type="text"
-                        value={selectedCounty}
-                        placeholder="Judet"
-                        onChange={(e) => {
-                            onSelectCounty(e.target.value);
-                            setIsOpen(true);
-                        }}
-                        className={styles['county-input']}
-                    />
-                </div>
-                <span
-                    className={styles['dropdown-arrow']}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setIsOpen((prev) => !prev);
-                    }}
-                >
-                ▼
-                </span>
-            </div>
-            {/* 🔽 SUGESTII FILTRATE */}
-            {isOpen && (
-                <div className={styles['county-select-dropdown']}>
-                    {filteredCounties.length === 0 ? (
-                        <div className={styles['county-select-option']}>
-                            Niciun județ găsit
-                        </div>
-                    ) : (
-                        filteredCounties.map((county) => (
-                            <div
-                                key={county}
-                                className={`${styles['county-select-option']} ${
-                                    selectedCounty === county ? styles['selected'] : ''
-                                }`}
-                                onClick={() => handleSelect(county)}
-                            >
-                                <LocationIcon />
-                                <span className={styles['county-option-text']}>{county}</span>
-                            </div>
-                        ))
-                    )}
-                </div>
-            )}
-
-        </div>
-    );
-};
 
 
 const COLORS = {

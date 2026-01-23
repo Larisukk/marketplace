@@ -38,8 +38,8 @@
     padding: 8px;
 
     box-shadow:
-            0 10px 25px rgba(0,0,0,.12),
-            0 4px 10px rgba(0,0,0,.08);
+        0 10px 25px rgba(0, 0, 0, .12),
+        0 4px 10px rgba(0, 0, 0, .08);
 
     max-height: 260px;
     overflow-y: auto;
@@ -56,4 +56,14 @@
 
 .county-select-option:hover {
     background: #f5f9f0;
+}
+
+.county-input {
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    background: transparent;
+    width: 90px;
+    color: #0F2A1D;
+    /* dark green */
 }

@@ -29,9 +29,11 @@ export default function App() {
     const { user } = useAuth();
 
     // pages where header MUST NOT appear
-    const hideHeaderOn: string[] = ["/chat"];
+    const hideHeaderPrefixes = ["/chat", "/auth"];
 
-    const shouldShowHeader = !hideHeaderOn.includes(location.pathname);
+    const shouldShowHeader = !hideHeaderPrefixes.some((p) =>
+        location.pathname.startsWith(p)
+    );
 
     return (
         <ChatProvider>

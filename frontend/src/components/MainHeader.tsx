@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../header/MainHeader.module.css';
 import { useAuth } from "../context/AuthContext";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import CountySelect from './CountySelect';
+import { COUNTY_BBOX } from '../utils/counties';
 
 const COLORS = {
     DARK_GREEN: '#0F2A1D',
@@ -13,8 +15,43 @@ const MainHeader: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { user } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
     const isUploadPage = location.pathname === "/upload";
     const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+    // Search state
+    const [scrolled, setScrolled] = useState(false);
+    const [productQuery, setProductQuery] = useState('');
+    const [selectedCounty, setSelectedCounty] = useState('');
+
+    useEffect(() => {
+        const handleScroll = () => {
+            // Show search bar after scrolling 400px (past hero)
+            if (window.scrollY > 400) {
+                setScrolled(true);
+            } else {
+                setScrolled(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        const params = new URLSearchParams();
+        if (productQuery.trim()) params.set("q", productQuery.trim());
+        if (selectedCounty) params.set("county", selectedCounty);
+        navigate(`/map?${params.toString()}`);
+    };
+
+    // Show search if scrolled on home, OR (optional) always on non-home/map? 
+    // Requirement: "on the homepage... scroll down".
+    const showSearch = (location.pathname === '/home' || location.pathname === '/') && scrolled;
+
+    // Add 'search-visible' class to header if valid
+    const headerClass = `${styles['main-header']} ${showSearch ? styles['search-visible'] : ''}`;
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -47,7 +84,8 @@ const MainHeader: React.FC = () => {
                 </div>
             )}
 
-            <header className={styles['main-header']}>
+
+            <header className={headerClass}>
                 <div className={styles['header-top-row']}>
                     <div className={styles['left-group']}>
                         <button
@@ -62,6 +100,28 @@ const MainHeader: React.FC = () => {
                         <a href="/home" className={styles['logo-link']}>
                             <img src="/biobuy-logo.png" alt="BioBuy" className={styles['logo-img']} />
                         </a>
+                    </div>
+
+                    {/* HEADER SEARCH BAR (Hidden by default, visible via CSS based on parent class) */}
+                    <div className={styles['main-nav']}>
+                        <form onSubmit={handleSearch} className={styles['header-search-bar']}>
+                            <input
+                                type="text"
+                                placeholder="Caută produse..."
+                                value={productQuery}
+                                onChange={(e) => setProductQuery(e.target.value)}
+                            />
+                            <div className={styles['divider']}></div>
+                            <CountySelect
+                                counties={Object.keys(COUNTY_BBOX)}
+                                selectedCounty={selectedCounty}
+                                onSelectCounty={setSelectedCounty}
+                                className={styles['header-location-select']}
+                            />
+                            <button type="submit" className={styles['search-button']}>
+                                🔍
+                            </button>
+                        </form>
                     </div>
 
                     <div className={styles['icon-links']}>
